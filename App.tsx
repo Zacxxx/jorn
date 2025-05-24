@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName } from './types'; 
 import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCES, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment } from './services/geminiService';
+import { attemptEnhancement, deductResources as deductEnhancementResources, generateItemId } from './components/items/item_utils';
 
 import ActionButton from './components/ActionButton'; 
 import Modal from './components/Modal';
@@ -9,7 +10,6 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { GetSpellIcon, BagIcon, CollectionIcon } from './components/IconComponents'; 
 import Header from './components/Header';
 import Footer from './components/Footer';
-// FIX: Changed import of 'CharacterSheetModal' to a named import to resolve "Module ... has no default export" error.
 import { CharacterSheetModal } from './components/CharacterSheetModal';
 import CraftingHubModal from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal'; 
@@ -109,6 +109,10 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [pendingTraitUnlock, setPendingTraitUnlock] = useState(false);
   const [defaultCharacterSheetTab, setDefaultCharacterSheetTab] = useState<CharacterSheetTab | undefined>('Main');
   const [currentActingEnemyIndex, setCurrentActingEnemyIndex] = useState(0);
+
+  // States for Item Enhancement
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancementMessage, setEnhancementMessage] = useState<string | null>(null);
 
   const [pendingSpellCraftData, setPendingSpellCraftData] = useState<GeneratedSpellData | null>(null);
   const [pendingSpellEditData, setPendingSpellEditData] = useState<GeneratedSpellData | null>(null);
@@ -366,7 +370,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     finally { setIsLoading(false); }
   };
 
-  const handleInitiateItemCraft = async (promptText: string, itemType: ItemType) => {
+  const handleInitiateItemCraft = async (promptText: string, itemType: ItemType, quantity: number) => {
     setIsLoading(true);
     try { 
       let itemData: GeneratedConsumableData | GeneratedEquipmentData; 
@@ -382,12 +386,83 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const handleConfirmItemCraft = () => {
     if (!pendingItemCraftData) return;
     const itemTypeCrafted: ItemType = (pendingItemCraftData as GeneratedEquipmentData).slot ? 'Equipment' : 'Consumable'; 
-    if (!checkResources(pendingItemCraftData.resourceCost)) { setModalContent({ title: "Craft Failed", message: "Insufficient resources.", type: 'error' }); return; }
+    
+    if (!checkResources(pendingItemCraftData.resourceCost)) { 
+      setModalContent({ title: "Craft Failed", message: "Insufficient resources.", type: 'error' }); 
+      return; 
+    }
     deductResources(pendingItemCraftData.resourceCost);
-    const newItem: GameItem = { ...pendingItemCraftData, id: `${itemTypeCrafted.toLowerCase()}-${Date.now()}`, itemType: itemTypeCrafted } as GameItem;
+
+    let newItem: GameItem;
+    if (itemTypeCrafted === 'Equipment') {
+      const equipmentData = pendingItemCraftData as GeneratedEquipmentData;
+      newItem = {
+        id: generateItemId('equip'),
+        name: equipmentData.name,
+        description: equipmentData.description,
+        iconName: equipmentData.iconName,
+        itemType: 'Equipment',
+        slot: equipmentData.slot,
+        statsBoost: equipmentData.statsBoost,
+        originalStatsBoost: { ...equipmentData.statsBoost }, // Initialize originalStatsBoost
+        resourceCost: equipmentData.resourceCost,
+        enhancementLevel: 0 // Initialize enhancementLevel
+      } as Equipment;
+    } else {
+      const consumableData = pendingItemCraftData as GeneratedConsumableData;
+      newItem = {
+        id: generateItemId('consum'),
+        name: consumableData.name,
+        description: consumableData.description,
+        iconName: consumableData.iconName,
+        itemType: 'Consumable',
+        effectType: consumableData.effectType,
+        magnitude: consumableData.magnitude,
+        duration: consumableData.duration,
+        statusToCure: consumableData.statusToCure,
+        buffToApply: consumableData.buffToApply,
+        resourceCost: consumableData.resourceCost
+      } as Consumable;
+    }
+
     setPlayer(prev => ({ ...prev, items: [...prev.items, newItem] }));
     setModalContent({ title: `${itemTypeCrafted} Crafted!`, message: `${newItem.name} added to inventory.`, type: 'success' });
     setPendingItemCraftData(null); setGameState('CRAFTING_HUB');
+  };
+
+  const handleAttemptEnhanceItem = (itemToEnhance: Equipment) => {
+    if (!itemToEnhance) return;
+    setIsEnhancing(true);
+    setEnhancementMessage(null);
+
+    const result = attemptEnhancement(itemToEnhance, player.inventory);
+    let newInventoryResources = player.inventory;
+
+    if (result.consumedResources.length > 0) {
+        newInventoryResources = deductEnhancementResources(player.inventory, result.consumedResources);
+    }
+
+    let newPlayerItems = [...player.items];
+    if (result.success && result.newItem) {
+      newPlayerItems = player.items.map(item => 
+        item.id === result.newItem!.id ? result.newItem! : item
+      );
+    }
+
+    setPlayer(prevPlayer => ({
+      ...prevPlayer,
+      items: newPlayerItems,
+      inventory: newInventoryResources,
+    }));
+
+    if (result.message) {
+      setModalContent({
+        title: 'Enhancement Result',
+        message: result.message,
+        type: result.success ? 'success' : 'error'
+      });
+    }
+    setIsEnhancing(false);
   };
 
   const handleEquipItem = (itemId: string, slot: DetailedEquipmentSlot) => {
@@ -1143,6 +1218,10 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
         onClose={() => setGameState('HOME')}
         onInitiateAppItemCraft={handleInitiateItemCraft}
         isLoading={isLoading}
+        playerItems={player.items}
+        playerInventory={player.inventory}
+        onAttemptEnhanceItem={handleAttemptEnhanceItem}
+        isEnhancing={isEnhancing}
       />
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
       <GameMenuModal 

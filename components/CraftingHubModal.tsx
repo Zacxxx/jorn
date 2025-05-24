@@ -149,18 +149,19 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
         )}
         {activeCraftingTab === 'Enhance' && (
             <div>
-                <h3 class="text-xl font-semibold text-sky-300 mb-3">Select Equipment to Enhance</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto p-2 bg-slate-800/30 rounded">
-                    {playerItems.filter(item => item.itemType === 'Equipment').map(item => item as Equipment).map(equip => (
-                        <div key={equip.id} className="bg-slate-700 p-2 rounded-md hover:bg-slate-600/70 cursor-pointer transition-all duration-150"
-                             onClick={() => handleOpenEnhanceModal(equip)} >
-                            <ItemDisplay item={equip} compact={true} showEquipButton={false} showDropButton={false} showUnequipButton={false} showExamineButton={false} />
-                            {equip.enhancementLevel && equip.enhancementLevel > 0 && 
-                                <p className="text-xs text-yellow-400 mt-1 text-center">+{equip.enhancementLevel}</p> }
-                        </div>
-                    ))}
-                    {playerItems.filter(item => item.itemType === 'Equipment').length === 0 && (
-                        <p className="text-slate-400 col-span-full text-center py-4">You have no equippable items to enhance.</p>
+                <h3 className="text-xl font-semibold text-sky-300 mb-3">Select Equipment to Enhance</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto p-2 bg-slate-800/30 rounded">
+                    {Array.isArray(playerItems) && playerItems.filter(item => item.itemType === 'Equipment').length > 0 ? (
+                        playerItems.filter(item => item.itemType === 'Equipment').map(item => item as Equipment).map(equip => (
+                            <div key={equip.id} className="bg-slate-700 p-2 rounded-md hover:bg-slate-600/70 cursor-pointer transition-all duration-150"
+                                onClick={() => handleOpenEnhanceModal(equip)} >
+                                <ItemDisplay item={equip} compact={true} showEquipButton={false} showDropButton={false} showUnequipButton={false} showExamineButton={false} />
+                                {equip.enhancementLevel && equip.enhancementLevel > 0 && 
+                                    <p className="text-xs text-yellow-400 mt-1 text-center">+{equip.enhancementLevel}</p> }
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-slate-400 col-span-full text-center py-4">You have no equippable items to enhance, or item data is unavailable.</p>
                     )}
                 </div>
             </div>
