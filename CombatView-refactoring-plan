@@ -1,0 +1,91 @@
+CombatView Refactoring Plan
+Current State Analysis
+The CombatView.tsx file is 1,529 lines and contains multiple responsibilities:
+Layout management system with drag & drop
+Combat action system
+Battle arena rendering
+Character sprite management
+Modal management
+Configuration management
+Event handling
+Refactoring Strategy
+I'll break this down into logical, reusable components following the existing project patterns.
+1. Directory Structure
+Apply to CombatView.t...
+2. Component Breakdown
+Phase 1: Extract Types and Configuration
+File: types/layout.ts
+Apply to CombatView.t...
+File: types/combat.ts
+Apply to CombatView.t...
+Phase 2: Custom Hooks
+File: hooks/useCombatLayout.ts
+Apply to CombatView.t...
+File: hooks/useDragAndDrop.ts
+Apply to CombatView.t...
+File: hooks/useLayoutHistory.ts
+Apply to CombatView.t...
+Phase 3: Layout Components
+File: components/battle-ui/layout/EditModeToolbar.tsx
+Apply to CombatView.t...
+File: components/battle-ui/layout/ResizeHandles.tsx
+Apply to CombatView.t...
+Phase 4: Combat Components
+File: components/battle-ui/combat/BattleArena.tsx
+Apply to CombatView.t...
+File: components/battle-ui/combat/CharacterSprites.tsx
+Apply to CombatView.t...
+Phase 5: Action System Components
+File: components/battle-ui/actions/ActionMenu.tsx
+Apply to CombatView.t...
+File: components/battle-ui/actions/CombatActionGrid.tsx
+Apply to CombatView.t...
+Phase 6: Content Area Components
+File: components/battle-ui/content/ContentArea.tsx
+Apply to CombatView.t...
+File: components/battle-ui/content/DynamicContent.tsx
+Apply to CombatView.t...
+Phase 7: Simplified Main CombatView
+File: components/CombatView.tsx
+Apply to CombatView.t...
+3. Implementation Phases
+Phase 1: Preparation (Low Risk)
+Create new directory structure
+Extract types and interfaces
+Create custom hooks (with existing logic)
+Test hooks in isolation
+Phase 2: Extract Helper Components (Low Risk)
+Move existing small components (ActionCategoryButton, CombatActionGridSlot, CombatActionTooltip)
+Create grid and action components
+Test individually
+Phase 3: Extract Layout System (Medium Risk)
+Extract layout management components
+Extract drag & drop functionality
+Test layout editing features
+Phase 4: Extract Combat Components (Medium Risk)
+Extract battle arena and character sprites
+Test sprite positioning and interactions
+Phase 5: Extract Content System (Medium Risk)
+Extract content area and dynamic panels
+Test content switching and actions
+Phase 6: Refactor Main Component (High Risk)
+Simplify main CombatView to orchestrator
+Integration testing
+Performance optimization
+Phase 7: Polish & Optimization (Low Risk)
+Add missing TypeScript types
+Performance optimizations
+Code cleanup and documentation
+4. Benefits of This Refactoring
+Maintainability: Each component has a single responsibility
+Reusability: Components can be reused in other contexts
+Testability: Smaller components are easier to test
+Performance: Better memoization opportunities
+Developer Experience: Easier to navigate and understand
+Type Safety: Better TypeScript support with focused interfaces
+5. Migration Strategy
+Gradual Migration: Extract components one by one while keeping original working
+Feature Flags: Use props to switch between old and new implementations
+Comprehensive Testing: Test each component thoroughly before integration
+Backward Compatibility: Ensure existing props and behavior remain unchanged
+This refactoring plan will transform the monolithic 1,529-line component into approximately 15-20 focused, reusable components with proper separation of concerns, following React and TypeScript best practices.
