@@ -12,6 +12,7 @@ interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   requiresConfirmation?: boolean;
   confirmationText?: string;
   onConfirm?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   fullWidth?: boolean;
   additionalClasses?: string;
 }
@@ -21,7 +22,6 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
-  className = '',
   icon,
   tooltip,
   disabled,
@@ -29,11 +29,30 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   requiresConfirmation,
   confirmationText,
   onConfirm,
+  onClick,
   fullWidth,
   additionalClasses = '',
   ...props
 }) => {
   const [isConfirming, setIsConfirming] = useState(false);
+
+  const handleButtonClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+    if (requiresConfirmation && !isConfirming) {
+      setIsConfirming(true);
+      return;
+    } 
+    
+    if (isConfirming && onConfirm) {
+        onConfirm();
+        setIsConfirming(false);
+    } else if (onClick) {
+      onClick(event);
+    } else if (onConfirm) {
+      onConfirm();
+    }
+  };
+
+  const buttonText = isConfirming ? (confirmationText || 'Confirm?') : children;
 
   const baseStyle =
     "inline-flex items-center justify-center rounded-md border font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-150 ease-in-out transform hover:scale-105 hover:shadow-lg focus:scale-105 focus:shadow-lg animate-pulse-on-hover";
@@ -48,23 +67,16 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   };
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs md:text-sm min-h-[32px]', // Ensure minimum height for tap targets
+    sm: 'px-3 py-1.5 text-xs md:text-sm min-h-[32px]',
     md: 'px-4 py-2 text-sm md:text-base min-h-[40px]',
     lg: 'px-6 py-2.5 text-base md:text-lg min-h-[48px]',
-  };
-
-  const handleClick = () => {
-    if (requiresConfirmation) {
-      setIsConfirming(true);
-    } else if (onConfirm) {
-      onConfirm();
-    }
   };
 
   return (
     <button
       type="button"
-      onClick={handleClick}
+      {...props}
+      onClick={handleButtonClick}
       disabled={disabled || isLoading}
       className={`
         ${baseStyle} 
@@ -72,19 +84,20 @@ const ActionButton: React.FC<ActionButtonProps> = ({
         ${sizeStyles[size]}
         ${fullWidth ? 'w-full' : ''}
         ${disabled || isLoading ? "opacity-70 cursor-not-allowed" : "hover:brightness-110 active:brightness-95"}
-        ${additionalClasses}
+        ${additionalClasses || ''}
+        ${props.className || ''}
       `}
       title={tooltip}
     >
-      {isLoading ? (
+      {isLoading && !isConfirming ? (
         <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
       ) : (
-        icon && <span className="mr-1.5 last:mr-0">{icon}</span>
+        icon && !isConfirming && <span className="mr-1.5 last:mr-0">{icon}</span>
       )}
-      <span>{children}</span>
+      <span>{buttonText}</span>
     </button>
   );
 };
