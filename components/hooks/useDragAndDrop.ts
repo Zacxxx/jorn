@@ -200,14 +200,23 @@ export const useDragAndDrop = ({ config, isEditMode, selectedElement, setSelecte
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       document.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-        document.removeEventListener('keydown', handleKeyDown);
-      };
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('keydown', handleKeyDown);
+      // Clear states when not in edit mode
+      setIsDragging(false);
+      setIsResizing(false);
+      setResizeHandle(null);
+      setDragStart(null);
     }
-  }, [isEditMode, handleMouseMove, handleMouseUp, handleKeyDown]);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isEditMode, handleMouseMove, handleMouseUp, handleKeyDown, setIsDragging, setIsResizing, setResizeHandle, setDragStart]);
 
   return {
     isDragging,
@@ -219,6 +228,9 @@ export const useDragAndDrop = ({ config, isEditMode, selectedElement, setSelecte
     handleMouseUp,
     handleKeyDown,
     snapToGrid,
+    setDragStart,
+    setIsDragging,
+    setIsResizing,
     setResizeHandle
   };
 }; 

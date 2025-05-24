@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# GridOverlay
+
+This component displays a grid overlay for the battle UI layout.
+
+## Usage
+
+[GridOverlay.tsx](mdc:components/battle-ui/layout/GridOverlay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.
+
+## Iterating and Improving the GridOverlay
+
+The `GridOverlay.tsx` component is a visual aid for the layout editor. As the editor's capabilities expand, the grid overlay might need to be enhanced:
+
+- **Customization Options**: 
+    - **Grid Size/Spacing**: Consider allowing users to customize the grid size or spacing, perhaps through controls in the [`EditModeToolbar.tsx`](mdc:components/battle-ui/layout/EditModeToolbar.tsx).
+    - **Grid Color/Opacity**: Offer options to change the grid line color or opacity for better visibility against different backgrounds or user preferences.
+    - **Grid Type**: Explore different grid types (e.g., dot grid vs. line grid) if it enhances the editing experience.
+- **Performance**: While typically simple, ensure that if the grid rendering becomes more complex (e.g., very dense grids, dynamic updates), it doesn't negatively impact the performance of the layout editor.
+- **Snapping Behavior Integration**: If snap-to-grid functionality is implemented, the `GridOverlay` might need to visually indicate snap points or be aware of snapping thresholds to align its rendering perfectly with the snapping logic.
+- **Dynamic Grid Based on Zoom**: If the layout editor supports zooming, the grid density or subdivisions could dynamically adjust to remain useful at different zoom levels (e.g., showing finer lines when zoomed in).
+- **Toggle Visibility**: Ensure easy toggling of the grid visibility, likely controlled via the `EditModeToolbar.tsx`.
+- **Accessibility**: If grid customization options are added (like color), ensure that default settings provide sufficient contrast and that any interactive elements for customization are themselves accessible.
+- **Integration with `ResizeHandles.tsx` and Draggable Elements**: The grid should serve as a clear visual backdrop for operations performed with [`ResizeHandles.tsx`](mdc:components/battle-ui/layout/ResizeHandles.tsx) and other draggable UI elements within the editor.
+
+

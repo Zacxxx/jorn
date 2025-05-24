@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# CombatActionGrid
+
+This component displays a grid for combat actions in the battle UI.
+
+## Usage
+
+[CombatActionGrid.tsx](mdc:components/battle-ui/actions/CombatActionGrid.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

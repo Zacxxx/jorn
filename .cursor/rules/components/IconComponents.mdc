@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# IconComponents
+
+This file likely contains a collection of reusable icon components.
+
+## Usage
+
+[IconComponents.tsx](mdc:components/IconComponents.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

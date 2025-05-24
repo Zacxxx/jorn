@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# SpellCraftingForm
+
+This component provides a form for crafting spells.
+
+## Usage
+
+[SpellCraftingForm.tsx](mdc:components/SpellCraftingForm.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

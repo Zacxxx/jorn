@@ -1,0 +1,108 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# System Architecture and Iteration Guidelines
+
+This document outlines the core architectural patterns of the application and provides guidelines for extending and modifying its systems.
+The primary application logic is centralized in [`App.tsx`](mdc:App.tsx).
+
+## Core Systems
+
+### 1. State Management
+
+- **Primary State Holder**: Most global game state, including player data, current game view (`gameState`), enemy information, and combat logs, is managed within the `App.tsx` component using React's `useState` hook.
+- **Player Data Persistence**: Player data (`Player` object) is persisted to `localStorage` under the key `rpgSpellCrafterPlayerV13`. State updates to the `player` object trigger a save to `localStorage`.
+- **Iteration**: 
+    - When adding new player-specific data, extend the `Player` type in [`types.ts`](mdc:types.ts) and update the initial state and `localStorage` hydration logic in `App.tsx`.
+    - For new pieces of global state, evaluate if they truly need to be in `App.tsx`. If the state is specific to a particular view or a limited set of components, consider using React Context or custom hooks for more localized state management.
+
+### 2. View Management
+
+- **Mechanism**: The application uses a state-machine-like approach for view transitions, controlled by the `gameState` state variable in `App.tsx`.
+- **Views**: Different string values for `gameState` (e.g., 'HOME', 'COMBAT', 'SPELL_CRAFTING', 'CHARACTER_SHEET') determine which primary view component is rendered.
+- **Modal Dialogs**: Modals (e.g., `CharacterSheetModal`, `CraftingHubModal`, `HelpWikiModal`, `GameMenuModal`) are also controlled by state variables in `App.tsx` (e.g., `isHelpWikiOpen`, `modalContent`).
+- **Iteration**:
+    - To add a new main screen/view, define a new `GameState` string in [`types.ts`](mdc:types.ts), add a corresponding state variable and handler function in `App.tsx` to set this `gameState`, and conditionally render the new view component within `App.tsx`'s main render block.
+    - For new modals, follow the pattern of using a boolean state variable to control visibility and potentially a state variable to hold modal-specific content if needed.
+
+### 3. Combat System
+
+- **Orchestration**: Combat logic is primarily managed within `App.tsx`, including turn management (`turn`, `isPlayerTurn`), targeting (`targetEnemyId`), action processing (e.g., `playerAttack`, `handlePlayerBasicAttack`, `enemyAttack`), status effect processing (`processStatusEffects`), and reward calculation (`awardCombatRewards`).
+- **Components**: The [`CombatView.tsx`](mdc:components/CombatView.tsx) component renders the UI for combat, receiving necessary data and callbacks from `App.tsx`.
+- **Iteration**:
+    - New combat actions for the player should have handler functions in `App.tsx` (e.g., `handlePlayerNewAbility`). These handlers will update player/enemy state and the combat log.
+    - Changes to enemy AI or behavior will likely involve modifying the enemy action selection logic within `App.tsx` (currently part of the `useEffect` hook that handles enemy turns).
+    - New status effects should be added to `StatusEffectName` in [`types.ts`](mdc:types.ts), and their logic implemented in `processStatusEffects` in `App.tsx` and potentially in how they affect stats or actions.
+
+### 4. Crafting & Generation Systems (Spells, Traits, Items)
+
+- **Service Interaction**: Crafting and generation processes (spells, traits, items, quests) involve calls to `geminiService` (e.g., `generateSpell`, `generateTrait`, `generateConsumable`, `generateEquipment`) initiated from `App.tsx`.
+- **State Management**: `App.tsx` manages pending generation data (e.g., `pendingSpellCraftData`, `pendingItemCraftData`) and the confirmation flow.
+- **Components**: Dedicated view components like [`SpellCraftingView.tsx`](mdc:components/SpellCraftingView.tsx), [`TraitCraftingView.tsx`](mdc:components/TraitCraftingView.tsx), and forms within modals handle the UI for these processes.
+- **Iteration**:
+    - To add a new craftable entity type, you'll likely need:
+        - New types in [`types.ts`](mdc:types.ts).
+        - New generation functions in `geminiService`.
+        - Handler functions in `App.tsx` to initiate and confirm the crafting.
+        - A new view/form component for the crafting UI.
+    - Modifications to existing crafting processes (e.g., adding new parameters or steps) will involve updating the relevant `geminiService` calls and the UI components/forms.
+
+### 5. Character Progression
+
+- **Core Attributes**: Player level, XP, stats (body, mind, reflex), spells, abilities, traits, and quests are part of the `Player` object in `App.tsx`.
+- **Calculations**: Effective stats, including bonuses from items and status effects, are calculated by `calculateEffectiveStats` in `App.tsx`.
+- **Unlocks**: New spells, traits, etc., are typically unlocked or gained through leveling, quest completion, or crafting, with logic managed in `App.tsx`.
+- **Iteration**:
+    - Adding new stats or progression vectors will require updating the `Player` type, `INITIAL_PLAYER_STATS` in [`constants.ts`](mdc:constants.ts), and relevant calculation functions like `calculateEffectiveStats`.
+    - New mechanisms for gaining abilities, traits, or spells should be implemented as functions within `App.tsx` that modify the player state.
+
+### 6. Data Persistence & Initialization
+
+- **Mechanism**: Player data is saved to `localStorage` on any change to the `player` state object and loaded on application start.
+- **Initialization**: `INITIAL_PLAYER_STATS` and other constants from [`constants.ts`](mdc:constants.ts) define the starting state for a new player.
+- **Iteration**:
+    - When adding new persistent player data, ensure it's included in the `Player` type, initialized correctly, and handled in the `localStorage` loading logic to prevent errors with older save data (provide default values).
+    - Incrementing `LOCAL_STORAGE_KEY` in `App.tsx` can be used to invalidate old save data if schema changes are significant and non-backward compatible, but this should be a last resort.
+
+### 7. External Services (`geminiService`)
+
+- **Purpose**: Used for generative content like spells, enemies, traits, and quests.
+- **Interaction**: Functions in `App.tsx` call methods from [`services/geminiService.ts`](mdc:services/geminiService.ts).
+- **Iteration**:
+    - If new generative capabilities are needed, add corresponding functions to `geminiService` and call them from `App.tsx`.
+    - Error handling and loading states for these asynchronous operations are managed in `App.tsx`.
+
+## General Iteration Principles
+
+1.  **Modularity and Component Responsibility**: 
+    - Strive to keep UI rendering and local interactions within their respective view components (e.g., `CombatView.tsx`, `SpellCraftingView.tsx`).
+    - `App.tsx` should primarily orchestrate global state changes and interactions between major systems.
+
+2.  **State Management**: 
+    - Before adding new state to `App.tsx`, consider if it can be managed locally within a component or a more self-contained state hook/context.
+    - For shared state that doesn't fit naturally into `App.tsx`, explore creating dedicated React Context providers.
+
+3.  **Handler Functions in `App.tsx`**: 
+    - For actions that modify global player state, game state, or involve multiple systems, create clearly named handler functions within `App.tsx` (e.g., `handleEquipItem`, `handleFindEnemy`).
+
+4.  **Type Safety (TypeScript)**:
+    - Strictly adhere to the types defined in [`types.ts`](mdc:types.ts).
+    - When adding new features, define new types or extend existing ones as needed. Ensure all new functions and component props are strongly typed.
+
+5.  **Constants and Configuration**: 
+    - Store all static configuration values, initial stats, magic numbers, and similar constants in [`constants.ts`](mdc:constants.ts).
+    - Reference these constants rather than hardcoding values directly in components or `App.tsx`.
+
+6.  **Code Consistency**: 
+    - Follow the existing coding style, naming conventions (e.g., `handle` prefix for event handlers), and project structure.
+    - When creating new components, try to mirror the structure and prop patterns of similar existing components.
+
+7.  **Extending Systems**: 
+    - **Adding New Features**: Identify which core systems the new feature touches (Combat, Crafting, Character Progression, etc.). Extend the state, types, and handler functions within `App.tsx` and create new UI components as needed.
+    - **Modifying Existing Features**: Carefully trace the data flow and state changes related to the feature, starting from `App.tsx`. Ensure modifications are consistent with the established patterns.
+
+8.  **Asynchronous Operations**: 
+    - Manage loading states (e.g., `isLoading` in `App.tsx`) and display appropriate feedback to the user (e.g., `LoadingSpinner`) during calls to `geminiService` or other long-running operations.
+    - Implement robust error handling for these operations, providing feedback to the user via modals or other notifications.

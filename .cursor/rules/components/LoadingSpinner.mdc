@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# LoadingSpinner
+
+This component displays a loading spinner.
+
+## Usage
+
+[LoadingSpinner.tsx](mdc:components/LoadingSpinner.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ConfirmationView
+
+This component is used to display a confirmation message or prompt.
+
+## Usage
+
+[ConfirmationView.tsx](mdc:components/ConfirmationView.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

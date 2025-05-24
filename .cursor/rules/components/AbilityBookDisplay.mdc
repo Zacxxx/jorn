@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# AbilityBookDisplay
+
+This component is responsible for displaying the character's ability book.
+
+## Usage
+
+[AbilityBookDisplay.tsx](mdc:components/AbilityBookDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

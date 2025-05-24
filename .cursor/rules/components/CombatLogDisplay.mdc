@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# CombatLogDisplay
+
+This component is used to display the combat log.
+
+## Usage
+
+[CombatLogDisplay.tsx](mdc:components/CombatLogDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

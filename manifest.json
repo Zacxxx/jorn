@@ -1,0 +1,26 @@
+{
+  "short_name": "Jorn",
+  "name": "Jorn - RPG Spell Crafter & Tactical Battler",
+  "description": "Embark on an adventure: craft spells, forge items, define your traits, and challenge formidable foes!",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "prefer_related_applications": false
+} 

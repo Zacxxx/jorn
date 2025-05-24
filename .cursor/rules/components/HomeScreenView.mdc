@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# HomeScreenView
+
+This component renders the home screen of the application.
+
+## Usage
+
+[HomeScreenView.tsx](mdc:components/HomeScreenView.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

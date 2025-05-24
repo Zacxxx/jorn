@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# PlayerStatsDisplay
+
+This component is responsible for displaying player statistics.
+
+## Usage
+
+[PlayerStatsDisplay.tsx](mdc:components/PlayerStatsDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

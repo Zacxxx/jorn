@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# GameOverView
+
+This component is displayed when the game is over.
+
+## Usage
+
+[GameOverView.tsx](mdc:components/GameOverView.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

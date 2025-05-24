@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# SpellEditingForm
+
+This component provides a form for editing spells.
+
+## Usage
+
+[SpellEditingForm.tsx](mdc:components/SpellEditingForm.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

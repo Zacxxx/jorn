@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Header
+
+This component renders the application header.
+
+## Usage
+
+[Header.tsx](mdc:components/Header.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

@@ -1,26 +1,21 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats, SpellIconName } from '../types';
-import { GetSpellIcon, UserIcon, SkullIcon, WandIcon, MindIcon, PotionGenericIcon, SwordsIcon, ShieldIcon, SpeedIcon, BookIcon, HealIcon, BodyIcon, ReflexIcon, FleeIcon, StarIcon } from './IconComponents';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Enemy, Spell, Consumable, Ability, CombatActionLog, Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
 import LoadingSpinner from './LoadingSpinner';
 import Modal from './Modal';
-import CombatLogDisplay from './CombatLogDisplay';
-import PlayerStatsDisplay from './PlayerStatsDisplay'; // Kept for modal use
-import EnemyDisplay from './EnemyDisplay'; // Kept for modal use
-import PlayerBattleDisplay from './PlayerBattleDisplay';
-import EnemyBattleDisplay from './EnemyBattleDisplay';
-import { STATUS_EFFECT_ICONS } from '../constants';
+import PlayerStatsDisplay from './PlayerStatsDisplay';
+import EnemyDisplay from './EnemyDisplay';
 
 // Import refactored components and hooks
 import { useCombatLayout, useDragAndDrop, useLayoutHistory } from './hooks';
-import { EditModeToolbar, ResizeHandles, GridOverlay } from './battle-ui/layout';
+import { EditModeToolbar, GridOverlay } from './battle-ui/layout';
 import { BattleArena, CharacterSprites } from './battle-ui/combat';
-import { ActionMenu, CombatActionGrid, CombatActionGridSlot, CombatActionTooltip } from './battle-ui/actions';
+import { ActionMenu, CombatActionTooltip } from './battle-ui/actions';
 import { ContentArea, DynamicContent } from './battle-ui/content';
 import { LayoutManagerModal } from './battle-ui/modals';
 
 // Import types from the types index file
-import { JornBattleConfig, Position, Size, UIElement, GridLayout } from '../types/layout';
+import { JornBattleConfig } from '../types/layout';
 import { DynamicAreaView, CombatActionItemType, CombatViewProps } from '../types/combat';
 
 // --- Default Configuration ---
@@ -76,8 +71,17 @@ const CombatView: React.FC<CombatViewProps> = ({
   // Merge provided config with default config
   const initialConfig = { ...defaultJornBattleConfig, ...config };
   const { currentConfig, setCurrentConfig, isEditMode, setIsEditMode, selectedElement, setSelectedElement, updateElementPosition, updateElementSize, applyPresetLayout } = useCombatLayout(initialConfig);
-  const { isDragging, isResizing, dragStart, resizeHandle, containerRef, handleMouseDown, handleMouseUp, handleKeyDown, snapToGrid, setResizeHandle } = useDragAndDrop({ config: currentConfig, isEditMode, selectedElement, setSelectedElement, updateElementPosition, updateElementSize });
-  const { layoutHistory, historyIndex, saveToHistory, undo, redo, canUndo, canRedo } = useLayoutHistory();
+  const { 
+    isDragging, 
+    isResizing, 
+    containerRef, 
+    handleMouseDown, 
+    setDragStart,
+    setIsDragging,
+    setIsResizing,
+    setResizeHandle
+  } = useDragAndDrop({ config: currentConfig, isEditMode, selectedElement, setSelectedElement, updateElementPosition, updateElementSize });
+  const { layoutHistory, saveToHistory, undo, redo, canUndo, canRedo } = useLayoutHistory();
 
   const [activeDynamicView, setActiveDynamicView] = useState<DynamicAreaView>('log');
   const [freestyleActionText, setFreestyleActionText] = useState('');
@@ -164,14 +168,6 @@ const CombatView: React.FC<CombatViewProps> = ({
     setHoveredCombatActionItem(null);
     setCombatActionTooltipPosition(null);
   }, []);
-
-  const handleFreestyleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!freestyleActionText.trim() || !isPlayerTurn || playerActionSkippedByStun) return;
-    onPlayerFreestyleAction(freestyleActionText, targetEnemyId);
-    setFreestyleActionText('');
-    handleCategoryChange('actions');
-  };
 
   const handleGridSlotMouseEnter = useCallback((event: React.MouseEvent, item: CombatActionItemType) => {
     setHoveredCombatActionItem(item);
@@ -297,6 +293,10 @@ const CombatView: React.FC<CombatViewProps> = ({
             onShowPlayerDetails={() => setShowPlayerDetailsModal(true)}
             onShowEnemyDetails={(enemy) => setShowEnemyDetailsModal(enemy)}
             containerRef={containerRef}
+            setDragStart={setDragStart}
+            setIsDragging={setIsDragging}
+            setIsResizing={setIsResizing}
+            setResizeHandle={setResizeHandle}
           />
         </BattleArena>
 

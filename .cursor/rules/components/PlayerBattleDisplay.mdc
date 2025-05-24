@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# PlayerBattleDisplay
+
+This component displays player information during battle.
+
+## Usage
+
+[PlayerBattleDisplay.tsx](mdc:components/PlayerBattleDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

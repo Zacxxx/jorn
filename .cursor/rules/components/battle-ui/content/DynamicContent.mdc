@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# DynamicContent
+
+This component is part of the battle UI and handles dynamic content display.
+
+## Usage
+
+[DynamicContent.tsx](mdc:components/battle-ui/content/DynamicContent.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

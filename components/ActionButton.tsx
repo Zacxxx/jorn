@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 
 interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info';
@@ -7,6 +6,14 @@ interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   isLoading?: boolean;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  tooltip?: string;
+  disabled?: boolean;
+  loadingText?: string;
+  requiresConfirmation?: boolean;
+  confirmationText?: string;
+  onConfirm?: () => void;
+  fullWidth?: boolean;
+  additionalClasses?: string;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -16,10 +23,20 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   isLoading = false,
   className = '',
   icon,
+  tooltip,
+  disabled,
+  loadingText,
+  requiresConfirmation,
+  confirmationText,
+  onConfirm,
+  fullWidth,
+  additionalClasses = '',
   ...props
 }) => {
-  const baseStyles =
-    'font-semibold rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-150 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center space-x-2 border-2 transform active:scale-95';
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  const baseStyle =
+    "inline-flex items-center justify-center rounded-md border font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-150 ease-in-out transform hover:scale-105 hover:shadow-lg focus:scale-105 focus:shadow-lg animate-pulse-on-hover";
 
   const variantStyles = {
     primary: 'bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white border-sky-700 hover:border-sky-500 focus:ring-sky-500',
@@ -36,12 +53,28 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     lg: 'px-6 py-2.5 text-base md:text-lg min-h-[48px]',
   };
 
+  const handleClick = () => {
+    if (requiresConfirmation) {
+      setIsConfirming(true);
+    } else if (onConfirm) {
+      onConfirm();
+    }
+  };
+
   return (
     <button
       type="button"
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-      disabled={isLoading || props.disabled}
-      {...props}
+      onClick={handleClick}
+      disabled={disabled || isLoading}
+      className={`
+        ${baseStyle} 
+        ${variantStyles[variant]} 
+        ${sizeStyles[size]}
+        ${fullWidth ? 'w-full' : ''}
+        ${disabled || isLoading ? "opacity-70 cursor-not-allowed" : "hover:brightness-110 active:brightness-95"}
+        ${additionalClasses}
+      `}
+      title={tooltip}
     >
       {isLoading ? (
         <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -49,7 +82,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
       ) : (
-        icon && <span className="mr-1.5 last:mr-0">{icon}</span> // Ensure icon spacing is consistent
+        icon && <span className="mr-1.5 last:mr-0">{icon}</span>
       )}
       <span>{children}</span>
     </button>

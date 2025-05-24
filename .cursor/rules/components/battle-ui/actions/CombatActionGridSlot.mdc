@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# CombatActionGridSlot
+
+This component represents a single slot in the combat action grid in the battle UI.
+
+## Usage
+
+[CombatActionGridSlot.tsx](mdc:components/battle-ui/actions/CombatActionGridSlot.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

@@ -1,0 +1,45 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# AI Manipulation Guidelines
+
+When interacting with the AI, consider the following:
+
+- Be specific and clear in your instructions.
+- Provide context when necessary.
+- If the AI doesn't understand, try rephrasing your request.
+- Use examples to clarify complex tasks.
+- Break down large tasks into smaller, manageable steps.
+
+## Iterating and Improving AI Interactions (with `geminiService.ts`)
+
+Continuously refining how the application interacts with AI, particularly through [`services/geminiService.ts`](mdc:services/geminiService.ts), is crucial for generating high-quality, relevant content for your game components (found in [`components/`](mdc:components)).
+
+- **Prompt Engineering in `geminiService.ts`**:
+    - **Iterative Refinement**: Treat prompts within `geminiService.ts` (e.g., for `generateSpell`, `generateEnemy`) as code. Version them, test variations, and track which prompts yield the best results for game balance and creativity.
+    - **Parameter Tuning**: Experiment with API parameters (e.g., temperature, max tokens, if available via the service) to control the creativity vs. predictability of AI outputs.
+    - **Contextualization**: Ensure prompts sent from `App.tsx` via `geminiService.ts` include relevant game context (player level, existing items, lore snippets) to guide the AI towards more fitting generations.
+
+- **Structuring AI Output for Components**:
+    - **Schema Definition**: Maintain and evolve clear TypeScript types (in [`types.ts`](mdc:types.ts)) for the data structures expected from `geminiService.ts` (e.g., `GeneratedSpellData`, `GeneratedEnemyData`). This ensures AI output can be reliably consumed by your UI components.
+    - **Validation & Normalization**: Within `geminiService.ts` or in `App.tsx` upon receiving data, implement validation to check if the AI output matches the expected schema. Normalize or transform data if necessary before it populates components like [`SpellbookDisplay.tsx`](mdc:components/SpellbookDisplay.tsx) or [`EnemyDisplay.tsx`](mdc:components/EnemyDisplay.tsx).
+
+- **Error Handling & Fallbacks**:
+    - **Robust `geminiService.ts`**: Enhance `geminiService.ts` to gracefully handle API errors, timeouts, or unexpected responses. Implement retry mechanisms with backoff if appropriate.
+    - **UI Fallbacks**: Ensure components that display AI-generated content have sensible fallbacks or loading states (e.g., using [`LoadingSpinner.tsx`](mdc:components/LoadingSpinner.tsx)) if `geminiService.ts` fails to return data or is taking time.
+
+- **Feedback Loops for AI Content (Conceptual)**:
+    - **User Feedback**: If the game allows, consider mechanisms for players to rate or report issues with AI-generated content (e.g., a poorly described spell). This qualitative data can be invaluable for future prompt refinement.
+    - **Developer Review**: Periodically review samples of AI-generated content to ensure it aligns with the game's tone and quality standards. Adjust prompts in `geminiService.ts` accordingly.
+
+- **Cost and Performance Optimization**:
+    - **Prompt Efficiency**: Aim for concise yet effective prompts to minimize token usage and API costs associated with `geminiService.ts`.
+    - **Caching**: If similar AI generation requests are made frequently with the same input parameters, consider implementing a caching layer within `geminiService.ts` or in `App.tsx` to reduce redundant API calls and improve response times for components.
+
+- **Testing AI-Driven Features**:
+    - **Mocking `geminiService.ts`**: For unit and integration tests of components or game logic that depend on AI, create mock implementations of `geminiService.ts` functions to return predictable data.
+    - **Qualitative Testing**: Regularly playtest features that rely heavily on AI-generated content to assess its impact on gameplay, balance, and overall user experience.
+
+

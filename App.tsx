@@ -119,6 +119,12 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [isHelpWikiOpen, setIsHelpWikiOpen] = useState(false);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
 
+  const handleRest = () => console.log("Rest action triggered"); // Placeholder
+  const handleExplore = () => console.log("Explore action triggered"); // Placeholder
+  const handleGuild = () => console.log("Guild action triggered"); // Placeholder
+  const handleCommunity = () => console.log("Community action triggered"); // Placeholder
+  const handleResearch = () => console.log("Research action triggered"); // Placeholder
+  const handleBoutique = () => console.log("Boutique action triggered"); // Placeholder
 
   const calculateEffectiveStats = useCallback((p: Player): PlayerEffectiveStats => {
     let effectiveBody = p.body;
@@ -934,7 +940,16 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
     <div className="flex flex-col min-h-screen bg-slate-900 text-slate-100 antialiased" style={{fontFamily: "'Inter', sans-serif"}}>
       <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet()} onNavigateHome={handleNavigateHome} />
       <main className="flex-grow container mx-auto px-2 py-3 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full"> {/* Increased max-width */}
-        {gameState === 'HOME' && <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} />}
+        {gameState === 'HOME' && <HomeScreenView 
+          onFindEnemy={handleFindEnemy}
+          isLoading={isLoading} 
+          onRest={handleRest}
+          onExplore={handleExplore}
+          onGuild={handleGuild}
+          onCommunity={handleCommunity}
+          onResearch={handleResearch}
+          onBoutique={handleBoutique}
+        />}
         {gameState === 'SPELL_CRAFTING' && (
           <SpellCraftingView
             onInitiateSpellCraft={handleInitiateSpellCraft}

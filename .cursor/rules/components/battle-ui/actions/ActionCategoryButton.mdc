@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ActionCategoryButton
+
+This component represents a button for an action category in the battle UI.
+
+## Usage
+
+[ActionCategoryButton.tsx](mdc:components/battle-ui/actions/ActionCategoryButton.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

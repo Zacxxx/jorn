@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ActionButton
+
+This component represents a generic action button.
+
+## Usage
+
+[ActionButton.tsx](mdc:components/ActionButton.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

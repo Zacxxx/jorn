@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# TraitCraftingView
+
+This component provides the view for trait crafting.
+
+## Usage
+
+[TraitCraftingView.tsx](mdc:components/TraitCraftingView.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

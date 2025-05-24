@@ -1,0 +1,32 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# EditModeToolbar
+
+This component is a toolbar for edit mode in the battle UI layout.
+
+## Usage
+
+[EditModeToolbar.tsx](mdc:components/battle-ui/layout/EditModeToolbar.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.
+
+## Iterating and Improving the EditModeToolbar
+
+As the battle UI layout editor evolves, the `EditModeToolbar` will likely require enhancements. Consider the following when iterating:
+
+- **New Editing Tools**: When adding new layout manipulation capabilities (e.g., alignment tools, distribution options, snapping controls), integrate corresponding buttons or controls into the toolbar. Ensure new icons are consistent with existing ones (see [`IconComponents.tsx`](mdc:components/IconComponents.tsx)).
+- **User Experience (UX) of Toolbar**: 
+    - **Clarity**: Ensure each button/control is clearly labeled (tooltip or direct text) and its function is intuitive.
+    - **Efficiency**: Group related tools together. Consider dropdowns or sub-menus if the number of tools becomes overwhelming.
+    - **Feedback**: Provide visual feedback when tools are activated or toggled.
+- **State Management**: The toolbar likely interacts with the state of the layout editor (e.g., selected tool, grid visibility). Ensure that state changes are managed cleanly, possibly through props passed down from a parent layout editor component or via a shared state context if the editor becomes more complex.
+- **Keyboard Shortcuts**: For frequently used editing tools, consider adding keyboard shortcuts and displaying them in tooltips to improve efficiency for power users.
+- **Responsiveness (if applicable)**: If the editor itself is intended to be used on various screen sizes, ensure the toolbar adapts appropriately (e.g., collapsing items into a menu on smaller screens).
+- **Extensibility**: Design the toolbar's internal structure so that adding new tools or modifying existing ones is straightforward. This might involve mapping over an array of tool configurations to generate buttons.
+- **Integration with `LayoutManagerModal.tsx`**: Changes to layout saving/loading or management via [`LayoutManagerModal.tsx`](mdc:components/battle-ui/modals/LayoutManagerModal.tsx) might necessitate updates to toolbar actions (e.g., a 'Save Layout' button).
+- **Visual Consistency**: Ensure the toolbar's styling remains consistent with the overall battle UI theme and other UI elements like [`GridOverlay.tsx`](mdc:components/battle-ui/layout/GridOverlay.tsx) or [`ResizeHandles.tsx`](mdc:components/battle-ui/layout/ResizeHandles.tsx).

@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# CharacterSheetModal
+
+This component displays the character sheet in a modal.
+
+## Usage
+
+[CharacterSheetModal.tsx](mdc:components/CharacterSheetModal.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# EnemyDisplay
+
+This component is responsible for displaying enemy information.
+
+## Usage
+
+[EnemyDisplay.tsx](mdc:components/EnemyDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

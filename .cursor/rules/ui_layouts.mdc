@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# UI Layout Guidelines
+
+For creating effective UI layouts:
+
+- Maintain a consistent visual hierarchy.
+- Ensure proper alignment and spacing of elements.
+- Use a grid system for structure.
+- Keep layouts clean and uncluttered.
+- Prioritize user experience and accessibility.
+
+## Iterating and Improving UI Layouts
+
+When evolving or refining UI layouts, consider the following principles:
+
+- **Gather Feedback**: Actively seek and incorporate user feedback (if possible through testing, analytics, or direct input) to identify pain points and areas for improvement in existing layouts.
+- **Performance Monitoring**: Be mindful of layout performance. Complex layouts or frequent re-renders can impact responsiveness. Profile and optimize as needed.
+- **A/B Testing (If Applicable)**: For significant layout changes, consider A/B testing different versions to empirically determine which performs better against defined usability or conversion metrics.
+- **Component Reusability**: As layouts evolve, identify and extract reusable layout patterns or components. This improves consistency and reduces code duplication. Refer to components in [`components/`](mdc:components) and [`components/battle-ui/`](mdc:components/battle-ui) for existing UI building blocks.
+- **Responsive Design Enhancements**: Continuously test and refine layouts across a wider range of devices and screen sizes. Pay attention to touch targets, readability, and navigation on smaller screens.
+- **Accessibility Audits**: Regularly audit layouts for accessibility compliance (WCAG standards). Use tools and manual testing to ensure layouts are usable by people with disabilities. This includes keyboard navigation, screen reader compatibility, and sufficient color contrast.
+- **Incremental Changes**: Prefer smaller, incremental layout adjustments over large, sweeping redesigns unless a major overhaul is explicitly justified. This makes it easier to track the impact of changes and roll back if necessary.
+- **Maintain Visual Consistency**: When adding new elements or sections to an existing layout, ensure they adhere to the established visual style, spacing, and hierarchy.
+- **Update Documentation/Rules**: If layout changes introduce new patterns or significantly alter existing ones, update relevant documentation or Cursor rules (like this one) to reflect the changes.
+
+

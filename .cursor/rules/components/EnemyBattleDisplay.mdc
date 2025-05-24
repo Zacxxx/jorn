@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# EnemyBattleDisplay
+
+This component displays enemy information during battle.
+
+## Usage
+
+[EnemyBattleDisplay.tsx](mdc:components/EnemyBattleDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

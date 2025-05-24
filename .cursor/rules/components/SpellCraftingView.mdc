@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# SpellCraftingView
+
+This component provides the view for spell crafting.
+
+## Usage
+
+[SpellCraftingView.tsx](mdc:components/SpellCraftingView.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

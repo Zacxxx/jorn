@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# SpellbookDisplay
+
+This component displays the character's spellbook.
+
+## Usage
+
+[SpellbookDisplay.tsx](mdc:components/SpellbookDisplay.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.

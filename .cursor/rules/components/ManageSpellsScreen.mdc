@@ -1,0 +1,16 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ManageSpellsScreen
+
+This component provides an interface for managing spells.
+
+## Usage
+
+[ManageSpellsScreen.tsx](mdc:components/ManageSpellsScreen.tsx)
+
+## Nested Routes
+
+Information about nested routes for this component will be added here if applicable.
