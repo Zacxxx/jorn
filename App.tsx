@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName } from './types'; 
 import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCES, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE } from './constants';
@@ -202,10 +201,40 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       setIsLoading(true);
       try {
         const questData = await generateMainQuestStory(player.level, player.quests);
-        const newQuest: Quest = { ...questData, id: `quest-main-${Date.now()}`, status: 'active', isMainQuest: true, iconName: questData.iconName || DEFAULT_QUEST_ICON };
+        const newQuest: Quest = { 
+          ...questData, 
+          id: `quest-main-${Date.now()}`, 
+          status: 'active', 
+          isMainQuest: true, 
+          iconName: questData.iconName || DEFAULT_QUEST_ICON 
+        };
         setPlayer(prev => ({ ...prev, quests: [...prev.quests, newQuest] }));
-        setModalContent({ title: "New Main Quest!", message: `You've received: ${newQuest.title}. Check your Character Sheet!`, type: 'info' });
-      } catch (error) { console.error("Failed to fetch initial main quest:", error); setModalContent({ title: "Quest Error", message: "Could not fetch a new main quest.", type: 'error' }); } finally { setIsLoading(false); }
+        setModalContent({ 
+          title: "New Main Quest!", 
+          message: `You've received: ${newQuest.title}. Check your Character Sheet!`, 
+          type: 'info' 
+        });
+      } catch (error) {
+        console.error("Failed to fetch initial main quest:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setModalContent({ 
+          title: "Quest Error", 
+          message: `Could not fetch a new main quest: ${errorMessage}. Please try again later or contact support if the issue persists.`, 
+          type: 'error' 
+        });
+        
+        // Log detailed error information
+        const errorDetails = {
+          playerLevel: player.level,
+          hasMainQuest,
+          error: errorMessage,
+          timestamp: new Date().toISOString(),
+          quests: player.quests.length
+        };
+        console.error("Quest fetch error details:", errorDetails);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }, [player.level, player.quests, isLoading]);
 

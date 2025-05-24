@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { GEMINI_MODEL_TEXT, AVAILABLE_SPELL_ICONS, DEFAULT_TRAIT_ICON, DEFAULT_QUEST_ICON, AVAILABLE_STATUS_EFFECTS, STATUS_EFFECT_ICONS, AVAILABLE_RESOURCES, AVAILABLE_ITEM_ICONS, CONSUMABLE_EFFECT_TYPES, AVAILABLE_EQUIPMENT_SLOTS } from '../constants'; // UPDATED POTION_EFFECT_TYPES
 import { GeneratedSpellData, GeneratedEnemyData, SpellIconName, GeneratedTraitData, GeneratedQuestData, Quest, Spell, SpellStatusEffect, StatusEffectName, ResourceCost, ResourceType, GeneratedConsumableData, ConsumableEffectType, GeneratedEquipmentData, EquipmentSlot, Player, PlayerEffectiveStats } from '../types'; // UPDATED Potion types
@@ -250,6 +248,10 @@ Keep traits passive, not overly game-breaking. Return valid JSON.`;
 }
 
 export async function generateMainQuestStory(playerLevel: number, existingQuests: Quest[]): Promise<GeneratedQuestData> {
+  if (!process.env.API_KEY) {
+    throw new Error("API_KEY environment variable is not set. Please configure the API key in your environment.");
+  }
+
   const lastMainQuest = existingQuests.filter(q => q.isMainQuest).sort((a,b) => b.id.localeCompare(a.id))[0]; 
   const previousQuestContext = lastMainQuest ? `Recently engaged with: '${lastMainQuest.title}'.` : "This is the first main quest.";
 
@@ -273,8 +275,17 @@ Make quest a natural progression. Return valid JSON.`;
       },
     });
 
+    if (!response.text) {
+      throw new Error("Empty response from Gemini API");
+    }
+
     const generatedData = parseJsonFromGeminiResponse(response.text) as GeneratedQuestData;
     
+    // Validate required fields
+    if (!generatedData.title || !generatedData.description || !Array.isArray(generatedData.objectives)) {
+      throw new Error("Invalid quest data structure received from API");
+    }
+
     if (!AVAILABLE_SPELL_ICONS.includes(generatedData.iconName) || ['HeroBackIcon'].includes(generatedData.iconName)) {
       generatedData.iconName = DEFAULT_QUEST_ICON;
     }
@@ -285,7 +296,16 @@ Make quest a natural progression. Return valid JSON.`;
     return generatedData;
   } catch (error) {
     console.error("Error generating main quest:", error);
-    throw new Error(`Failed to generate main quest: ${error instanceof Error ? error.message : String(error)}`);
+    // Add more detailed error information
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails = {
+      playerLevel,
+      hasPreviousQuest: !!lastMainQuest,
+      error: errorMessage,
+      timestamp: new Date().toISOString()
+    };
+    console.error("Quest generation error details:", errorDetails);
+    throw new Error(`Failed to generate main quest: ${errorMessage}`);
   }
 }
 
