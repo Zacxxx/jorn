@@ -116,9 +116,10 @@ export interface Equipment {
   iconName: SpellIconName;
   itemType: 'Equipment';
   slot: EquipmentSlot; // Generic slot type for item definition
-  statsBoost: Partial<Pick<Player, 'body' | 'mind' | 'reflex' | 'speed' | 'maxHp' | 'maxMp' | 'maxEp'>>; 
+  statsBoost: Partial<Pick<Player, 'body' | 'mind' | 'reflex' | 'speed' | 'maxHp' | 'maxMp' | 'maxEp'>>;
   resourceCost?: ResourceCost[];
   element?: ItemElement; // Added element property
+  enhancementLevel?: number; // Added for item improvement
   // Optional: could add a sub-type later for more precise mapping to DetailedEquipmentSlot
   // equipmentSubType?: 'Helmet' | 'Chestplate' | 'Greaves' | 'Boots' | 'Gloves' | 'Cloak' | 'Amulet' | 'Ring' | 'Belt' | 'Sword' | 'Staff' | 'Bow';
 }
