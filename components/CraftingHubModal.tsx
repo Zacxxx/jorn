@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { ItemType } from '../types';
 import Modal from './Modal';
@@ -10,19 +8,41 @@ import { PotionGenericIcon, GearIcon, ScrollIcon } from './IconComponents'; // A
 interface CraftingHubModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInitiateAppItemCraft: (prompt: string, itemType: ItemType) => Promise<void>;
+  onInitiateAppItemCraft: (prompt: string, itemType: ItemType, quantity: number) => Promise<void>;
   isLoading: boolean;
 }
 
 type CraftingTab = 'Consumables' | 'Equipment'; // UPDATED
 
+interface LastCraftedItem {
+    prompt: string;
+    itemType: ItemType;
+    quantity: number;
+}
+
 const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, onInitiateAppItemCraft, isLoading }) => {
   const [activeCraftingTab, setActiveCraftingTab] = useState<CraftingTab>('Consumables'); // UPDATED
+  const [lastCraftedItemDetails, setLastCraftedItemDetails] = useState<LastCraftedItem | null>(null);
+  const [showRecraftInForm, setShowRecraftInForm] = useState<boolean>(false);
 
-  const handleFormSubmit = async (prompt: string) => {
+  const handleFormSubmit = async (prompt: string, quantity: number) => {
     const itemTypeToCraft = activeCraftingTab === 'Consumables' ? 'Consumable' : 'Equipment'; // UPDATED
-    await onInitiateAppItemCraft(prompt, itemTypeToCraft);
+    await onInitiateAppItemCraft(prompt, itemTypeToCraft, quantity);
+    setLastCraftedItemDetails({ prompt, itemType: itemTypeToCraft, quantity });
+    setShowRecraftInForm(false);
   };
+
+  const handleRecraftClick = () => {
+    if (lastCraftedItemDetails) {
+        const targetTab = lastCraftedItemDetails.itemType === 'Consumable' ? 'Consumables' : 'Equipment';
+        setActiveCraftingTab(targetTab);
+        setShowRecraftInForm(true);
+    }
+  };
+
+  const clearLastCraftedForForm = () => {
+    setShowRecraftInForm(false);
+  }
   
   const TabButton: React.FC<{ icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }> = ({ icon, label, isActive, onClick }) => (
     <button
@@ -61,6 +81,9 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, on
             itemType="Consumable" // UPDATED
             onInitiateCraft={handleFormSubmit}
             isLoading={isLoading}
+            lastCraftedPrompt={showRecraftInForm && lastCraftedItemDetails?.itemType === 'Consumable' ? lastCraftedItemDetails.prompt : undefined}
+            lastCraftedQuantity={showRecraftInForm && lastCraftedItemDetails?.itemType === 'Consumable' ? lastCraftedItemDetails.quantity : undefined}
+            onClearLastCrafted={clearLastCraftedForForm}
           />
         )}
         {activeCraftingTab === 'Equipment' && (
@@ -68,10 +91,25 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, on
             itemType="Equipment"
             onInitiateCraft={handleFormSubmit}
             isLoading={isLoading}
+            lastCraftedPrompt={showRecraftInForm && lastCraftedItemDetails?.itemType === 'Equipment' ? lastCraftedItemDetails.prompt : undefined}
+            lastCraftedQuantity={showRecraftInForm && lastCraftedItemDetails?.itemType === 'Equipment' ? lastCraftedItemDetails.quantity : undefined}
+            onClearLastCrafted={clearLastCraftedForForm}
           />
         )}
       </div>
-       <div className="mt-5 pt-4 border-t-2 border-slate-700/80 flex justify-end">
+       <div className="mt-5 pt-4 border-t-2 border-slate-700/80 flex justify-between items-center">
+            {lastCraftedItemDetails && (
+                <ActionButton 
+                    onClick={handleRecraftClick}
+                    variant="outline"
+                    size="md"
+                    className="transition-all duration-150 hover:bg-sky-700 hover:text-white"
+                    disabled={isLoading}
+                >
+                    Recraft: {lastCraftedItemDetails.prompt.substring(0,20)}... (x{lastCraftedItemDetails.quantity})
+                </ActionButton>
+            )}
+            {!lastCraftedItemDetails && <div />}
           <ActionButton onClick={onClose} variant="secondary" size="md">
             Close Crafting
           </ActionButton>
