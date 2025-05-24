@@ -57,7 +57,7 @@ export const BattleArena: React.FC<BattleArenaProps> = ({
       }}
     >
       {/* Background */}
-      <div className={`absolute inset-0 bg-gradient-to-b ${config.backgroundGradient?.from} ${config.backgroundGradient?.to}`}></div>
+      <div className={`absolute inset-0 bg-gradient-to-b ${config.background?.backgroundGradient?.from ?? ''} ${config.background?.backgroundGradient?.to ?? ''}`.trim()}></div>
 
       {/* Character Sprites Container */}
       <div className="absolute inset-0">

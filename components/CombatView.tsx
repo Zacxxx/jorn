@@ -15,7 +15,7 @@ import { ContentArea, DynamicContent } from './battle-ui/content';
 import { LayoutManagerModal } from './battle-ui/modals';
 
 // Import types from the types index file
-import { JornBattleConfig } from '../types/layout';
+import { JornBattleConfig, BattleLayoutConfig } from '../types';
 import { DynamicAreaView, CombatActionItemType, CombatViewProps } from '../types/combat';
 
 // --- Default Configuration ---
@@ -24,34 +24,39 @@ const defaultJornBattleConfig: JornBattleConfig = {
   useFullHeight: true,
   gridColumns: 12,
   gridRows: 8,
-  canvasWidth: 100,
+  canvasWidth: '100%',
   canvasHeight: '85vh',
-  canvasMinWidth: 800,
-  canvasMinHeight: 600,
+  canvasMinWidth: '320px',
+  canvasMinHeight: '480px',
   layout: {
-    battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 65 }, visible: true, zIndex: 1 },
-    actionMenu: { position: { x: 0, y: 65 }, size: { width: 25, height: 35 }, visible: true, zIndex: 2 },
-    contentArea: { position: { x: 25, y: 65 }, size: { width: 75, height: 35 }, visible: true, zIndex: 2 },
-    playerSprite: { position: { x: 75, y: 70 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
+    battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 60 }, visible: true, zIndex: 1 },
+    actionMenu: { position: { x: 0, y: 60 }, size: { width: 100, height: 20 }, visible: true, zIndex: 2 },
+    contentArea: { position: { x: 0, y: 80 }, size: { width: 100, height: 20 }, visible: true, zIndex: 2 },
+    playerSprite: { position: { x: 75, y: 45 }, size: { width: 20, height: 25 }, visible: true, zIndex: 3, scale: 1.0 },
     enemySprites: [
-      { position: { x: 25, y: 30 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
-      { position: { x: 15, y: 20 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
-      { position: { x: 35, y: 25 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 }
-    ]
+      { position: { x: 25, y: 20 }, size: { width: 20, height: 25 }, visible: true, zIndex: 3, scale: 1.0 },
+    ],
+    playerStatus: { position: { x: 5, y: 5 }, size: { width: 40, height: 10 }, visible: true, zIndex: 10 },
+    enemyStatus: { position: { x: 55, y: 5 }, size: { width: 40, height: 10 }, visible: true, zIndex: 10 },
+    actionGrid: { position: { x: 5, y: 65 }, size: { width: 90, height: 30 }, visible: false, zIndex: 5 },
+    turnIndicator: { position: { x: 45, y: 1 }, size: { width: 10, height: 5 }, visible: true, zIndex: 10 },
+    combatLog: { position: { x: 5, y: 85 }, size: { width: 90, height: 10 }, visible: false, zIndex: 5 },
+    dynamicViewContainer: { position: { x: 25, y: 65 }, size: { width: 75, height: 35 }, visible: true, zIndex: 2 }
   },
-  playerPosition: { x: 75, y: 70 },
+  playerPosition: { x: 75, y: 45 },
   enemyPositions: [
-    { x: 25, y: 30 },
-    { x: 15, y: 20 },
-    { x: 35, y: 25 }
+    { x: 25, y: 20 }
   ],
-  playerStatusPosition: { x: 60, y: 75 },
-  enemyStatusPosition: { x: 5, y: 5 },
-  backgroundGradient: { from: 'from-sky-700/40', to: 'to-green-700/40' },
-  fontSizes: {
-    base: 1.0, small: 0.75, large: 1.25, heading: 1.5, ui: 0.875
+  playerStatusPosition: { x: 5, y: 5 },
+  enemyStatusPosition: { x: 55, y: 5 },
+  background: {
+    backgroundGradient: { from: 'from-sky-700/40', to: 'to-green-700/40' }
   },
-  animationSpeed: 1, showDamageNumbers: true,
+  fontSizes: {
+    base: '1rem', small: '0.75rem', large: '1.25rem', heading: '1.5rem', ui: '0.875rem'
+  },
+  animationSpeed: 1,
+  showDamageNumbers: true,
   messageBoxStyle: {
     backgroundColor: 'bg-slate-800/70', textColor: 'text-slate-200', borderColor: 'border-slate-600/50'
   },
@@ -64,12 +69,58 @@ const defaultJornBattleConfig: JornBattleConfig = {
 const CombatView: React.FC<CombatViewProps> = ({
   player, effectivePlayerStats, currentEnemies, targetEnemyId, onSetTargetEnemy,
   preparedSpells, onPlayerAttack, onPlayerBasicAttack, onPlayerDefend, onPlayerFlee, onPlayerFreestyleAction,
-  combatLog, isPlayerTurn, playerActionSkippedByStun,
+  combatLog: combatLogFromProps,
+  isPlayerTurn, playerActionSkippedByStun,
   onUseConsumable, onUseAbility, consumables, abilities,
   config = {}
 }) => {
-  // Merge provided config with default config
-  const initialConfig = { ...defaultJornBattleConfig, ...config };
+  const initialConfig: JornBattleConfig = (() => {
+    const d = defaultJornBattleConfig; // Alias for default
+    const p = config || {};          // Alias for props config, ensuring it's an object
+
+    const getLayout = (): BattleLayoutConfig => {
+      const dL = d.layout;
+      const pL = (p.layout || {}) as Partial<BattleLayoutConfig>; // Props layout, or empty, as Partial
+      return {
+        battleArea: pL.battleArea || dL.battleArea,
+        actionMenu: pL.actionMenu || dL.actionMenu,
+        contentArea: pL.contentArea || dL.contentArea,
+        playerSprite: pL.playerSprite || dL.playerSprite,
+        enemySprites: pL.enemySprites || dL.enemySprites,
+        playerStatus: pL.playerStatus || dL.playerStatus,
+        enemyStatus: pL.enemyStatus || dL.enemyStatus,
+        actionGrid: pL.actionGrid || dL.actionGrid,
+        turnIndicator: pL.turnIndicator || dL.turnIndicator,
+        combatLog: pL.combatLog || dL.combatLog,
+        dynamicViewContainer: pL.dynamicViewContainer || dL.dynamicViewContainer,
+      };
+    };
+
+    return {
+      battleAreaHeight: p.battleAreaHeight ?? d.battleAreaHeight,
+      useFullHeight: p.useFullHeight ?? d.useFullHeight,
+      gridColumns: p.gridColumns ?? d.gridColumns, 
+      gridRows: p.gridRows ?? d.gridRows,
+      canvasWidth: p.canvasWidth ?? d.canvasWidth,
+      canvasHeight: p.canvasHeight ?? d.canvasHeight,
+      canvasMinWidth: p.canvasMinWidth ?? d.canvasMinWidth,
+      canvasMinHeight: p.canvasMinHeight ?? d.canvasMinHeight,
+      layout: getLayout(), // layout is always fully constructed by getLayout
+      playerPosition: p.playerPosition ?? d.playerPosition,
+      enemyPositions: p.enemyPositions ?? d.enemyPositions,
+      playerStatusPosition: p.playerStatusPosition ?? d.playerStatusPosition,
+      enemyStatusPosition: p.enemyStatusPosition ?? d.enemyStatusPosition,
+      // For nested objects, ensure merging happens safely
+      background: { ...(d.background || {}), ...(p.background || {}) },
+      fontSizes: { ...(d.fontSizes || {}), ...(p.fontSizes || {}) },
+      animationSpeed: p.animationSpeed ?? d.animationSpeed,
+      showDamageNumbers: p.showDamageNumbers ?? d.showDamageNumbers,
+      messageBoxStyle: { ...(d.messageBoxStyle || {}), ...(p.messageBoxStyle || {}) },
+      menuStyle: { ...(d.menuStyle || {}), ...(p.menuStyle || {}) },
+      editMode: { ...(d.editMode || {}), ...(p.editMode || {}) },
+    } as JornBattleConfig; // Final assertion
+  })();
+
   const { currentConfig, setCurrentConfig, isEditMode, setIsEditMode, selectedElement, setSelectedElement, updateElementPosition, updateElementSize, applyPresetLayout } = useCombatLayout(initialConfig);
   const { 
     isDragging, 
@@ -123,9 +174,54 @@ const CombatView: React.FC<CombatViewProps> = ({
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const importedConfig = JSON.parse(e.target?.result as string);
-          // Merge imported config with default and current to maintain structure and add new defaults
-          setCurrentConfig((prev: JornBattleConfig) => ({ ...defaultJornBattleConfig, ...prev, ...importedConfig }));
+          const importedConfig = JSON.parse(e.target?.result as string) as Partial<JornBattleConfig>; 
+          setCurrentConfig((prev: JornBattleConfig): JornBattleConfig => {
+            const d = defaultJornBattleConfig; // Default config alias
+            const p = prev || {}; // Previous state alias
+            const i = importedConfig || {}; // Imported config alias
+            
+            const getMergedLayout = (): BattleLayoutConfig => {
+              const dL = d.layout;
+              const pL = (p.layout || {}) as Partial<BattleLayoutConfig>; 
+              const iL = (i.layout || {}) as Partial<BattleLayoutConfig>; 
+              return {
+                battleArea: iL.battleArea || pL.battleArea || dL.battleArea,
+                actionMenu: iL.actionMenu || pL.actionMenu || dL.actionMenu,
+                contentArea: iL.contentArea || pL.contentArea || dL.contentArea,
+                playerSprite: iL.playerSprite || pL.playerSprite || dL.playerSprite,
+                enemySprites: iL.enemySprites || pL.enemySprites || dL.enemySprites,
+                playerStatus: iL.playerStatus || pL.playerStatus || dL.playerStatus,
+                enemyStatus: iL.enemyStatus || pL.enemyStatus || dL.enemyStatus,
+                actionGrid: iL.actionGrid || pL.actionGrid || dL.actionGrid,
+                turnIndicator: iL.turnIndicator || pL.turnIndicator || dL.turnIndicator,
+                combatLog: iL.combatLog || pL.combatLog || dL.combatLog,
+                dynamicViewContainer: iL.dynamicViewContainer || pL.dynamicViewContainer || dL.dynamicViewContainer,
+              };
+            };
+
+            return {
+              battleAreaHeight: i.battleAreaHeight ?? p.battleAreaHeight ?? d.battleAreaHeight,
+              useFullHeight: i.useFullHeight ?? p.useFullHeight ?? d.useFullHeight,
+              gridColumns: i.gridColumns ?? p.gridColumns ?? d.gridColumns,
+              gridRows: i.gridRows ?? p.gridRows ?? d.gridRows,
+              canvasWidth: i.canvasWidth ?? p.canvasWidth ?? d.canvasWidth,
+              canvasHeight: i.canvasHeight ?? p.canvasHeight ?? d.canvasHeight,
+              canvasMinWidth: i.canvasMinWidth ?? p.canvasMinWidth ?? d.canvasMinWidth,
+              canvasMinHeight: i.canvasMinHeight ?? p.canvasMinHeight ?? d.canvasMinHeight,
+              layout: getMergedLayout(),
+              playerPosition: i.playerPosition ?? p.playerPosition ?? d.playerPosition,
+              enemyPositions: i.enemyPositions ?? p.enemyPositions ?? d.enemyPositions,
+              playerStatusPosition: i.playerStatusPosition ?? p.playerStatusPosition ?? d.playerStatusPosition,
+              enemyStatusPosition: i.enemyStatusPosition ?? p.enemyStatusPosition ?? d.enemyStatusPosition,
+              background: { ...(d.background || {}), ...(p.background || {}), ...(i.background || {}) },
+              fontSizes: { ...(d.fontSizes || {}), ...(p.fontSizes || {}), ...(i.fontSizes || {}) },
+              animationSpeed: i.animationSpeed ?? p.animationSpeed ?? d.animationSpeed,
+              showDamageNumbers: i.showDamageNumbers ?? p.showDamageNumbers ?? d.showDamageNumbers,
+              messageBoxStyle: { ...(d.messageBoxStyle || {}), ...(p.messageBoxStyle || {}), ...(i.messageBoxStyle || {}) },
+              menuStyle: { ...(d.menuStyle || {}), ...(p.menuStyle || {}), ...(i.menuStyle || {}) },
+              editMode: { ...(d.editMode || {}), ...(p.editMode || {}), ...(i.editMode || {}) },
+            } as JornBattleConfig;
+          });
         } catch (error) {
           console.error('Failed to import layout:', error);
         }
@@ -182,7 +278,7 @@ const CombatView: React.FC<CombatViewProps> = ({
   const canPlayerAct = isPlayerTurn && !playerActionSkippedByStun;
 
   const resetLayout = useCallback(() => {
-    saveToHistory(currentConfig); // Save current state before reset
+    saveToHistory(currentConfig);
     setCurrentConfig({ ...defaultJornBattleConfig });
   }, [saveToHistory, currentConfig, setCurrentConfig]);
 
@@ -198,38 +294,50 @@ const CombatView: React.FC<CombatViewProps> = ({
       {/* Inject font scaling CSS */}
       <style>
         {`
+          .combat-view-container {
+            /* Base font size for scaling, set via JS style prop */
+          }
           .combat-view-container * {
-            font-size: calc(var(--font-base) * 1) !important;
+            /* Consider if this global override is too aggressive. 
+               It might be better to let Tailwind's text utilities handle most cases 
+               and apply specific scaling where needed.
+               For now, making it scale with --font-base-rem from CSS variables. */
+            font-size: calc(var(--font-base-rem, 1rem) * 1) !important; /* Default to 1rem if --font-base-rem is not set */
           }
           .combat-view-container .text-xs {
-            font-size: calc(var(--font-ui) * 0.75) !important;
+            font-size: calc(var(--font-ui-rem, 0.75rem) * 0.8) !important; /* Adjusted for better scaling */
           }
           .combat-view-container .text-sm {
-            font-size: calc(var(--font-ui) * 0.875) !important;
+            font-size: calc(var(--font-ui-rem, 0.875rem) * 0.9) !important; /* Adjusted for better scaling */
           }
           .combat-view-container .text-lg {
-            font-size: calc(var(--font-large) * 1) !important;
+            font-size: calc(var(--font-large-rem, 1.25rem) * 1) !important;
           }
           .combat-view-container .text-xl, .combat-view-container .text-2xl {
-            font-size: calc(var(--font-heading) * 1) !important;
+            font-size: calc(var(--font-heading-rem, 1.5rem) * 1) !important;
           }
         `}
       </style>
       <div
         ref={containerRef}
-        className="combat-view-container relative bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700 overflow-hidden"
+        className="combat-view-container relative bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700 overflow-hidden 
+                   w-full h-[85vh] md:h-auto" // Mobile: full width, 85% viewport height. md and up: height auto (to be set by style prop or content)
         style={{
-          width: `${currentConfig.canvasWidth}%`,
-          height: currentConfig.useFullHeight ? currentConfig.canvasHeight : `${currentConfig.battleAreaHeight + 300}px`,
-          minWidth: `${currentConfig.canvasMinWidth}px`,
-          minHeight: `${currentConfig.canvasMinHeight}px`,
-          // Apply comprehensive font scaling using CSS custom properties
-          '--font-base': `${currentConfig.fontSizes?.base || 1}rem`,
-          '--font-small': `${currentConfig.fontSizes?.small || 0.75}rem`,
-          '--font-large': `${currentConfig.fontSizes?.large || 1.25}rem`,
-          '--font-heading': `${currentConfig.fontSizes?.heading || 1.5}rem`,
-          '--font-ui': `${currentConfig.fontSizes?.ui || 0.875}rem`,
-          fontSize: `var(--font-base)`
+          // Apply config dimensions only for md screens and up
+          width: window.innerWidth >= 768 ? `${currentConfig.canvasWidth}%` : '100%', // Full width on mobile
+          height: window.innerWidth >= 768 
+            ? (currentConfig.useFullHeight ? `${currentConfig.canvasHeight}` : `${currentConfig.battleAreaHeight + 300}px`)
+            : '85vh', // Fixed height for mobile, can be adjusted
+          minWidth: window.innerWidth >= 768 ? `${currentConfig.canvasMinWidth}px` : '100%', // Mobile: no min-width other than 100%
+          minHeight: window.innerWidth >= 768 ? `${currentConfig.canvasMinHeight}px` : 'auto', // Mobile: min-height auto
+
+          // Apply comprehensive font scaling using CSS custom properties (ensure these are in rem)
+          '--font-base-rem': `${currentConfig.fontSizes?.base || 1}rem`,
+          '--font-small-rem': `${currentConfig.fontSizes?.small || 0.75}rem`,
+          '--font-large-rem': `${currentConfig.fontSizes?.large || 1.25}rem`,
+          '--font-heading-rem': `${currentConfig.fontSizes?.heading || 1.5}rem`,
+          '--font-ui-rem': `${currentConfig.fontSizes?.ui || 0.875}rem`,
+          fontSize: `var(--font-base-rem)` // Base font size applied here
         } as React.CSSProperties}
         onClick={(e) => {
           // Deselect when clicking on the main container (but not children)
@@ -327,7 +435,7 @@ const CombatView: React.FC<CombatViewProps> = ({
             preparedSpells={preparedSpells}
             abilities={abilities}
             consumables={consumables}
-            combatLog={combatLog}
+            combatLog={combatLogFromProps}
             player={player}
             canPlayerAct={canPlayerAct}
             targetEnemyId={targetEnemyId}

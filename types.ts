@@ -366,3 +366,78 @@ export interface GeneratedQuestData {
 
 // UPDATED CharacterSheetTab
 export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Traits' | 'Quests' | 'Abilities' | 'Encyclopedia';
+
+export interface UIElementConfig {
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  visible: boolean;
+  zIndex: number;
+  scale?: number;
+}
+
+export interface BattleLayoutConfig {
+  battleArea: UIElementConfig;
+  actionMenu: UIElementConfig;
+  contentArea: UIElementConfig;
+  playerSprite: UIElementConfig;
+  enemySprites: UIElementConfig[];
+  playerStatus?: UIElementConfig;
+  enemyStatus?: UIElementConfig;
+  actionGrid?: UIElementConfig;
+  turnIndicator?: UIElementConfig;
+  combatLog?: UIElementConfig;
+  dynamicViewContainer?: UIElementConfig;
+}
+
+export interface BattleBackgroundConfig {
+  imageUrl?: string;
+  backgroundGradient?: {
+    from: string;
+    to: string;
+  };
+  backgroundColor?: string;
+}
+
+export interface JornBattleConfig {
+  battleAreaHeight: number;
+  useFullHeight: boolean;
+  gridColumns: number;
+  gridRows: number;
+  canvasWidth: number | string;
+  canvasHeight: string | number;
+  canvasMinWidth?: number | string;
+  canvasMinHeight?: number | string;
+  layout: BattleLayoutConfig;
+  playerPosition?: { x: number; y: number };
+  enemyPositions?: Array<{ x: number; y: number }>;
+  playerStatusPosition?: { x: number; y: number };
+  enemyStatusPosition?: { x: number; y: number };
+  background?: BattleBackgroundConfig;
+  fontSizes?: {
+    base?: number | string;
+    small?: number | string;
+    large?: number | string;
+    heading?: number | string;
+    ui?: number | string;
+  };
+  animationSpeed?: number;
+  showDamageNumbers?: boolean;
+  messageBoxStyle?: {
+    backgroundColor?: string;
+    textColor?: string;
+    borderColor?: string;
+  };
+  menuStyle?: {
+    backgroundColor?: string;
+    buttonColor?: string;
+    textColor?: string;
+    hoverColor?: string;
+    activeColor?: string;
+  };
+  editMode?: {
+    enabled?: boolean;
+    showGrid?: boolean;
+    snapToGrid?: boolean;
+    gridSize?: number;
+  };
+}

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Position, JornBattleConfig, Size, UIElement } from '../../types';
+import { Position, JornBattleConfig, Size, UIElementConfig as UIElement } from '../../types';
 
 interface UseDragAndDropProps {
   config: JornBattleConfig;
