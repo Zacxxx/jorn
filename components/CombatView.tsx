@@ -46,6 +46,12 @@ interface JornBattleConfig {
   gridRows: number;
   layout: GridLayout;
   
+  // Canvas configuration
+  canvasWidth: number;
+  canvasHeight: string; // Can be vh, px, or %
+  canvasMinWidth: number;
+  canvasMinHeight: number;
+  
   // Classic positioning (fallback)
   playerPosition: Position;
   enemyPositions: Position[];
@@ -54,6 +60,15 @@ interface JornBattleConfig {
   
   // Background configuration
   backgroundGradient?: { from: string; to: string };
+  
+  // Typography configuration
+  fontSizes?: {
+    base: number;       // Base font size in rem
+    small: number;      // Small text
+    large: number;      // Large text
+    heading: number;    // Heading text
+    ui: number;         // UI elements
+  };
   
   // UI style configuration
   messageBoxStyle?: {
@@ -97,6 +112,10 @@ const defaultJornBattleConfig: JornBattleConfig = {
   useFullHeight: true,
   gridColumns: 12,
   gridRows: 8,
+  canvasWidth: 100,
+  canvasHeight: '85vh',
+  canvasMinWidth: 800,
+  canvasMinHeight: 600,
   layout: {
     battleArea: {
       position: { x: 0, y: 0 },
@@ -156,6 +175,13 @@ const defaultJornBattleConfig: JornBattleConfig = {
   playerStatusPosition: { x: 60, y: 75 },
   enemyStatusPosition: { x: 5, y: 5 },
   backgroundGradient: { from: 'from-sky-700/40', to: 'to-green-700/40' },
+  fontSizes: {
+    base: 1.0,
+    small: 0.75,
+    large: 1.25,
+    heading: 1.5,
+    ui: 0.875
+  },
   animationSpeed: 1,
   showDamageNumbers: true,
   messageBoxStyle: {
@@ -535,6 +561,13 @@ const CombatView: React.FC<CombatViewProps> = ({
         newConfig.layout.battleArea.position = newPosition;
       } else if (elementKey === 'playerSprite') {
         newConfig.layout.playerSprite.position = newPosition;
+        newConfig.playerPosition = newPosition; // Keep classic positioning in sync
+      } else if (elementKey.startsWith('enemySprite-')) {
+        const index = parseInt(elementKey.split('-')[1]);
+        if (newConfig.layout.enemySprites[index]) {
+          newConfig.layout.enemySprites[index].position = newPosition;
+          newConfig.enemyPositions[index] = newPosition; // Keep classic positioning in sync
+        }
       }
       return newConfig;
     });
@@ -795,41 +828,65 @@ const CombatView: React.FC<CombatViewProps> = ({
   // --- Character Rendering Functions (Pokemon-battle.tsx inspired) ---
   const renderPlayerSprite = useCallback(() => {
     const position = mergedConfig.playerPosition;
+    const isSelected = selectedElement === 'playerSprite';
     
     return (
       <div
         key={`player-${player.id || 'hero'}`}
-        className="absolute transition-all duration-300 cursor-pointer hover:scale-105"
+        className={`absolute transition-all duration-200 cursor-pointer hover:scale-105 ${isEditMode ? 'z-10' : ''} ${isSelected && isEditMode ? 'ring-4 ring-yellow-400/70 ring-offset-2 ring-offset-slate-900' : ''} ${isDragging && isSelected ? 'scale-110 shadow-2xl' : ''}`}
         style={{
           left: `${position.x}%`,
           top: `${position.y}%`,
           transform: 'translateX(-50%) translateY(-50%)',
         }}
-        onClick={() => setShowPlayerDetailsModal(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isEditMode) {
+            setSelectedElement('playerSprite');
+          } else {
+            setShowPlayerDetailsModal(true);
+          }
+        }}
+        onMouseDown={(e) => isEditMode && handleMouseDown(e, 'playerSprite')}
       >
         <PlayerBattleDisplay 
           player={player}
           effectiveStats={effectivePlayerStats}
           onInfoClick={() => setShowPlayerDetailsModal(true)}
         />
+        {isEditMode && isSelected && (
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black text-xs px-2 py-1 rounded whitespace-nowrap">
+            Player Sprite
+          </div>
+        )}
       </div>
     );
-  }, [player, effectivePlayerStats, mergedConfig.playerPosition]);
+  }, [player, effectivePlayerStats, mergedConfig.playerPosition, isEditMode, selectedElement, isDragging, handleMouseDown]);
 
   const renderEnemySprites = useCallback(() => {
     return currentEnemies.map((enemy, index) => {
       const position = mergedConfig.enemyPositions[index] || mergedConfig.enemyPositions[0];
+      const elementKey = `enemySprite-${index}`;
+      const isSelected = selectedElement === elementKey;
       
       return (
         <div
           key={`enemy-${enemy.id}`}
-          className="absolute transition-all duration-300 cursor-pointer hover:scale-105"
+          className={`absolute transition-all duration-200 cursor-pointer hover:scale-105 ${isEditMode ? 'z-10' : ''} ${isSelected && isEditMode ? 'ring-4 ring-red-400/70 ring-offset-2 ring-offset-slate-900' : ''} ${isDragging && isSelected ? 'scale-110 shadow-2xl' : ''}`}
           style={{
             left: `${position.x}%`,
             top: `${position.y}%`,
             transform: 'translateX(-50%) translateY(-50%)',
           }}
-          onClick={() => onSetTargetEnemy(enemy.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isEditMode) {
+              setSelectedElement(elementKey);
+            } else {
+              onSetTargetEnemy(enemy.id);
+            }
+          }}
+          onMouseDown={(e) => isEditMode && handleMouseDown(e, elementKey)}
         >
           <EnemyBattleDisplay
             enemy={enemy}
@@ -837,10 +894,15 @@ const CombatView: React.FC<CombatViewProps> = ({
             onClick={() => onSetTargetEnemy(enemy.id)}
             onInfoClick={() => setShowEnemyDetailsModal(enemy)}
           />
+          {isEditMode && isSelected && (
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              Enemy {index + 1}
+            </div>
+          )}
         </div>
       );
     });
-  }, [currentEnemies, targetEnemyId, onSetTargetEnemy, mergedConfig.enemyPositions]);
+  }, [currentEnemies, targetEnemyId, onSetTargetEnemy, mergedConfig.enemyPositions, isEditMode, selectedElement, isDragging, handleMouseDown]);
 
   const renderDynamicAreaContent = () => {
     const renderActionGrid = (items: CombatActionItemType[], type: 'spell' | 'ability' | 'consumable') => {
@@ -916,10 +978,13 @@ const CombatView: React.FC<CombatViewProps> = ({
   return (
     <div 
       ref={containerRef}
-      className="relative w-full bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700 overflow-hidden"
+      className="relative bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700 overflow-hidden"
       style={{ 
-        height: mergedConfig.useFullHeight ? '85vh' : `${mergedConfig.battleAreaHeight + 300}px`,
-        minHeight: '600px'
+        width: `${mergedConfig.canvasWidth}%`,
+        height: mergedConfig.useFullHeight ? mergedConfig.canvasHeight : `${mergedConfig.battleAreaHeight + 300}px`,
+        minWidth: `${mergedConfig.canvasMinWidth}px`,
+        minHeight: `${mergedConfig.canvasMinHeight}px`,
+        fontSize: `${mergedConfig.fontSizes?.base || 1}rem`
       }}
     >
       {/* Edit Mode Toolbar */}
@@ -963,7 +1028,12 @@ const CombatView: React.FC<CombatViewProps> = ({
           <div className="text-xs text-slate-400 space-y-1">
             <div>• Click: Select • Drag: Move • Resize handles: Scale</div>
             <div>• Arrow keys: Move • Shift+Arrow: Fine move • Ctrl+Z/Y: Undo/Redo</div>
-            <div>• {selectedElement ? `Selected: ${selectedElement}` : 'No element selected'}</div>
+            <div>• {selectedElement ? `Selected: ${selectedElement.includes('Sprite') ? selectedElement.replace('Sprite', ' Sprite').replace('-', ' ').replace(/([A-Z])/g, ' $1').trim() : selectedElement}` : 'No element selected'}</div>
+            {selectedElement?.includes('Sprite') && (
+              <div className="text-yellow-300 text-xs">
+                🎭 Sprite selected - Use Yellow/Red rings to identify sprites
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1218,6 +1288,86 @@ const CombatView: React.FC<CombatViewProps> = ({
                       }))}
                       className="rounded border-slate-600 bg-slate-800"
                     />
+                  </div>
+                  
+                  {/* Canvas Size Controls */}
+                  <div className="border-t border-slate-600 pt-3 mt-3">
+                    <h5 className="text-xs font-semibold text-slate-300 mb-2">Canvas Size</h5>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400">Width (%)</span>
+                        <input
+                          type="range"
+                          min="50"
+                          max="100"
+                          value={mergedConfig.canvasWidth}
+                          onChange={(e) => setCurrentConfig(prev => ({ ...prev, canvasWidth: parseInt(e.target.value) }))}
+                          className="w-20"
+                        />
+                        <span className="text-xs text-slate-300 w-12">{mergedConfig.canvasWidth}%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400">Min Width (px)</span>
+                        <input
+                          type="number"
+                          min="600"
+                          max="1600"
+                          value={mergedConfig.canvasMinWidth}
+                          onChange={(e) => setCurrentConfig(prev => ({ ...prev, canvasMinWidth: parseInt(e.target.value) }))}
+                          className="w-20 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-slate-200 text-xs"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400">Min Height (px)</span>
+                        <input
+                          type="number"
+                          min="400"
+                          max="1200"
+                          value={mergedConfig.canvasMinHeight}
+                          onChange={(e) => setCurrentConfig(prev => ({ ...prev, canvasMinHeight: parseInt(e.target.value) }))}
+                          className="w-20 px-2 py-1 bg-slate-800 border border-slate-600 rounded text-slate-200 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Font Size Controls */}
+                  <div className="border-t border-slate-600 pt-3 mt-3">
+                    <h5 className="text-xs font-semibold text-slate-300 mb-2">Font Sizes</h5>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400">Base Size</span>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="2"
+                          step="0.1"
+                          value={mergedConfig.fontSizes?.base || 1}
+                          onChange={(e) => setCurrentConfig(prev => ({ 
+                            ...prev, 
+                            fontSizes: { ...prev.fontSizes!, base: parseFloat(e.target.value) }
+                          }))}
+                          className="w-20"
+                        />
+                        <span className="text-xs text-slate-300 w-12">{(mergedConfig.fontSizes?.base || 1).toFixed(1)}rem</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-400">UI Size</span>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="1.5"
+                          step="0.05"
+                          value={mergedConfig.fontSizes?.ui || 0.875}
+                          onChange={(e) => setCurrentConfig(prev => ({ 
+                            ...prev, 
+                            fontSizes: { ...prev.fontSizes!, ui: parseFloat(e.target.value) }
+                          }))}
+                          className="w-20"
+                        />
+                        <span className="text-xs text-slate-300 w-12">{(mergedConfig.fontSizes?.ui || 0.875).toFixed(2)}rem</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
