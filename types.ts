@@ -277,7 +277,8 @@ export type GameState =
   | 'SELECTING_POTION' // May become SELECTING_CONSUMABLE
   | 'CHARACTER_SHEET'
   | 'SELECTING_ABILITY'
-  | 'CRAFTING_HUB'; 
+  | 'CRAFTING_HUB'
+  | 'CAMP_VIEW'; // Added new game state for camp view
 
 
 export interface GeneratedSpellData {

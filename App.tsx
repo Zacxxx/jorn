@@ -14,6 +14,7 @@ import { CharacterSheetModal } from './components/CharacterSheetModal';
 import CraftingHubModal from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal'; 
 import GameMenuModal from './components/GameMenuModal'; 
+import CampView from './components/CampView';
 
 import HomeScreenView from './components/HomeScreenView';
 import SpellCraftingView from './components/SpellCraftingView';
@@ -119,12 +120,39 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [isHelpWikiOpen, setIsHelpWikiOpen] = useState(false);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
 
-  const handleRest = () => console.log("Rest action triggered"); // Placeholder
+  const handleRest = () => setGameState('CAMP_VIEW');
   const handleExplore = () => console.log("Explore action triggered"); // Placeholder
   const handleGuild = () => console.log("Guild action triggered"); // Placeholder
   const handleCommunity = () => console.log("Community action triggered"); // Placeholder
   const handleResearch = () => console.log("Research action triggered"); // Placeholder
   const handleBoutique = () => console.log("Boutique action triggered"); // Placeholder
+
+  const handleSleep = () => {
+    setIsLoading(true);
+    // Simulate a short delay for resting
+    setTimeout(() => {
+      setPlayer(prev => ({
+        ...prev,
+        hp: effectivePlayerStats.maxHp, // Restore HP to full
+        mp: effectivePlayerStats.maxMp, // Restore MP to full
+        activeStatusEffects: prev.activeStatusEffects.filter(effect => 
+          // Remove temporary negative effects, keep persistent or positive ones
+          // This is a basic example; you might want more nuanced logic here
+          effect.name === 'Regeneration' || 
+          effect.name === 'StrengthenBody' || 
+          effect.name === 'StrengthenMind' || 
+          effect.name === 'StrengthenReflex'
+          // Add other positive/persistent effects to keep after resting
+        )
+      }));
+      setModalContent({
+        title: "Rested",
+        message: `You feel refreshed! HP and MP have been fully restored. Some temporary effects have worn off.`,
+        type: 'success'
+      });
+      setIsLoading(false);
+    }, 1000); // 1 second delay to simulate resting
+  };
 
   const calculateEffectiveStats = useCallback((p: Player): PlayerEffectiveStats => {
     let effectiveBody = p.body;
@@ -950,6 +978,14 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
           onResearch={handleResearch}
           onBoutique={handleBoutique}
         />}
+        {gameState === 'CAMP_VIEW' && (
+          <CampView 
+            playerName={player.name}
+            onSleep={handleSleep}
+            onReturnToMap={handleNavigateHome}
+            isLoading={isLoading}
+          />
+        )}
         {gameState === 'SPELL_CRAFTING' && (
           <SpellCraftingView
             onInitiateSpellCraft={handleInitiateSpellCraft}
