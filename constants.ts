@@ -1,5 +1,3 @@
-
-
 import { Player, Spell, SpellIconName, StatusEffectName, ResourceType, ConsumableEffectType, EquipmentSlot, Ability, DetailedEquipmentSlot } from './types'; // UPDATED PotionEffectType
 
 export const GEMINI_MODEL_TEXT = 'gemini-2.5-flash-preview-04-17';
@@ -220,3 +218,17 @@ export const GENERIC_TO_DETAILED_SLOT_MAP: Record<EquipmentSlot, DetailedEquipme
   Armor: ['Head', 'Chest', 'Legs', 'Feet', 'Hands', 'Shoulder', 'Back'], 
   Accessory: ['Neck', 'Jewels', 'Belt', 'Accessory1', 'Accessory2', 'Back'], 
 };
+
+// Define data for each element
+export const ELEMENT_DATA = [
+  { id: 'Fire', name: 'Fire', description: 'Deals burning damage over time.', iconName: 'Fireball' },
+  { id: 'Ice', name: 'Ice', description: 'Slows enemies and can freeze them.', iconName: 'IceShard' },
+  { id: 'Lightning', name: 'Lightning', description: 'Deals high burst damage and can stun.', iconName: 'LightningBolt' },
+  { id: 'Physical', name: 'Physical', description: 'Standard physical damage.', iconName: 'SwordSlash' },
+  { id: 'Healing', name: 'Healing', description: 'Restores health.', iconName: 'Heal' },
+  { id: 'Dark', name: 'Dark', description: 'Drains life or applies curses.', iconName: 'ShadowBolt' },
+  { id: 'Light', name: 'Light', description: 'Heals or harms undead and demons.', iconName: 'HolyLight' },
+  { id: 'Arcane', name: 'Arcane', description: 'Raw magical energy.', iconName: 'ArcaneBlast' },
+  { id: 'Poison', name: 'Poison', description: 'Deals damage over time and weakens.', iconName: 'StatusPoison' },
+  { id: 'None', name: 'None', description: 'Has no elemental alignment.', iconName: 'Default' },
+];

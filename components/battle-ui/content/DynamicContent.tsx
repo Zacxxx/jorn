@@ -58,7 +58,7 @@ export const DynamicContent: React.FC<DynamicContentProps> = ({
   switch (activeDynamicView) {
     case 'actions':
       return (
-        <div className="p-2 sm:p-3 flex flex-col h-full">
+        <div className="p-2 sm:p-3 flex flex-col h-full overflow-y-auto styled-scrollbar">
           <form onSubmit={handleFreestyleSubmit} className="mb-2 flex-grow">
             <textarea
               value={freestyleActionText}
@@ -126,42 +126,48 @@ export const DynamicContent: React.FC<DynamicContentProps> = ({
       );
     case 'spells':
       return (
-        <CombatActionGrid
-          items={preparedSpells}
-          type="spell"
-          player={player}
-          canPlayerAct={canPlayerAct}
-          targetEnemyId={targetEnemyId}
-          onActionSelect={onActionSelect}
-          onMouseEnter={onMouseEnterAction}
-          onMouseLeave={onMouseLeaveAction}
-        />
+        <div className="h-full overflow-y-auto styled-scrollbar">
+          <CombatActionGrid
+            items={preparedSpells}
+            type="spell"
+            player={player}
+            canPlayerAct={canPlayerAct}
+            targetEnemyId={targetEnemyId}
+            onActionSelect={onActionSelect}
+            onMouseEnter={onMouseEnterAction}
+            onMouseLeave={onMouseLeaveAction}
+          />
+        </div>
       );
     case 'abilities':
       return (
-        <CombatActionGrid
-          items={abilities}
-          type="ability"
-          player={player}
-          canPlayerAct={canPlayerAct}
-          targetEnemyId={targetEnemyId}
-          onActionSelect={onActionSelect}
-          onMouseEnter={onMouseEnterAction}
-          onMouseLeave={onMouseLeaveAction}
-        />
+        <div className="h-full overflow-y-auto styled-scrollbar">
+          <CombatActionGrid
+            items={abilities}
+            type="ability"
+            player={player}
+            canPlayerAct={canPlayerAct}
+            targetEnemyId={targetEnemyId}
+            onActionSelect={onActionSelect}
+            onMouseEnter={onMouseEnterAction}
+            onMouseLeave={onMouseLeaveAction}
+          />
+        </div>
       );
     case 'items':
       return (
-        <CombatActionGrid
-          items={consumables}
-          type="consumable"
-          player={player}
-          canPlayerAct={canPlayerAct}
-          targetEnemyId={targetEnemyId}
-          onActionSelect={onActionSelect}
-          onMouseEnter={onMouseEnterAction}
-          onMouseLeave={onMouseLeaveAction}
-        />
+        <div className="h-full overflow-y-auto styled-scrollbar">
+          <CombatActionGrid
+            items={consumables}
+            type="consumable"
+            player={player}
+            canPlayerAct={canPlayerAct}
+            targetEnemyId={targetEnemyId}
+            onActionSelect={onActionSelect}
+            onMouseEnter={onMouseEnterAction}
+            onMouseLeave={onMouseLeaveAction}
+          />
+        </div>
       );
     case 'log':
       return <CombatLogDisplay logs={combatLog} />;

@@ -131,6 +131,21 @@ const CombatView: React.FC<CombatViewProps> = ({
   }, [setCurrentConfig]);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        applyPresetLayout('mobile');
+      } else {
+        applyPresetLayout('classic'); // Or your default desktop preset
+      }
+    };
+
+    handleResize(); // Apply initial layout on mount
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [applyPresetLayout]);
+
+  useEffect(() => {
     if (!isPlayerTurn) {
       if (activeDynamicView !== 'log') setActiveDynamicView('log');
     } else {

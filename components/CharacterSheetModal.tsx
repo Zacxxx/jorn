@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, ResourceType, Consumable, Quest, CharacterSheetTab, SpellIconName, Ability, EquipmentSlot as GenericEquipmentSlot, ActiveStatusEffect, InventoryFilterType, ItemType } from '../types';
 import Modal from './Modal';
@@ -11,7 +9,7 @@ import {
 } from './IconComponents';
 import { 
     DETAILED_EQUIPMENT_SLOTS_LEFT_COL, DETAILED_EQUIPMENT_SLOTS_RIGHT_COL, 
-    DETAILED_SLOT_PLACEHOLDER_ICONS, RESOURCE_ICONS, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, STATUS_EFFECT_ICONS, DEFAULT_ENCYCLOPEDIA_ICON
+    DETAILED_SLOT_PLACEHOLDER_ICONS, RESOURCE_ICONS, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, STATUS_EFFECT_ICONS, DEFAULT_ENCYCLOPEDIA_ICON, ELEMENT_DATA
 } from '../constants';
 import SpellbookDisplay from './SpellbookDisplay';
 import AbilityBookDisplay from './AbilityBookDisplay'; 
@@ -452,6 +450,22 @@ const MainTabSection: React.FC<MainTabSectionProps> = ({ title, items, onManageC
 };
 // --- END: Main Tab Helper Components ---
 
+// New component to display a single element
+interface ElementDisplayCardProps {
+  element: { id: string; name: string; description: string; iconName: SpellIconName; };
+}
+
+const ElementDisplayCard: React.FC<ElementDisplayCardProps> = ({ element }) => (
+  <div className="bg-slate-800/80 p-3 rounded-lg shadow-md border border-slate-600">
+    <div className="flex items-center mb-2">
+      <GetSpellIcon iconName={element.iconName} className="w-10 h-10 mr-3 text-teal-300"/>
+      <div>
+        <h5 className="text-lg font-bold text-teal-200">{element.name}</h5>
+        <p className="text-xs text-slate-400 italic">{element.description}</p>
+      </div>
+    </div>
+  </div>
+);
 
 export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   isOpen, onClose, player, effectiveStats, onEquipItem, onUnequipItem,
@@ -471,7 +485,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   const [hoveredInventoryItem, setHoveredInventoryItem] = useState<InventoryGridItemType | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number, y: number } | null>(null);
   
-  const [encyclopediaSubTab, setEncyclopediaSubTab] = useState<'spells' | 'abilities' | 'traits' | 'items' | 'monsters'>('monsters');
+  const [encyclopediaSubTab, setEncyclopediaSubTab] = useState<'spells' | 'abilities' | 'traits' | 'items' | 'monsters' | 'elements'>('monsters');
 
 
   useEffect(() => {
@@ -828,6 +842,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
         { id: 'abilities', label: 'Abilities', icon: <MindIcon /> },
         { id: 'traits', label: 'Traits', icon: <StarIcon /> },
         { id: 'items', label: 'Items', icon: <BagIcon /> },
+        { id: 'elements', label: 'Elements', icon: <GetSpellIcon iconName={'CollectionIcon'} className="w-4 h-4" /> },
     ];
 
     const bestiaryEntries = Object.values(player.bestiary);
@@ -908,6 +923,15 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                         </div>
                     ) : <p className="text-center text-slate-400 italic py-6">No items found in inventory.</p>
                 )}
+                {encyclopediaSubTab === 'elements' && (
+                    ELEMENT_DATA.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {ELEMENT_DATA.map(element => (
+                                <ElementDisplayCard key={element.id} element={element} />
+                            ))}
+                        </div>
+                    ) : <p className="text-center text-slate-400 italic py-6">No element data found.</p>
+                )}
             </div>
         </div>
     );
@@ -986,5 +1010,3 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     </Modal>
   );
 };
-// No longer a default export
-// export default CharacterSheetModal;

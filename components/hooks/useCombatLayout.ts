@@ -71,11 +71,15 @@ export const useCombatLayout = (initialConfig: JornBattleConfig) => {
       },
       'mobile': {
         layout: {
-          battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 50 }, visible: true, zIndex: 1 },
-          actionMenu: { position: { x: 0, y: 50 }, size: { width: 100, height: 15 }, visible: true, zIndex: 2 },
-          contentArea: { position: { x: 0, y: 65 }, size: { width: 100, height: 35 }, visible: true, zIndex: 2 },
-          playerSprite: { position: { x: 75, y: 70 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
-          enemySprites: [{ position: { x: 25, y: 25 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 }]
+          battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 40 }, visible: true, zIndex: 1 },
+          actionMenu: { position: { x: 0, y: 40 }, size: { width: 100, height: 30 }, visible: true, zIndex: 2 },
+          contentArea: { position: { x: 0, y: 70 }, size: { width: 100, height: 30 }, visible: true, zIndex: 2 },
+          playerSprite: { position: { x: 75, y: 30 }, size: { width: 20, height: 25 }, visible: true, zIndex: 3, scale: 0.8 },
+          enemySprites: [
+            { position: { x: 20, y: 20 }, size: { width: 20, height: 25 }, visible: true, zIndex: 3, scale: 0.8 },
+            { position: { x: 10, y: 15 }, size: { width: 20, height: 25 }, visible: true, zIndex: 3, scale: 0.8 },
+            { position: { x: 30, y: 18 }, size: { width: 20, height: 25 }, visible: true, zIndex: 3, scale: 0.8 }
+          ]
         }
       }
     };

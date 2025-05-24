@@ -1,5 +1,3 @@
-
-
 export interface Player {
   hp: number;
   maxHp: number;
@@ -77,6 +75,8 @@ export type AbilityEffectType =
 export type ItemType = 'Consumable' | 'Equipment'; // UPDATED
 export type InventoryFilterType = 'All' | ItemType | 'Resource'; // New for inventory filtering
 
+// Define the possible elements for items
+export type ItemElement = Spell['damageType'] | 'None'; // Reusing Spell damage types
 
 export type ConsumableEffectType = 'HP_RESTORE' | 'MP_RESTORE' | 'EP_RESTORE' | 'CURE_STATUS' | 'APPLY_BUFF'; // RENAMED
 
@@ -106,6 +106,7 @@ export interface Consumable { // RENAMED from Potion
   statusToCure?: StatusEffectName;
   buffToApply?: StatusEffectName; 
   resourceCost?: ResourceCost[];
+  element?: ItemElement; // Added element property
 }
 
 export interface Equipment {
@@ -117,6 +118,7 @@ export interface Equipment {
   slot: EquipmentSlot; // Generic slot type for item definition
   statsBoost: Partial<Pick<Player, 'body' | 'mind' | 'reflex' | 'speed' | 'maxHp' | 'maxMp' | 'maxEp'>>; 
   resourceCost?: ResourceCost[];
+  element?: ItemElement; // Added element property
   // Optional: could add a sub-type later for more precise mapping to DetailedEquipmentSlot
   // equipmentSubType?: 'Helmet' | 'Chestplate' | 'Greaves' | 'Boots' | 'Gloves' | 'Cloak' | 'Amulet' | 'Ring' | 'Belt' | 'Sword' | 'Staff' | 'Bow';
 }

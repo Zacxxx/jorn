@@ -41,7 +41,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
        onClick={() => isEditMode && onElementSelect('actionMenu')}
        onMouseDown={(e) => isEditMode && onMouseDown(e, 'actionMenu')}
     >
-      <div className="p-2 flex flex-col space-y-2 h-full">
+      <div className="p-2 flex flex-row flex-wrap justify-around items-center space-y-0 space-x-0 sm:flex-col sm:space-y-2 sm:space-x-0 h-full">
         <ActionButton
           label="Actions"
           icon={<SwordsIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
