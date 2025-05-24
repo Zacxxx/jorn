@@ -365,6 +365,11 @@ const CombatView: React.FC<CombatViewProps> = ({
   const [isResizing, setIsResizing] = useState(false);
   const [resizeHandle, setResizeHandle] = useState<string | null>(null);
   
+  // Undo/Redo system
+  const [layoutHistory, setLayoutHistory] = useState<JornBattleConfig[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [showSnapIndicator, setShowSnapIndicator] = useState(false);
+  
   // Refs for the battle arena
   const battleAreaRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -451,8 +456,73 @@ const CombatView: React.FC<CombatViewProps> = ({
   }, []);
 
   const resetLayout = useCallback(() => {
+    saveToHistory();
     setCurrentConfig({ ...defaultJornBattleConfig });
   }, []);
+
+  // --- Undo/Redo Functions ---
+  const saveToHistory = useCallback(() => {
+    setLayoutHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push({ ...currentConfig });
+      return newHistory.slice(-50); // Keep last 50 changes
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, 49));
+  }, [currentConfig, historyIndex]);
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex(prev => prev - 1);
+      setCurrentConfig({ ...layoutHistory[historyIndex - 1] });
+    }
+  }, [historyIndex, layoutHistory]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < layoutHistory.length - 1) {
+      setHistoryIndex(prev => prev + 1);
+      setCurrentConfig({ ...layoutHistory[historyIndex + 1] });
+    }
+  }, [historyIndex, layoutHistory]);
+
+  // --- Preset Layouts ---
+  const applyPresetLayout = useCallback((preset: string) => {
+    saveToHistory();
+    
+    const presets: { [key: string]: Partial<JornBattleConfig> } = {
+      'classic': {
+        layout: {
+          battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 70 }, visible: true, zIndex: 1 },
+          actionMenu: { position: { x: 0, y: 70 }, size: { width: 30, height: 30 }, visible: true, zIndex: 2 },
+          contentArea: { position: { x: 30, y: 70 }, size: { width: 70, height: 30 }, visible: true, zIndex: 2 },
+          playerSprite: { position: { x: 75, y: 75 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
+          enemySprites: [{ position: { x: 25, y: 30 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 }]
+        }
+      },
+      'wide': {
+        layout: {
+          battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 60 }, visible: true, zIndex: 1 },
+          actionMenu: { position: { x: 0, y: 60 }, size: { width: 20, height: 40 }, visible: true, zIndex: 2 },
+          contentArea: { position: { x: 20, y: 60 }, size: { width: 80, height: 40 }, visible: true, zIndex: 2 },
+          playerSprite: { position: { x: 80, y: 75 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
+          enemySprites: [{ position: { x: 20, y: 25 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 }]
+        }
+      },
+      'mobile': {
+        layout: {
+          battleArea: { position: { x: 0, y: 0 }, size: { width: 100, height: 50 }, visible: true, zIndex: 1 },
+          actionMenu: { position: { x: 0, y: 50 }, size: { width: 100, height: 15 }, visible: true, zIndex: 2 },
+          contentArea: { position: { x: 0, y: 65 }, size: { width: 100, height: 35 }, visible: true, zIndex: 2 },
+          playerSprite: { position: { x: 75, y: 70 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 },
+          enemySprites: [{ position: { x: 25, y: 25 }, size: { width: 15, height: 20 }, visible: true, zIndex: 3, scale: 1.0 }]
+        }
+      }
+    };
+
+    const presetConfig = presets[preset];
+    if (presetConfig) {
+      setCurrentConfig(prev => ({ ...prev, ...presetConfig }));
+    }
+  }, [saveToHistory]);
 
   const updateElementPosition = useCallback((elementKey: string, newPosition: Position) => {
     setCurrentConfig(prev => {
@@ -509,33 +579,112 @@ const CombatView: React.FC<CombatViewProps> = ({
   }, [isEditMode]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !selectedElement || !dragStart || !containerRef.current) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || !selectedElement || !dragStart) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
     const currentMouseX = (e.clientX - rect.left) / rect.width * 100;
     const currentMouseY = (e.clientY - rect.top) / rect.height * 100;
-
-    const deltaX = currentMouseX - dragStart.x;
-    const deltaY = currentMouseY - dragStart.y;
 
     const currentElement = mergedConfig.layout[selectedElement as keyof typeof mergedConfig.layout] as UIElement;
     if (!currentElement) return;
 
-    const newX = snapToGrid(Math.max(0, Math.min(100 - currentElement.size.width, currentElement.position.x + deltaX)));
-    const newY = snapToGrid(Math.max(0, Math.min(100 - currentElement.size.height, currentElement.position.y + deltaY)));
+    if (isDragging) {
+      // Handle dragging/moving
+      const deltaX = currentMouseX - dragStart.x;
+      const deltaY = currentMouseY - dragStart.y;
 
-    updateElementPosition(selectedElement, { x: newX, y: newY });
-    
-    setDragStart({ x: currentMouseX, y: currentMouseY });
-  }, [isDragging, selectedElement, dragStart, updateElementPosition, snapToGrid, mergedConfig.layout]);
+      const newX = snapToGrid(Math.max(0, Math.min(100 - currentElement.size.width, currentElement.position.x + deltaX)));
+      const newY = snapToGrid(Math.max(0, Math.min(100 - currentElement.size.height, currentElement.position.y + deltaY)));
+
+      updateElementPosition(selectedElement, { x: newX, y: newY });
+      setDragStart({ x: currentMouseX, y: currentMouseY });
+    } else if (isResizing && resizeHandle) {
+      // Handle resizing
+      const deltaX = currentMouseX - dragStart.x;
+      const deltaY = currentMouseY - dragStart.y;
+
+      let newWidth = currentElement.size.width;
+      let newHeight = currentElement.size.height;
+      let newX = currentElement.position.x;
+      let newY = currentElement.position.y;
+
+      switch (resizeHandle) {
+        case 'se': // Southeast
+          newWidth = Math.max(10, Math.min(100 - currentElement.position.x, currentElement.size.width + deltaX));
+          newHeight = Math.max(10, Math.min(100 - currentElement.position.y, currentElement.size.height + deltaY));
+          break;
+        case 'sw': // Southwest
+          newWidth = Math.max(10, Math.min(currentElement.position.x + currentElement.size.width, currentElement.size.width - deltaX));
+          newHeight = Math.max(10, Math.min(100 - currentElement.position.y, currentElement.size.height + deltaY));
+          newX = Math.max(0, currentElement.position.x + (currentElement.size.width - newWidth));
+          break;
+        case 'ne': // Northeast
+          newWidth = Math.max(10, Math.min(100 - currentElement.position.x, currentElement.size.width + deltaX));
+          newHeight = Math.max(10, Math.min(currentElement.position.y + currentElement.size.height, currentElement.size.height - deltaY));
+          newY = Math.max(0, currentElement.position.y + (currentElement.size.height - newHeight));
+          break;
+        case 'nw': // Northwest
+          newWidth = Math.max(10, Math.min(currentElement.position.x + currentElement.size.width, currentElement.size.width - deltaX));
+          newHeight = Math.max(10, Math.min(currentElement.position.y + currentElement.size.height, currentElement.size.height - deltaY));
+          newX = Math.max(0, currentElement.position.x + (currentElement.size.width - newWidth));
+          newY = Math.max(0, currentElement.position.y + (currentElement.size.height - newHeight));
+          break;
+        case 'n': // North
+          newHeight = Math.max(10, Math.min(currentElement.position.y + currentElement.size.height, currentElement.size.height - deltaY));
+          newY = Math.max(0, currentElement.position.y + (currentElement.size.height - newHeight));
+          break;
+        case 's': // South
+          newHeight = Math.max(10, Math.min(100 - currentElement.position.y, currentElement.size.height + deltaY));
+          break;
+        case 'w': // West
+          newWidth = Math.max(10, Math.min(currentElement.position.x + currentElement.size.width, currentElement.size.width - deltaX));
+          newX = Math.max(0, currentElement.position.x + (currentElement.size.width - newWidth));
+          break;
+        case 'e': // East
+          newWidth = Math.max(10, Math.min(100 - currentElement.position.x, currentElement.size.width + deltaX));
+          break;
+      }
+
+      if (newX !== currentElement.position.x || newY !== currentElement.position.y) {
+        updateElementPosition(selectedElement, { x: snapToGrid(newX), y: snapToGrid(newY) });
+      }
+      if (newWidth !== currentElement.size.width || newHeight !== currentElement.size.height) {
+        updateElementSize(selectedElement, { width: snapToGrid(newWidth), height: snapToGrid(newHeight) });
+      }
+      
+      setDragStart({ x: currentMouseX, y: currentMouseY });
+    }
+  }, [isDragging, isResizing, selectedElement, dragStart, resizeHandle, updateElementPosition, updateElementSize, snapToGrid, mergedConfig.layout]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
     setDragStart(null);
   }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isEditMode || !selectedElement) return;
+    if (!isEditMode) return;
+
+    // Global shortcuts
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key) {
+        case 'z':
+          if (e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+          e.preventDefault();
+          return;
+        case 'y':
+          redo();
+          e.preventDefault();
+          return;
+      }
+    }
+
+    if (!selectedElement) return;
 
     const step = e.shiftKey ? 0.5 : 2; // Fine vs coarse movement
     const currentElement = mergedConfig.layout[selectedElement as keyof typeof mergedConfig.layout] as UIElement;
@@ -566,7 +715,7 @@ const CombatView: React.FC<CombatViewProps> = ({
 
     e.preventDefault();
     updateElementPosition(selectedElement, { x: snapToGrid(newX), y: snapToGrid(newY) });
-  }, [isEditMode, selectedElement, mergedConfig.layout, updateElementPosition, snapToGrid]);
+  }, [isEditMode, selectedElement, mergedConfig.layout, updateElementPosition, snapToGrid, undo, redo]);
 
   // Mouse and keyboard event listeners
   useEffect(() => {
@@ -779,6 +928,24 @@ const CombatView: React.FC<CombatViewProps> = ({
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs font-semibold text-slate-300">Layout Editor</span>
             <ActionButton 
+              onClick={undo}
+              disabled={historyIndex <= 0}
+              variant="secondary" 
+              className="!py-1 !px-2 !text-xs"
+              title="Undo (Ctrl+Z)"
+            >
+              ↶
+            </ActionButton>
+            <ActionButton 
+              onClick={redo}
+              disabled={historyIndex >= layoutHistory.length - 1}
+              variant="secondary" 
+              className="!py-1 !px-2 !text-xs"
+              title="Redo (Ctrl+Y)"
+            >
+              ↷
+            </ActionButton>
+            <ActionButton 
               onClick={() => setShowLayoutManager(true)} 
               variant="secondary" 
               className="!py-1 !px-2 !text-xs"
@@ -794,8 +961,8 @@ const CombatView: React.FC<CombatViewProps> = ({
             </ActionButton>
           </div>
           <div className="text-xs text-slate-400 space-y-1">
-            <div>• Click elements to select • Drag to move • Use resize handles</div>
-            <div>• Arrow keys: Move • Shift+Arrow: Fine move • Esc: Deselect</div>
+            <div>• Click: Select • Drag: Move • Resize handles: Scale</div>
+            <div>• Arrow keys: Move • Shift+Arrow: Fine move • Ctrl+Z/Y: Undo/Redo</div>
             <div>• {selectedElement ? `Selected: ${selectedElement}` : 'No element selected'}</div>
           </div>
         </div>
@@ -826,7 +993,7 @@ const CombatView: React.FC<CombatViewProps> = ({
       {/* Battle Arena */}
       <div 
         ref={battleAreaRef}
-        className={`absolute rounded-lg shadow-inner overflow-hidden ${isEditMode ? 'border-2 border-blue-400' : 'border border-slate-700/60'} ${isDragging && selectedElement === 'battleArea' ? 'cursor-move' : ''}`}
+        className={`absolute rounded-lg shadow-inner overflow-hidden transition-all duration-200 ${isEditMode ? 'border-2 border-blue-400' : 'border border-slate-700/60'} ${isDragging && selectedElement === 'battleArea' ? 'cursor-move scale-[1.02] shadow-2xl' : ''} ${isEditMode && selectedElement === 'battleArea' ? 'ring-2 ring-blue-500/50 ring-offset-2 ring-offset-slate-900' : ''}`}
         style={{
           left: `${mergedConfig.layout.battleArea.position.x}%`,
           top: `${mergedConfig.layout.battleArea.position.y}%`,
@@ -864,7 +1031,7 @@ const CombatView: React.FC<CombatViewProps> = ({
 
       {/* Action Menu */}
       <div 
-        className={`absolute rounded-lg shadow-md overflow-hidden ${isEditMode ? 'border-2 border-green-400' : 'border border-slate-700/60'} ${isDragging && selectedElement === 'actionMenu' ? 'cursor-move' : ''}`}
+        className={`absolute rounded-lg shadow-md overflow-hidden transition-all duration-200 ${isEditMode ? 'border-2 border-green-400' : 'border border-slate-700/60'} ${isDragging && selectedElement === 'actionMenu' ? 'cursor-move scale-[1.02] shadow-2xl' : ''} ${isEditMode && selectedElement === 'actionMenu' ? 'ring-2 ring-green-500/50 ring-offset-2 ring-offset-slate-900' : ''}`}
         style={{
           left: `${mergedConfig.layout.actionMenu.position.x}%`,
           top: `${mergedConfig.layout.actionMenu.position.y}%`,
@@ -907,7 +1074,7 @@ const CombatView: React.FC<CombatViewProps> = ({
 
       {/* Content Area */}
       <div 
-        className={`absolute rounded-lg shadow-md overflow-hidden ${isEditMode ? 'border-2 border-purple-400' : 'border border-slate-700/60'} ${isDragging && selectedElement === 'contentArea' ? 'cursor-move' : ''}`}
+        className={`absolute rounded-lg shadow-md overflow-hidden transition-all duration-200 ${isEditMode ? 'border-2 border-purple-400' : 'border border-slate-700/60'} ${isDragging && selectedElement === 'contentArea' ? 'cursor-move scale-[1.02] shadow-2xl' : ''} ${isEditMode && selectedElement === 'contentArea' ? 'ring-2 ring-purple-500/50 ring-offset-2 ring-offset-slate-900' : ''}`}
         style={{
           left: `${mergedConfig.layout.contentArea.position.x}%`,
           top: `${mergedConfig.layout.contentArea.position.y}%`,
@@ -960,7 +1127,7 @@ const CombatView: React.FC<CombatViewProps> = ({
       {showLayoutManager && (
         <Modal isOpen={true} onClose={() => setShowLayoutManager(false)} title="Layout Manager" size="lg">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <h4 className="text-sm font-semibold text-slate-300 mb-2">Quick Actions</h4>
                 <div className="space-y-2">
@@ -986,6 +1153,33 @@ const CombatView: React.FC<CombatViewProps> = ({
                       Import Layout
                     </ActionButton>
                   </div>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-semibold text-slate-300 mb-2">Presets</h4>
+                <div className="space-y-2">
+                  <ActionButton 
+                    onClick={() => applyPresetLayout('classic')} 
+                    variant="secondary" 
+                    className="w-full !py-2 !text-sm"
+                  >
+                    Classic Layout
+                  </ActionButton>
+                  <ActionButton 
+                    onClick={() => applyPresetLayout('wide')} 
+                    variant="secondary" 
+                    className="w-full !py-2 !text-sm"
+                  >
+                    Wide Layout
+                  </ActionButton>
+                  <ActionButton 
+                    onClick={() => applyPresetLayout('mobile')} 
+                    variant="secondary" 
+                    className="w-full !py-2 !text-sm"
+                  >
+                    Mobile Layout
+                  </ActionButton>
                 </div>
               </div>
               
