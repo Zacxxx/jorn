@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
-import { ItemType } from '../types';
+import React, { useState, useEffect } from 'react';
+import { ItemType, Equipment, GameItem, ResourceType, Player } from '../types'; // Added GameItem, Player
 import Modal from './Modal';
 import ItemCraftingForm from './ItemCraftingForm';
 import ActionButton from './ActionButton';
-import { PotionGenericIcon, GearIcon, ScrollIcon } from './IconComponents'; // Added ScrollIcon as a generic consumable icon
+import { PotionGenericIcon, GearIcon, ScrollIcon, StarIcon } from './IconComponents'; // Added StarIcon for enhancement
+import ItemEnhancementModal from './ItemEnhancementModal'; // Import the new modal
+import ItemDisplay from './ItemDisplay'; // For showing items in enhance tab
 
 interface CraftingHubModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInitiateAppItemCraft: (prompt: string, itemType: ItemType, quantity: number) => Promise<void>;
+  onInitiateAppItemCraft: (prompt: string, itemType: ItemType, quantity: number) => Promise<void>; 
   isLoading: boolean;
+  playerItems: GameItem[]; // Added to list items for enhancement
+  playerInventory: Player['inventory']; // Added for enhancement modal
+  onAttemptEnhanceItem: (itemToEnhance: Equipment) => void; // Callback for enhancement attempt
+  isEnhancing: boolean; // Loading state for enhancement
 }
 
-type CraftingTab = 'Consumables' | 'Equipment'; // UPDATED
+// UPDATED CraftingTab type
+type CraftingTab = 'Consumables' | 'Equipment' | 'Enhance';
 
 interface LastCraftedItem {
     prompt: string;
@@ -20,10 +27,32 @@ interface LastCraftedItem {
     quantity: number;
 }
 
-const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, onInitiateAppItemCraft, isLoading }) => {
-  const [activeCraftingTab, setActiveCraftingTab] = useState<CraftingTab>('Consumables'); // UPDATED
+const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ 
+    isOpen, 
+    onClose, 
+    onInitiateAppItemCraft, 
+    isLoading, 
+    playerItems, 
+    playerInventory,
+    onAttemptEnhanceItem,
+    isEnhancing
+}) => {
+  const [activeCraftingTab, setActiveCraftingTab] = useState<CraftingTab>('Consumables');
   const [lastCraftedItemDetails, setLastCraftedItemDetails] = useState<LastCraftedItem | null>(null);
   const [showRecraftInForm, setShowRecraftInForm] = useState<boolean>(false);
+  const [itemToEnhance, setItemToEnhance] = useState<Equipment | null>(null);
+  const [isEnhancementModalOpen, setIsEnhancementModalOpen] = useState<boolean>(false);
+
+  // Reset itemToEnhance when tab changes away from Enhance or modal closes
+  useEffect(() => {
+    if (activeCraftingTab !== 'Enhance') {
+      setItemToEnhance(null);
+    }
+    if (!isOpen) {
+        setIsEnhancementModalOpen(false);
+        setItemToEnhance(null);
+    }
+  }, [activeCraftingTab, isOpen]);
 
   const handleFormSubmit = async (prompt: string, quantity: number) => {
     const itemTypeToCraft = activeCraftingTab === 'Consumables' ? 'Consumable' : 'Equipment'; // UPDATED
@@ -44,6 +73,22 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, on
     setShowRecraftInForm(false);
   }
   
+  const handleOpenEnhanceModal = (item: Equipment) => {
+    setItemToEnhance(item);
+    setIsEnhancementModalOpen(true);
+  };
+
+  const handleCloseEnhanceModal = () => {
+    setIsEnhancementModalOpen(false);
+    // setItemToEnhance(null); // Keep item selected in case user reopens quickly, useEffect handles reset on tab change
+  };
+
+  const handleActualEnhanceAttempt = (item: Equipment) => {
+    onAttemptEnhanceItem(item);
+    // Optionally close modal immediately or wait for isEnhancing to finish
+    // For now, let it stay open to show loading, App.tsx can close it via isOpen prop of CraftingHub if needed post-attempt
+  };
+
   const TabButton: React.FC<{ icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }> = ({ icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
@@ -74,8 +119,14 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, on
           isActive={activeCraftingTab === 'Equipment'}
           onClick={() => setActiveCraftingTab('Equipment')}
         />
+        <TabButton
+          icon={<StarIcon className="w-5 h-5" />} // Using StarIcon for Enhance
+          label="Enhance Item"
+          isActive={activeCraftingTab === 'Enhance'}
+          onClick={() => setActiveCraftingTab('Enhance')}
+        />
       </div>
-      <div className="bg-slate-700/50 p-3 md:p-4 rounded-b-lg shadow-inner">
+      <div className="bg-slate-700/50 p-3 md:p-4 rounded-b-lg shadow-inner min-h-[200px]">
         {activeCraftingTab === 'Consumables' && ( // UPDATED
           <ItemCraftingForm
             itemType="Consumable" // UPDATED
@@ -96,6 +147,24 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, on
             onClearLastCrafted={clearLastCraftedForForm}
           />
         )}
+        {activeCraftingTab === 'Enhance' && (
+            <div>
+                <h3 class="text-xl font-semibold text-sky-300 mb-3">Select Equipment to Enhance</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto p-2 bg-slate-800/30 rounded">
+                    {playerItems.filter(item => item.itemType === 'Equipment').map(item => item as Equipment).map(equip => (
+                        <div key={equip.id} className="bg-slate-700 p-2 rounded-md hover:bg-slate-600/70 cursor-pointer transition-all duration-150"
+                             onClick={() => handleOpenEnhanceModal(equip)} >
+                            <ItemDisplay item={equip} compact={true} showEquipButton={false} showDropButton={false} showUnequipButton={false} showExamineButton={false} />
+                            {equip.enhancementLevel && equip.enhancementLevel > 0 && 
+                                <p className="text-xs text-yellow-400 mt-1 text-center">+{equip.enhancementLevel}</p> }
+                        </div>
+                    ))}
+                    {playerItems.filter(item => item.itemType === 'Equipment').length === 0 && (
+                        <p className="text-slate-400 col-span-full text-center py-4">You have no equippable items to enhance.</p>
+                    )}
+                </div>
+            </div>
+        )}
       </div>
        <div className="mt-5 pt-4 border-t-2 border-slate-700/80 flex justify-between items-center">
             {lastCraftedItemDetails && (
@@ -114,6 +183,16 @@ const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ isOpen, onClose, on
             Close Crafting
           </ActionButton>
         </div>
+        {itemToEnhance && (
+            <ItemEnhancementModal 
+                isOpen={isEnhancementModalOpen}
+                onClose={handleCloseEnhanceModal}
+                itemToEnhance={itemToEnhance}
+                playerInventory={playerInventory}
+                onAttemptEnhance={handleActualEnhanceAttempt}
+                isLoading={isEnhancing}
+            />
+        )}
     </Modal>
   );
 };
