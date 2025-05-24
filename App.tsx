@@ -937,9 +937,9 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-900 text-slate-100 antialiased" style={{fontFamily: "'Inter', sans-serif"}}>
+    <div className="flex flex-col min-h-screen h-screen bg-slate-900 text-slate-100 antialiased overflow-hidden" style={{fontFamily: "'Inter', sans-serif"}}>
       <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet()} onNavigateHome={handleNavigateHome} />
-      <main className="flex-grow container mx-auto px-2 py-3 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full"> {/* Increased max-width */}
+      <main className="flex-grow container mx-auto px-2 py-3 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full overflow-y-auto styled-scrollbar">
         {gameState === 'HOME' && <HomeScreenView 
           onFindEnemy={handleFindEnemy}
           isLoading={isLoading} 
