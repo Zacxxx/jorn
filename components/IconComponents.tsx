@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { SpellIconName } from '../types';
 
@@ -320,10 +318,49 @@ export const CollectionIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) =
 
 export const FleeIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V12.75M19.5 3.75l-6.75 6.75M15.75 3.75H19.5v3.75" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0112 3.75zM7.5 6.375a.75.75 0 000 1.5h9a.75.75 0 000-1.5h-9zM12 15.75a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM7.5 18.375a.75.75 0 000 1.5h9a.75.75 0 000-1.5h-9zM4.875 8.25a.75.75 0 01.75-.75h13.5a.75.75 0 010 1.5H5.625a.75.75 0 01-.75-.75zm0 7.5a.75.75 0 01.75-.75h13.5a.75.75 0 010 1.5H5.625a.75.75 0 01-.75-.75z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.375 2.25L18 4.875M18.75 15.375L16.125 18M8.625 2.25L6 4.875M5.25 15.375L7.875 18" />
   </svg>
 );
 
+// --- Icons for CampView ---
+export const SunIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+  </svg>
+);
+
+export const MoonIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+  </svg>
+);
+
+export const ArrowUturnLeftIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+  </svg>
+);
+
+export const UserGroupIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.94-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+  </svg>
+);
+
+export const BookOpenIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+  </svg>
+);
+
+export const ArchiveBoxIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 3H20.25M3.75 3H3.75C2.784 3 2.003 3.785 2.003 4.755V14.25c0 .97.781 1.755 1.747 1.755h16.5c.966 0 1.747-.785 1.747-1.755V4.755c0-.97-.781-1.755-1.747-1.755H3.75z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h3M10.5 9h3M10.5 12h3" />
+  </svg>
+);
+// --- End Icons for CampView ---
 
 export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: string }> = ({ iconName, className }) => {
   switch (iconName) {
@@ -378,6 +415,11 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
     case 'SearchIcon': return <SearchIcon className={className} />;
     case 'CollectionIcon': return <CollectionIcon className={className} />;
     case 'FleeIcon': return <FleeIcon className={className} />;
+    case 'SunIcon': return <SunIcon className={className} />;
+    case 'MoonIcon': return <MoonIcon className={className} />;
+    case 'ArrowUturnLeftIcon': return <ArrowUturnLeftIcon className={className} />;
+    case 'UserGroupIcon': return <UserGroupIcon className={className} />;
+    case 'BookOpenIcon': return <BookOpenIcon className={className} />;
     case 'Default':
     default: return <UnknownIcon className={className} />;
   }
