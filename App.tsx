@@ -1024,6 +1024,12 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
             onUseAbility={handleUseAbility}
             consumables={player.items.filter(item => item.itemType === 'Consumable') as Consumable[]}
             abilities={getPreparedAbilities()}
+            config={{
+              // Custom positioning for enemies based on count
+              enemyPositions: currentEnemies.length > 1 
+                ? [{ x: 20, y: 25 }, { x: 35, y: 20 }, { x: 25, y: 35 }]
+                : [{ x: 25, y: 30 }]
+            }}
           />
         )}
         {(gameState === 'GAME_OVER_VICTORY' || gameState === 'GAME_OVER_DEFEAT') && (

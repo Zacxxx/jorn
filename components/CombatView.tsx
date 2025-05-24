@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats, SpellIconName } from '../types';
 import { GetSpellIcon, UserIcon, SkullIcon, WandIcon, MindIcon, PotionGenericIcon, SwordsIcon, ShieldIcon, SpeedIcon, BookIcon, HealIcon, BodyIcon, ReflexIcon, FleeIcon, StarIcon } from './IconComponents';
 import ActionButton from './ActionButton';
@@ -11,6 +11,79 @@ import EnemyDisplay from './EnemyDisplay'; // Kept for modal use
 import PlayerBattleDisplay from './PlayerBattleDisplay';
 import EnemyBattleDisplay from './EnemyBattleDisplay';
 import { STATUS_EFFECT_ICONS } from '../constants';
+
+// --- Jorn Battle Configuration Types ---
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface JornBattleConfig {
+  // Layout configuration
+  battleAreaHeight: number;
+  playerPosition: Position;
+  enemyPositions: Position[];
+  playerStatusPosition: Position;
+  enemyStatusPosition: Position;
+  
+  // Background configuration
+  backgroundGradient?: { from: string; to: string };
+  
+  // UI style configuration
+  messageBoxStyle?: {
+    backgroundColor: string;
+    textColor: string;
+    borderColor: string;
+  };
+  menuStyle?: {
+    backgroundColor: string;
+    buttonColor: string;
+    textColor: string;
+    hoverColor: string;
+    activeColor: string;
+  };
+  
+  // Animation configuration
+  animationSpeed?: number;
+  showDamageNumbers?: boolean;
+}
+
+// Extended types for positioning
+interface PositionedPlayer extends Player {
+  battlePosition?: Position;
+}
+
+interface PositionedEnemy extends Enemy {
+  battlePosition?: Position;
+}
+
+// --- Default Configuration ---
+const defaultJornBattleConfig: JornBattleConfig = {
+  battleAreaHeight: 400,
+  playerPosition: { x: 75, y: 70 },
+  enemyPositions: [
+    { x: 25, y: 30 },
+    { x: 15, y: 20 },
+    { x: 35, y: 25 }
+  ],
+  playerStatusPosition: { x: 60, y: 75 },
+  enemyStatusPosition: { x: 5, y: 5 },
+  backgroundGradient: { from: 'from-sky-700/40', to: 'to-green-700/40' },
+  animationSpeed: 1,
+  showDamageNumbers: true,
+  messageBoxStyle: {
+    backgroundColor: 'bg-slate-800/70',
+    textColor: 'text-slate-200',
+    borderColor: 'border-slate-600/50'
+  },
+  menuStyle: {
+    backgroundColor: 'bg-slate-800/70',
+    buttonColor: 'bg-slate-700',
+    textColor: 'text-slate-200',
+    hoverColor: 'hover:bg-slate-600',
+    activeColor: 'bg-sky-600'
+  }
+};
 
 // --- Types for CombatView ---
 interface CombatViewProps {
@@ -33,6 +106,7 @@ interface CombatViewProps {
   onUseAbility: (abilityId: string, targetId: string | null) => void;
   consumables: Consumable[];
   abilities: Ability[];
+  config?: Partial<JornBattleConfig>;
 }
 
 type DynamicAreaView = 'actions' | 'spells' | 'abilities' | 'items' | 'log';
@@ -176,13 +250,20 @@ const CombatView: React.FC<CombatViewProps> = ({
   preparedSpells, onPlayerAttack, onPlayerBasicAttack, onPlayerDefend, onPlayerFlee, onPlayerFreestyleAction,
   combatLog, isPlayerTurn, playerActionSkippedByStun,
   onUseConsumable, onUseAbility, consumables, abilities,
+  config = {}
 }) => {
+  // Merge provided config with default config
+  const mergedConfig: JornBattleConfig = { ...defaultJornBattleConfig, ...config };
+  
   const [activeDynamicView, setActiveDynamicView] = useState<DynamicAreaView>('log');
   const [freestyleActionText, setFreestyleActionText] = useState('');
   const [showEnemyDetailsModal, setShowEnemyDetailsModal] = useState<Enemy | null>(null);
   const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
   const [hoveredCombatActionItem, setHoveredCombatActionItem] = useState<CombatActionItemType | null>(null);
   const [combatActionTooltipPosition, setCombatActionTooltipPosition] = useState<{ x: number, y: number } | null>(null);
+  
+  // Refs for the battle arena
+  const battleAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isPlayerTurn) {
@@ -223,6 +304,56 @@ const CombatView: React.FC<CombatViewProps> = ({
   }, []);
 
   const canPlayerAct = isPlayerTurn && !playerActionSkippedByStun;
+
+  // --- Character Rendering Functions (Pokemon-battle.tsx inspired) ---
+  const renderPlayerSprite = useCallback(() => {
+    const position = mergedConfig.playerPosition;
+    
+    return (
+      <div
+        key={`player-${player.id || 'hero'}`}
+        className="absolute transition-all duration-300 cursor-pointer hover:scale-105"
+        style={{
+          left: `${position.x}%`,
+          top: `${position.y}%`,
+          transform: 'translateX(-50%) translateY(-50%)',
+        }}
+        onClick={() => setShowPlayerDetailsModal(true)}
+      >
+        <PlayerBattleDisplay 
+          player={player}
+          effectiveStats={effectivePlayerStats}
+          onInfoClick={() => setShowPlayerDetailsModal(true)}
+        />
+      </div>
+    );
+  }, [player, effectivePlayerStats, mergedConfig.playerPosition]);
+
+  const renderEnemySprites = useCallback(() => {
+    return currentEnemies.map((enemy, index) => {
+      const position = mergedConfig.enemyPositions[index] || mergedConfig.enemyPositions[0];
+      
+      return (
+        <div
+          key={`enemy-${enemy.id}`}
+          className="absolute transition-all duration-300 cursor-pointer hover:scale-105"
+          style={{
+            left: `${position.x}%`,
+            top: `${position.y}%`,
+            transform: 'translateX(-50%) translateY(-50%)',
+          }}
+          onClick={() => onSetTargetEnemy(enemy.id)}
+        >
+          <EnemyBattleDisplay
+            enemy={enemy}
+            isTargeted={targetEnemyId === enemy.id}
+            onClick={() => onSetTargetEnemy(enemy.id)}
+            onInfoClick={() => setShowEnemyDetailsModal(enemy)}
+          />
+        </div>
+      );
+    });
+  }, [currentEnemies, targetEnemyId, onSetTargetEnemy, mergedConfig.enemyPositions]);
 
   const renderDynamicAreaContent = () => {
     const renderActionGrid = (items: CombatActionItemType[], type: 'spell' | 'ability' | 'consumable') => {
@@ -286,60 +417,75 @@ const CombatView: React.FC<CombatViewProps> = ({
 
 
   return (
-    <div className="h-full flex flex-col p-2 md:p-3 bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700 space-y-3">
-      {/* Battle Scene Area */}
-      <div className="flex-grow relative bg-slate-850/50 rounded-lg shadow-inner border border-slate-700/60 overflow-hidden min-h-[300px] md:min-h-[400px]">
-        {/* Background elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="h-1/2 bg-sky-700/40"></div> {/* Sky */}
-          <div className="h-1/2 bg-green-700/40"></div> {/* Ground */}
+    <div className="h-full flex flex-col p-2 md:p-3 bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700">
+      {/* Battle Arena - Pokemon-battle.tsx inspired structure */}
+      <div 
+        ref={battleAreaRef}
+        className="relative w-full overflow-hidden rounded-lg border border-slate-700/60 shadow-inner"
+        style={{ height: `${mergedConfig.battleAreaHeight}px` }}
+      >
+        {/* Background */}
+        <div className={`absolute inset-0 bg-gradient-to-b ${mergedConfig.backgroundGradient?.from} ${mergedConfig.backgroundGradient?.to}`}>
+          {/* Background pattern */}
+          <div className="absolute inset-0">
+            <div className="h-1/2 opacity-60"></div> {/* Sky */}
+            <div className="h-1/2 opacity-60"></div> {/* Ground */}
+          </div>
         </div>
-        
-        {/* Diagonal Layout Container */}
-        <div className="absolute inset-0 z-10 flex flex-col">
-            {/* Top-Left for Enemies */}
-            <div className="flex-1 flex justify-start items-start p-2 sm:p-4">
-                <div className="flex gap-2 sm:gap-4">
-                    {currentEnemies.map((enemy, index) => (
-                        <EnemyBattleDisplay
-                            key={enemy.id}
-                            enemy={enemy}
-                            isTargeted={targetEnemyId === enemy.id}
-                            onClick={() => onSetTargetEnemy(enemy.id)}
-                            onInfoClick={() => setShowEnemyDetailsModal(enemy)}
-                        />
-                    ))}
-                </div>
-            </div>
-            {/* Bottom-Right for Player */}
-            <div className="flex-1 flex justify-end items-end p-2 sm:p-4">
-                 <PlayerBattleDisplay 
-                    player={player}
-                    effectiveStats={effectivePlayerStats}
-                    onInfoClick={() => setShowPlayerDetailsModal(true)}
-                 />
-            </div>
+
+        {/* Character Sprites Container */}
+        <div className="absolute inset-0">
+          {/* Enemy sprites */}
+          {renderEnemySprites()}
+          
+          {/* Player sprite */}
+          {renderPlayerSprite()}
         </div>
       </div>
 
+      {/* Visual separator */}
+      <div className="h-1 w-full bg-slate-800 my-2"></div>
 
-      {/* Combat Controls Area */}
-      <div className="flex flex-col md:flex-row gap-2 md:gap-3 bg-slate-850/50 p-2 sm:p-3 rounded-lg shadow-inner border border-slate-700/60 min-h-[200px] md:min-h-[240px]">
-        <div className="w-full md:w-1/4 lg:w-1/5 flex flex-row md:flex-col gap-1 md:gap-2 p-1 bg-slate-800/70 rounded-lg shadow-md border border-slate-600/50 overflow-y-auto md:styled-scrollbar">
-          {actionCategories.map(cat => (
-            <ActionCategoryButton
-              key={cat.view}
-              label={cat.label}
-              icon={cat.icon}
-              view={cat.view}
-              isActive={activeDynamicView === cat.view}
-              onClick={() => handleCategoryChange(cat.view)}
-              disabled={cat.view !== 'log' && !canPlayerAct}
-            />
-          ))}
+
+      {/* Combat Interface - Pokemon-battle.tsx inspired structure */}
+      <div className="flex h-48">
+        {/* Menu Section */}
+        <div 
+          className="w-1/3 border-t-2 border-r-2 rounded-lg shadow-md overflow-hidden"
+          style={{
+            backgroundColor: mergedConfig.menuStyle?.backgroundColor,
+            borderColor: mergedConfig.messageBoxStyle?.borderColor,
+          }}
+        >
+          <div className="h-full flex flex-col">
+            {/* Action Categories */}
+            <div className="flex-1 p-2 space-y-1 overflow-y-auto styled-scrollbar">
+              {actionCategories.map(cat => (
+                <ActionCategoryButton
+                  key={cat.view}
+                  label={cat.label}
+                  icon={cat.icon}
+                  view={cat.view}
+                  isActive={activeDynamicView === cat.view}
+                  onClick={() => handleCategoryChange(cat.view)}
+                  disabled={cat.view !== 'log' && !canPlayerAct}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="flex-grow bg-slate-800/70 rounded-lg shadow-md border border-slate-600/50 overflow-hidden" key={activeDynamicView}>
-          {renderDynamicAreaContent()}
+
+        {/* Dynamic Content Area */}
+        <div 
+          className="w-2/3 border-t-2 rounded-lg shadow-md overflow-hidden"
+          style={{
+            backgroundColor: mergedConfig.menuStyle?.backgroundColor,
+            borderColor: mergedConfig.messageBoxStyle?.borderColor,
+          }}
+        >
+          <div className="h-full" key={activeDynamicView}>
+            {renderDynamicAreaContent()}
+          </div>
         </div>
       </div>
 
