@@ -16,9 +16,9 @@ code {
 }
 
 /* Tailwind base and components (optional if you are fully relying on CDN or PostCSS) */
-/* @tailwind base; */
-/* @tailwind components; */
-/* @tailwind utilities; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Custom scrollbar styles (if you want them globally and not just via .styled-scrollbar) */
 /* ::-webkit-scrollbar {
