@@ -117,6 +117,7 @@ export interface Equipment {
   itemType: 'Equipment';
   slot: EquipmentSlot; // Generic slot type for item definition
   statsBoost: Partial<Pick<Player, 'body' | 'mind' | 'reflex' | 'speed' | 'maxHp' | 'maxMp' | 'maxEp'>>;
+  originalStatsBoost?: Partial<Pick<Player, 'body' | 'mind' | 'reflex' | 'speed' | 'maxHp' | 'maxMp' | 'maxEp'>>; // Added to store base stats before enhancement
   resourceCost?: ResourceCost[];
   element?: ItemElement; // Added element property
   enhancementLevel?: number; // Added for item improvement
