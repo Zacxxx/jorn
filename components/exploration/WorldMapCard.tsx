@@ -1,6 +1,6 @@
 import React from 'react';
 import { PointOfInterestProperties } from '../../types'; // Adjusted path
-import { GetSpellIcon } from '../IconComponents'; // Adjusted path
+import { GetSpellIcon } from '../books/IconComponents'; // Adjusted path
 
 interface WorldMapCardProps {
   pointOfInterest: PointOfInterestProperties;

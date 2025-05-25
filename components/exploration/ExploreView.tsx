@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import ActionButton from '../ActionButton';
-import { ArrowUturnLeftIcon } from '../IconComponents';
+import ActionButton from '../battle-ui/layout/ActionButton';
+import { ArrowUturnLeftIcon } from '../books/IconComponents';
 import WorldMap from './WorldMap';
 import ExplorationPlay from './ExplorationPlay';
 import { PointOfInterest, GameState, EncyclopediaSubTabId, CharacterSheetTab } from '../../types';

@@ -1,6 +1,6 @@
 import React from 'react';
-import Modal from '../../Modal';
-import ActionButton from '../../ActionButton';
+import Modal from '../../ui/Modal';
+import ActionButton from '../layout/ActionButton';
 import { JornBattleConfig } from '../../../types';
 
 interface LayoutManagerModalProps {

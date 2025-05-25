@@ -1,6 +1,6 @@
 import React from 'react';
-import ActionButton from '../ActionButton';
-import { SunIcon, MoonIcon, ArrowUturnLeftIcon, UserGroupIcon, BookOpenIcon, ArchiveBoxIcon } from '../IconComponents'; // Assuming you have these or similar icons
+import ActionButton from '../battle-ui/layout/ActionButton';
+import { SunIcon, MoonIcon, ArrowUturnLeftIcon, UserGroupIcon, BookOpenIcon, ArchiveBoxIcon } from '../books/IconComponents'; // Assuming you have these or similar icons
 
 interface CampViewProps {
   playerName?: string;

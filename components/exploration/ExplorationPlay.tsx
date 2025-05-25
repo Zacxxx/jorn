@@ -1,6 +1,6 @@
 import React from 'react';
-import ActionButton from '../ActionButton'; // Adjusted path
-import { PlayIcon } from '../IconComponents'; // Adjusted path
+import ActionButton from '../battle-ui/layout/ActionButton'; // Adjusted path
+import { PlayIcon } from '../books/IconComponents'; // Adjusted path
 
 interface ExplorationPlayProps {
   onPlay: () => void;
