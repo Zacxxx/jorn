@@ -35,6 +35,7 @@ interface CharacterSheetModalProps {
   onOpenSpellCraftingScreen?: () => void; 
   onOpenTraitCraftingScreen?: () => void; 
   canCraftNewTrait?: boolean; 
+  onOpenEnhancementModal?: (item: Equipment) => void;
 }
 
 // --- Helper Components for "Main" Tab & Character Sheet ---
@@ -472,7 +473,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   maxRegisteredSpells, maxPreparedSpells, maxPreparedAbilities, onEditSpell,
   onPrepareSpell, onUnprepareSpell, onPrepareAbility, onUnprepareAbility, 
   isLoading, initialTab, onOpenSpellCraftingScreen,
-  onOpenTraitCraftingScreen, canCraftNewTrait 
+  onOpenTraitCraftingScreen, canCraftNewTrait, onOpenEnhancementModal
 }) => {
   const [activeTab, setActiveTab] = useState<CharacterSheetTab>(initialTab || 'Main');
   const [itemSelectionModalState, setItemSelectionModalState] = useState<{isOpen: boolean, slot: DetailedEquipmentSlot | null}>({isOpen: false, slot: null});
@@ -680,7 +681,58 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                             <p className="text-xs text-slate-500 mt-1 italic">A crafting resource.</p>
                         </div>
                     ) : ( // Is GameItem
-                        <ItemCard item={selectedInventoryItemDetail as GameItem} isCompact={false}/>
+                        <div className="space-y-3">
+                            <ItemCard item={selectedInventoryItemDetail as GameItem} isCompact={false}/>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                                {/* Equip Button */}
+                                {(selectedInventoryItemDetail as GameItem).itemType === 'Equipment' && 
+                                 player.equippedItems[(selectedInventoryItemDetail as Equipment).slot] !== (selectedInventoryItemDetail as Equipment).id && (
+                                  <ActionButton 
+                                    onClick={() => { 
+                                        onEquipItem((selectedInventoryItemDetail as Equipment).id, (selectedInventoryItemDetail as Equipment).slot as DetailedEquipmentSlot); 
+                                        setSelectedInventoryItemDetail(null); 
+                                    }} 
+                                    variant="success" 
+                                    size="sm"
+                                   >
+                                    Equip
+                                  </ActionButton>
+                                )}
+                                {/* Unequip Button */}
+                                {(selectedInventoryItemDetail as GameItem).itemType === 'Equipment' && 
+                                  player.equippedItems[(selectedInventoryItemDetail as Equipment).slot] === (selectedInventoryItemDetail as Equipment).id && (
+                                  <ActionButton onClick={() => { onUnequipItem((selectedInventoryItemDetail as Equipment).slot as DetailedEquipmentSlot); setSelectedInventoryItemDetail(null);}} variant="warning" size="sm">
+                                    Unequip
+                                  </ActionButton>
+                                )}
+                                
+                                {/* Enhance Button - ADDED */}
+                                {(selectedInventoryItemDetail as GameItem).itemType === 'Equipment' && onOpenEnhancementModal && (
+                                  <ActionButton 
+                                    onClick={() => {
+                                      if (typeof onOpenEnhancementModal === 'function') {
+                                        onOpenEnhancementModal(selectedInventoryItemDetail as Equipment);
+                                      }
+                                      setSelectedInventoryItemDetail(null); // Close this modal
+                                    }}
+                                    variant="secondary" 
+                                    size="sm"
+                                    className="bg-purple-600 hover:bg-purple-700 text-white focus:ring-purple-500 col-span-1"
+                                  >
+                                    <StarIcon className="w-4 h-4 mr-1.5" /> Enhance
+                                  </ActionButton>
+                                )}
+                                
+                                {/* Drop Button */}
+                                <ActionButton onClick={() => {
+                                    console.log("Drop item attempt:", selectedInventoryItemDetail.id);
+                                    // onDropItem(selectedInventoryItemDetail.id); // Future: implement drop
+                                    setSelectedInventoryItemDetail(null);
+                                }} variant="danger_outline" size="sm" className="col-span-1">
+                                  Drop
+                                </ActionButton>
+                            </div>
+                        </div>
                     )}
                  </Modal>
             )}

@@ -23,6 +23,7 @@ import SpellEditingView from './components/SpellEditingView';
 import CombatView from './components/CombatView';
 import ConfirmationView from './components/ConfirmationView';
 import GameOverView from './components/GameOverView';
+import ItemEnhancementModal from './components/ItemEnhancementModal';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV13'; // Incremented version for bestiary
@@ -118,11 +119,16 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [pendingSpellEditData, setPendingSpellEditData] = useState<GeneratedSpellData | null>(null);
   const [originalSpellForEdit, setOriginalSpellForEdit] = useState<Spell | null>(null);
 
-  const [pendingItemCraftData, setPendingItemCraftData] = useState<GeneratedConsumableData | GeneratedEquipmentData | null>(null); 
+  // Updated type for pendingItemCraftData to include quantity
+  const [pendingItemCraftData, setPendingItemCraftData] = useState<{ data: GeneratedConsumableData | GeneratedEquipmentData; quantity: number; } | null>(null);
   const [playerActionSkippedByStun, setPlayerActionSkippedByStun] = useState(false);
 
   const [isHelpWikiOpen, setIsHelpWikiOpen] = useState(false);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
+
+  // State for opening ItemEnhancementModal directly from inventory
+  const [directEnhanceItem, setDirectEnhanceItem] = useState<Equipment | null>(null);
+  const [isDirectEnhanceModalOpen, setIsDirectEnhanceModalOpen] = useState(false);
 
   const handleRest = () => setGameState('CAMP_VIEW');
   const handleExplore = () => console.log("Explore action triggered"); // Placeholder
@@ -314,6 +320,12 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const handleOpenCharacterSheet = (tab: CharacterSheetTab = 'Main') => { setDefaultCharacterSheetTab(tab); setGameState('CHARACTER_SHEET'); };
   const handleOpenEncyclopedia = () => { setDefaultCharacterSheetTab('Encyclopedia'); setGameState('CHARACTER_SHEET'); };
 
+  // Handler to open enhancement modal from inventory
+  const handleOpenEnhancementModalFromInventory = (item: Equipment) => {
+    setDirectEnhanceItem(item);
+    setIsDirectEnhanceModalOpen(true);
+  };
+
   const handleOpenHelpWiki = () => setIsHelpWikiOpen(true);
   const handleCloseHelpWiki = () => setIsHelpWikiOpen(false);
   const handleOpenGameMenu = () => setIsGameMenuOpen(true);
@@ -376,7 +388,8 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       let itemData: GeneratedConsumableData | GeneratedEquipmentData; 
       if (itemType === 'Consumable') itemData = await generateConsumable(promptText, player.level); 
       else itemData = await generateEquipment(promptText, player.level); 
-      setPendingItemCraftData(itemData); 
+      // Store data along with quantity
+      setPendingItemCraftData({ data: itemData, quantity }); 
       setGameState('ITEM_CRAFT_CONFIRMATION'); 
     } 
     catch (error) { console.error(`${itemType} idea error:`, error); setModalContent({ title: "Generation Failed", message: error instanceof Error ? error.message : `Could not generate ${itemType} idea.`, type: 'error' }); } 
@@ -384,49 +397,68 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   };
 
   const handleConfirmItemCraft = () => {
-    if (!pendingItemCraftData) return;
-    const itemTypeCrafted: ItemType = (pendingItemCraftData as GeneratedEquipmentData).slot ? 'Equipment' : 'Consumable'; 
-    
-    if (!checkResources(pendingItemCraftData.resourceCost)) { 
-      setModalContent({ title: "Craft Failed", message: "Insufficient resources.", type: 'error' }); 
+    if (!pendingItemCraftData || !pendingItemCraftData.data) return;
+
+    const { data: itemBlueprint, quantity } = pendingItemCraftData;
+    const itemTypeCrafted: ItemType = (itemBlueprint as GeneratedEquipmentData).slot ? 'Equipment' : 'Consumable';
+
+    // Calculate total resource cost for the given quantity
+    const totalResourceCost: ResourceCost[] = [];
+    if (itemBlueprint.resourceCost) {
+      itemBlueprint.resourceCost.forEach(cost => {
+        totalResourceCost.push({ type: cost.type, quantity: cost.quantity * quantity });
+      });
+    }
+
+    if (!checkResources(totalResourceCost)) { 
+      setModalContent({ title: "Craft Failed", message: "Insufficient resources for the requested quantity.", type: 'error' }); 
       return; 
     }
-    deductResources(pendingItemCraftData.resourceCost);
+    deductResources(totalResourceCost);
 
-    let newItem: GameItem;
-    if (itemTypeCrafted === 'Equipment') {
-      const equipmentData = pendingItemCraftData as GeneratedEquipmentData;
-      newItem = {
-        id: generateItemId('equip'),
-        name: equipmentData.name,
-        description: equipmentData.description,
-        iconName: equipmentData.iconName,
-        itemType: 'Equipment',
-        slot: equipmentData.slot,
-        statsBoost: equipmentData.statsBoost,
-        originalStatsBoost: { ...equipmentData.statsBoost }, // Initialize originalStatsBoost
-        resourceCost: equipmentData.resourceCost,
-        enhancementLevel: 0 // Initialize enhancementLevel
-      } as Equipment;
-    } else {
-      const consumableData = pendingItemCraftData as GeneratedConsumableData;
-      newItem = {
-        id: generateItemId('consum'),
-        name: consumableData.name,
-        description: consumableData.description,
-        iconName: consumableData.iconName,
-        itemType: 'Consumable',
-        effectType: consumableData.effectType,
-        magnitude: consumableData.magnitude,
-        duration: consumableData.duration,
-        statusToCure: consumableData.statusToCure,
-        buffToApply: consumableData.buffToApply,
-        resourceCost: consumableData.resourceCost
-      } as Consumable;
+    const newItemsArray: GameItem[] = [];
+    for (let i = 0; i < quantity; i++) {
+      let newItemEntry: GameItem;
+      if (itemTypeCrafted === 'Equipment') {
+        const equipmentData = itemBlueprint as GeneratedEquipmentData;
+        newItemEntry = {
+          id: generateItemId('equip'), // Unique ID for each item
+          name: equipmentData.name,
+          description: equipmentData.description,
+          iconName: equipmentData.iconName,
+          itemType: 'Equipment',
+          slot: equipmentData.slot,
+          statsBoost: equipmentData.statsBoost,
+          originalStatsBoost: { ...equipmentData.statsBoost },
+          resourceCost: equipmentData.resourceCost, // This is cost per item, for reference
+          enhancementLevel: 0
+        } as Equipment;
+      } else {
+        const consumableData = itemBlueprint as GeneratedConsumableData;
+        newItemEntry = {
+          id: generateItemId('consum'), // Unique ID for each item
+          name: consumableData.name,
+          description: consumableData.description,
+          iconName: consumableData.iconName,
+          itemType: 'Consumable',
+          effectType: consumableData.effectType,
+          magnitude: consumableData.magnitude,
+          duration: consumableData.duration,
+          statusToCure: consumableData.statusToCure,
+          buffToApply: consumableData.buffToApply,
+          resourceCost: consumableData.resourceCost // Cost per item
+        } as Consumable;
+      }
+      newItemsArray.push(newItemEntry);
     }
 
-    setPlayer(prev => ({ ...prev, items: [...prev.items, newItem] }));
-    setModalContent({ title: `${itemTypeCrafted} Crafted!`, message: `${newItem.name} added to inventory.`, type: 'success' });
+    setPlayer(prev => ({ ...prev, items: [...prev.items, ...newItemsArray] }));
+    const firstItemName = newItemsArray[0]?.name || 'item';
+    setModalContent({ 
+      title: `${itemTypeCrafted}${quantity > 1 ? 's' : ''} Crafted!`, 
+      message: `${quantity}x ${firstItemName} added to inventory.`, 
+      type: 'success' 
+    });
     setPendingItemCraftData(null); setGameState('CRAFTING_HUB');
   };
 
@@ -1121,11 +1153,22 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
             pendingSpellCraftData={null}
             pendingSpellEditData={null}
             originalSpellForEdit={null}
+            // Pass the whole pendingItemCraftData object which includes quantity
             pendingItemCraftData={pendingItemCraftData}
             onConfirm={handleConfirmItemCraft}
             onCancel={() => { setPendingItemCraftData(null); setGameState('CRAFTING_HUB'); }}
-            checkResources={checkResources}
-            renderResourceList={(costs) => costs ? costs.map(c => <span key={c.type} className="text-xs text-amber-200 mr-2 p-1 bg-slate-600/70 rounded"><GetSpellIcon iconName={RESOURCE_ICONS[c.type] || 'Default'} className="inline w-3 h-3 mr-1"/>{c.quantity} {c.type}</span>) : 'None'}
+            checkResources={checkResources} // This checkResources in App.tsx needs to be aware of total cost
+            renderResourceList={(costs, itemQuantity) => 
+              costs ? costs.map(c => 
+                <span key={c.type} className="text-xs text-amber-200 mr-2 p-1 bg-slate-600/70 rounded">
+                  <GetSpellIcon iconName={RESOURCE_ICONS[c.type] || 'Default'} className="inline w-3 h-3 mr-1"/>
+                  {/* If renderResourceList in ConfirmationView now handles total quantity, this is fine.
+                      Otherwise, App.tsx's renderResourceList may need to adjust what `c.quantity` it shows or take `itemQuantity` 
+                      from ConfirmationView. For now, assuming ConfirmationView's displayResourceCost is passed here. */}
+                  {c.quantity} {c.type}
+                </span>
+              ) : 'None'
+            }
             isLoading={isLoading}
           />
         )}
@@ -1212,6 +1255,7 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
         onOpenSpellCraftingScreen={() => setGameState('SPELL_CRAFTING')}
         onOpenTraitCraftingScreen={() => setGameState('TRAIT_CRAFTING')}
         canCraftNewTrait={player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) + 1)}
+        onOpenEnhancementModal={handleOpenEnhancementModalFromInventory} // Pass the handler
       />
       <CraftingHubModal 
         isOpen={gameState === 'CRAFTING_HUB'}
@@ -1223,6 +1267,22 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
         onAttemptEnhanceItem={handleAttemptEnhanceItem}
         isEnhancing={isEnhancing}
       />
+      {directEnhanceItem && (
+        <ItemEnhancementModal
+          isOpen={isDirectEnhanceModalOpen}
+          onClose={() => { setIsDirectEnhanceModalOpen(false); setDirectEnhanceItem(null); }}
+          itemToEnhance={directEnhanceItem}
+          playerInventory={player.inventory}
+          onAttemptEnhance={(item) => {
+            handleAttemptEnhanceItem(item); // Reuse the existing enhancement logic
+            // Decide if the modal should close or update for next level
+            // For now, let App.tsx's handleAttemptEnhanceItem show a global message
+            // And this modal will simply close if the enhancement attempt happens
+            // setIsDirectEnhanceModalOpen(false); // Or manage this based on result/isEnhancing
+          }}
+          isLoading={isEnhancing} // Use the global isEnhancing state
+        />
+      )}
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
       <GameMenuModal 
         isOpen={isGameMenuOpen} 

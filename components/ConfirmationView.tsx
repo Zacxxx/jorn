@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import Modal from './Modal';
 import ActionButton from './ActionButton';
@@ -12,11 +10,11 @@ interface ConfirmationViewProps {
   pendingSpellCraftData: GeneratedSpellData | null;
   pendingSpellEditData: GeneratedSpellData | null;
   originalSpellForEdit: Spell | null;
-  pendingItemCraftData: GeneratedConsumableData | GeneratedEquipmentData | null; // UPDATED
+  pendingItemCraftData: { data: GeneratedConsumableData | GeneratedEquipmentData; quantity: number; } | null; 
   onConfirm: () => void;
   onCancel: () => void;
   checkResources: (costs?: ResourceCost[]) => boolean;
-  renderResourceList: (costs?: ResourceCost[]) => React.ReactNode;
+  renderResourceList: (costs?: ResourceCost[], itemQuantity?: number) => React.ReactNode;
   isLoading: boolean;
 }
 
@@ -48,7 +46,12 @@ const ConfirmationView: React.FC<ConfirmationViewProps> = ({
   const isSpellEdit = gameState === 'SPELL_EDIT_CONFIRMATION';
   const isItemCraft = gameState === 'ITEM_CRAFT_CONFIRMATION';
 
-  const dataToConfirm = isSpellCraft ? pendingSpellCraftData : isSpellEdit ? pendingSpellEditData : pendingItemCraftData;
+  const dataToConfirm = isSpellCraft ? pendingSpellCraftData 
+                      : isSpellEdit ? pendingSpellEditData 
+                      : isItemCraft && pendingItemCraftData ? pendingItemCraftData.data 
+                      : null;
+  
+  const itemCraftQuantity = isItemCraft && pendingItemCraftData ? pendingItemCraftData.quantity : 1;
 
   if (!dataToConfirm) {
     console.error("ConfirmationView rendered without data to confirm.");
@@ -56,14 +59,22 @@ const ConfirmationView: React.FC<ConfirmationViewProps> = ({
   }
 
   const itemTypeForConfirm: ItemType | undefined = isItemCraft 
-    ? ((pendingItemCraftData as GeneratedEquipmentData).slot ? 'Equipment' : 'Consumable') // UPDATED 'Potion' to 'Consumable'
+    ? ((dataToConfirm as GeneratedEquipmentData).slot ? 'Equipment' : 'Consumable')
     : undefined;
 
   const title = isSpellCraft ? "Confirm Spell Craft" 
               : isSpellEdit ? "Confirm Spell Refinement" 
-              : `Confirm ${itemTypeForConfirm} Craft`;
+              : `Confirm ${itemTypeForConfirm} Craft (x${itemCraftQuantity})`;
 
-  const canAfford = checkResources(dataToConfirm.resourceCost);
+  let displayResourceCost = dataToConfirm.resourceCost;
+  if (isItemCraft && itemCraftQuantity > 1 && dataToConfirm.resourceCost) {
+    displayResourceCost = dataToConfirm.resourceCost.map(cost => ({ 
+        ...cost, 
+        quantity: cost.quantity * itemCraftQuantity 
+    }));
+  }
+
+  const canAfford = checkResources(displayResourceCost);
   const itemData = dataToConfirm; 
 
   return (
@@ -75,7 +86,9 @@ const ConfirmationView: React.FC<ConfirmationViewProps> = ({
             <p className="text-xs text-slate-400">Original Mana: {originalSpellForEdit.manaCost}, Damage: {originalSpellForEdit.damage}</p>
           </div>
         )}
-        <p className="text-base text-slate-200">The AI has proposed the following:</p>
+        <p className="text-base text-slate-200">
+          {isItemCraft ? `The AI has proposed the following (Quantity: ${itemCraftQuantity}):` : 'The AI has proposed the following:'}
+        </p>
         
         <div className="p-4 bg-slate-700/80 rounded-lg text-slate-200 space-y-0.5 border-2 border-slate-600/70 shadow-inner">
           <DetailRow label="Name" value={itemData.name} icon={itemData.iconName || 'Default'} iconClass="text-sky-300"/>
@@ -93,7 +106,7 @@ const ConfirmationView: React.FC<ConfirmationViewProps> = ({
             </>
           )}
 
-          {isItemCraft && itemTypeForConfirm === 'Consumable' && (itemData as GeneratedConsumableData).effectType && ( // UPDATED
+          {isItemCraft && itemTypeForConfirm === 'Consumable' && (itemData as GeneratedConsumableData).effectType && (
             <>
               <hr className="border-slate-600/50 my-1.5" />
               <DetailRow label="Effect Type" value={(itemData as GeneratedConsumableData).effectType.replace('_', ' ')} icon="PotionGeneric" iconClass="text-lime-400"/>
@@ -122,18 +135,18 @@ const ConfirmationView: React.FC<ConfirmationViewProps> = ({
         </div>
         
         <div>
-          <h3 className="text-md font-semibold text-amber-300 mb-2 mt-3">Required Resources:</h3>
+          <h3 className="text-md font-semibold text-amber-300 mb-2 mt-3">Total Required Resources:</h3>
           <div className="bg-slate-700/80 p-3 rounded-lg border-2 border-slate-600/70 shadow-inner">
-            {renderResourceList(itemData.resourceCost)}
+            {renderResourceList(displayResourceCost, isItemCraft ? itemCraftQuantity : undefined)}
           </div>
         </div>
 
-        {!canAfford && <p className="text-red-400 font-bold mt-3 text-center py-2 bg-red-900/30 rounded-md border border-red-700/50">You do not have enough resources!</p>}
+        {!canAfford && <p className="text-red-400 font-bold mt-3 text-center py-2 bg-red-900/30 rounded-md border border-red-700/50">You do not have enough resources for this quantity!</p>}
         
         <div className="flex justify-end space-x-4 pt-4">
           <ActionButton onClick={onCancel} variant="secondary" size="md">Cancel</ActionButton>
           <ActionButton onClick={onConfirm} variant="primary" size="md" disabled={!canAfford || isLoading} isLoading={isLoading}>
-            {isLoading ? "Processing..." : (isSpellCraft ? "Craft Spell" : isSpellEdit ? "Confirm Refinement" : `Craft ${itemTypeForConfirm}`)}
+            {isLoading ? "Processing..." : (isSpellCraft ? "Craft Spell" : isSpellEdit ? "Confirm Refinement" : `Craft ${itemTypeForConfirm} (x${itemCraftQuantity})`)}
           </ActionButton>
         </div>
       </div>
