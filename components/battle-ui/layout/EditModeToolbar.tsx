@@ -1,5 +1,5 @@
 import React from 'react';
-import ActionButton from '../../ActionButton';
+import ActionButton from './ActionButton';
 import { JornBattleConfig } from '../../../types';
 import { useDragAndDrop } from '../../hooks/useDragAndDrop';
 

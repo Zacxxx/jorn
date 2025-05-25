@@ -1,9 +1,9 @@
 import React from 'react';
 import { DynamicAreaView, CombatActionItemType, Player, Spell, Ability, Consumable, CombatActionLog } from '../../../types';
-import { CombatActionGrid } from '../actions/CombatActionGrid';
-import CombatLogDisplay from '../../CombatLogDisplay';
-import ActionButton from '../../ActionButton';
-import { SwordsIcon, ShieldIcon, FleeIcon } from '../../IconComponents';
+import { CombatActionGrid } from '../layout/CombatActionGrid';
+import CombatLogDisplay from '../combat/CombatLogDisplay';
+import ActionButton from '../layout/ActionButton';
+import { SwordsIcon, ShieldIcon, FleeIcon } from '../../books/IconComponents';
 
 interface DynamicContentProps {
   activeDynamicView: DynamicAreaView;

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { PointOfInterest, GameState, EncyclopediaSubTabId } from '../../types'; // Adjusted path
-import ActionButton from '../ActionButton'; // Adjusted path
+import ActionButton from '../battle-ui/layout/ActionButton'; // Adjusted path
 import WorldMapCard from './WorldMapCard';
-import { BookOpenIcon, SearchIcon, SkullIcon } from '../IconComponents'; // Adjusted path
+import { BookOpenIcon, SearchIcon, SkullIcon } from '../books/IconComponents'; // Adjusted path
 
 interface WorldMapProps {
   pointsOfInterest: PointOfInterest[]; // Later, this could be full WorldMapData

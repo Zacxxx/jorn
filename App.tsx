@@ -4,27 +4,27 @@ import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SP
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment } from './services/geminiService';
 import { attemptEnhancement, deductResources as deductEnhancementResources, generateItemId } from './components/items/item_utils';
 
-import ActionButton from './components/ActionButton'; 
-import Modal from './components/Modal';
-import LoadingSpinner from './components/LoadingSpinner';
-import { GetSpellIcon, BagIcon, CollectionIcon } from './components/IconComponents'; 
-import Header from './components/Header';
-import Footer from './components/Footer';
-import { CharacterSheetModal } from './components/CharacterSheetModal';
-import CraftingHubModal from './components/CraftingHubModal';
-import HelpWikiModal from './components/HelpWikiModal'; 
-import GameMenuModal from './components/GameMenuModal'; 
+import ActionButton from "./components/battle-ui/layout/ActionButton"; 
+import Modal from './components/ui/Modal';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+import { GetSpellIcon, BagIcon, CollectionIcon } from './components/books/IconComponents'; 
+import Header from './components/ui/Header';
+import Footer from './components/ui/Footer';
+import { CharacterSheetModal } from './components/characterwindow/character/CharacterSheetModal';
+import CraftingHubModal from './components/crafting/itemcrafting/CraftingHubModal';
+import HelpWikiModal from './components/menu/HelpWikiModal'; 
+import GameMenuModal from './components/menu/GameMenuModal'; 
 import CampView from './components/resting/CampView';
 import ExploreView from './components/exploration/ExploreView';
 
-import HomeScreenView from './components/HomeScreenView';
-import SpellCraftingView from './components/SpellCraftingView';
-import TraitCraftingView from './components/TraitCraftingView';
-import SpellEditingView from './components/SpellEditingView';
-import CombatView from './components/CombatView';
-import ConfirmationView from './components/ConfirmationView';
-import GameOverView from './components/GameOverView';
-import ItemEnhancementModal from './components/ItemEnhancementModal';
+import HomeScreenView from './components/menu/HomeScreenView';
+import SpellCraftingView from './components/crafting/spellcrafting/SpellCraftingView';
+import TraitCraftingView from './components/crafting/traitcrafting/TraitCraftingView';
+import SpellEditingView from './components/crafting/spellcrafting/SpellEditingView';
+import CombatView from './components/battle-ui/combat/CombatView';
+import ConfirmationView from './components/crafting/ConfirmationView';
+import GameOverView from './components/battle-logic/GameOverView';
+import ItemEnhancementModal from './components/crafting/itemcrafting/ItemEnhancementModal';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV13'; // Incremented version for bestiary

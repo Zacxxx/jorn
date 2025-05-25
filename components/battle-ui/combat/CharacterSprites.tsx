@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import { Player, Enemy, PlayerEffectiveStats } from '../../../types';
 import { JornBattleConfig } from '../../../types/layout'; // Import specific type
-import PlayerBattleDisplay from '../../PlayerBattleDisplay';
-import EnemyBattleDisplay from '../../EnemyBattleDisplay';
+import PlayerBattleDisplay from '../layout/PlayerBattleDisplay';
+import EnemyBattleDisplay from '../layout/EnemyBattleDisplay';
 import { useDragAndDrop } from '../../hooks'; // Import from index
 
 interface CharacterSpritesProps {
