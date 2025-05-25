@@ -1,6 +1,8 @@
 import React from 'react';
 import { CombatActionItemType, Player, Spell, Ability } from '../../../types';
 import { GetSpellIcon } from '../../IconComponents';
+import SpellCard from '../../SpellCard';
+import { getTagsFromSpell } from '../../../spellTagUtils';
 
 interface CombatActionGridSlotProps {
     actionItem: CombatActionItemType;
@@ -12,18 +14,39 @@ interface CombatActionGridSlotProps {
 }
 
 export const CombatActionGridSlot: React.FC<CombatActionGridSlotProps> = ({ actionItem, player, onClick, onMouseEnter, onMouseLeave, isDisabledByGameLogic }) => {
+    // If this is a Spell, use SpellCard for rendering
+    if ('manaCost' in actionItem) {
+        const spell = actionItem as Spell;
+        const isAffordable = player.mp >= spell.manaCost;
+        const finalDisabled = isDisabledByGameLogic || !isAffordable;
+        return (
+            <div
+                className={`w-full h-24 relative ${finalDisabled ? 'opacity-60 pointer-events-none' : ''}`}
+                onClick={() => !finalDisabled && onClick(spell)}
+                onMouseEnter={e => onMouseEnter(e, spell)}
+                onMouseLeave={onMouseLeave}
+                tabIndex={0}
+                role="button"
+                aria-disabled={finalDisabled}
+                style={{ cursor: finalDisabled ? 'not-allowed' : 'pointer' }}
+            >
+                <SpellCard
+                    spell={{ ...spell, tags: getTagsFromSpell(spell) }}
+                    className="h-full cursor-pointer"
+                />
+                {!isAffordable && !isDisabledByGameLogic && (
+                    <span className="absolute top-1 right-1 text-[0.6rem] text-red-300 bg-red-900/70 px-1 rounded-sm z-10">Low Res</span>
+                )}
+            </div>
+        );
+    }
+    // Ability or Consumable: keep existing rendering
     const { name, iconName } = actionItem;
     let costText = "";
     let costColor = "text-slate-400";
     let iconColor = "text-sky-300";
     let isAffordable = true;
-
-    if ('manaCost' in actionItem) { // Spell
-        costText = `MP: ${actionItem.manaCost}`;
-        isAffordable = player.mp >= actionItem.manaCost;
-        costColor = isAffordable ? "text-blue-300" : "text-red-400";
-        iconColor = "text-sky-300";
-    } else if ('epCost' in actionItem) { // Ability
+    if ('epCost' in actionItem) { // Ability
         costText = `EP: ${actionItem.epCost}`;
         isAffordable = player.ep >= actionItem.epCost;
         costColor = isAffordable ? "text-yellow-300" : "text-red-400";
@@ -31,9 +54,7 @@ export const CombatActionGridSlot: React.FC<CombatActionGridSlotProps> = ({ acti
     } else { // Consumable
         iconColor = "text-lime-300";
     }
-    
     const finalDisabled = isDisabledByGameLogic || !isAffordable;
-
     return (
         <button
             onClick={() => onClick(actionItem)}
@@ -51,4 +72,4 @@ export const CombatActionGridSlot: React.FC<CombatActionGridSlotProps> = ({ acti
              {!isAffordable && !isDisabledByGameLogic && <span className="absolute top-1 right-1 text-[0.6rem] text-red-300 bg-red-900/70 px-1 rounded-sm">Low Res</span>}
         </button>
     );
-}; 
+};

@@ -128,6 +128,21 @@ export interface Equipment {
 export type GameItem = Consumable | Equipment; // UPDATED
 
 
+export interface Enemy {
+  id: string;
+  name: string;
+  description?: string;
+  hp: number;
+  maxHp: number;
+  level: number;
+  iconName: SpellIconName;
+  activeStatusEffects: ActiveStatusEffect[];
+  weakness?: Spell['damageType'];
+  resistance?: Spell['damageType'];
+  specialAbilityName?: string;
+  specialAbilityDescription?: string;
+}
+
 export type SpellIconName = 
   | 'Fireball' 
   | 'IceShard' 
@@ -212,35 +227,28 @@ export interface ActiveStatusEffect {
 export interface SpellStatusEffect {
   name: StatusEffectName;
   duration: number;
-  magnitude?: number;
   chance: number;
   description?: string;
 }
+
+export type SpellTargetType = 'single' | 'aoe';
 
 export interface Spell {
   id: string;
   name: string;
   description: string;
   manaCost: number;
-  damage: number; 
+  damage: number;
   damageType: 'Fire' | 'Ice' | 'Lightning' | 'Physical' | 'Healing' | 'Dark' | 'Light' | 'Arcane' | 'Poison' | 'None';
-  scalesWith?: 'Body' | 'Mind'; 
-  effect?: string;
-  iconName: SpellIconName;
-  statusEffectInflict?: SpellStatusEffect;
+  tags?: string[];
   resourceCost?: ResourceCost[];
-}
-
-export interface Enemy {
-  id:string;
-  name: string;
-  description: string;
-  hp: number;
-  maxHp: number;
-  body: number;    
-  mind: number;    
-  reflex: number;  
-  speed: number;   
+  effect?: string;
+  statusEffectInflict?: SpellStatusEffect;
+  // Existing fields below
+  body: number;
+  mind: number;
+  reflex: number;
+  speed: number;
   level: number;
   specialAbilityName?: string;
   specialAbilityDescription?: string;
@@ -249,10 +257,12 @@ export interface Enemy {
   imagePrompt?: string;
   iconName: SpellIconName;
   activeStatusEffects: ActiveStatusEffect[];
-  baseBody?: number; 
+  baseBody?: number;
   baseMind?: number;
   baseReflex?: number;
-  isTargeted?: boolean; // Optional for UI indication, managed by App.tsx through props
+  isTargeted?: boolean;
+  aoe?: boolean;
+  targetType?: SpellTargetType;
 }
 
 export interface CombatActionLog {

@@ -20,7 +20,15 @@ const CompactHpBar: React.FC<{ value: number; maxValue: number; colorClass: stri
   </div>
 );
 
-const EnemyBattleDisplay: React.FC<EnemyBattleDisplayProps> = ({ enemy, isTargeted, onClick, onInfoClick }) => {
+interface EnemyBattleDisplayProps {
+  enemy: Enemy;
+  isTargeted: boolean;
+  isAOEActive?: boolean;
+  onClick: () => void;
+  onInfoClick: () => void;
+}
+
+const EnemyBattleDisplay: React.FC<EnemyBattleDisplayProps> = ({ enemy, isTargeted, isAOEActive = false, onClick, onInfoClick }) => {
   const enemyIconName = enemy.iconName || 'SkullIcon';
 
   return (
@@ -28,8 +36,8 @@ const EnemyBattleDisplay: React.FC<EnemyBattleDisplayProps> = ({ enemy, isTarget
       {/* Enemy Sprite Placeholder */}
       <button 
         onClick={onClick} /* For targeting */
-        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-red-500/30 rounded-full mb-1.5 shadow-lg border-2  flex items-center justify-center
-                    ${isTargeted ? 'border-yellow-400 ring-2 ring-yellow-300' : 'border-red-400/60 hover:border-yellow-500'} transition-all duration-150`}
+        className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-red-500/30 rounded-full mb-1.5 shadow-lg border-2 flex items-center justify-center
+          ${isTargeted ? 'border-yellow-400 ring-2 ring-yellow-300' : isAOEActive ? 'border-purple-400 ring-2 ring-purple-300 animate-pulse' : 'border-red-400/60 hover:border-yellow-500'} transition-all duration-150`}
         title={`Target ${enemy.name}`}
         aria-pressed={isTargeted}
       >

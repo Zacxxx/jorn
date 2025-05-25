@@ -1,6 +1,7 @@
 
 import React from 'react';
 import SpellEditingForm from './SpellEditingForm';
+import SpellCard from './SpellCard';
 import { Spell } from '../types';
 
 interface SpellEditingViewProps {
@@ -18,6 +19,19 @@ const SpellEditingView: React.FC<SpellEditingViewProps> = ({
 }) => {
   return (
     <div className="space-y-6">
+      {/* Static preview for the spell being edited */}
+      <div className="mb-2">
+        <SpellCard spell={{
+  ...originalSpell,
+  body: originalSpell.body ?? 0,
+  mind: originalSpell.mind ?? 0,
+  reflex: originalSpell.reflex ?? 0,
+  speed: originalSpell.speed ?? 0,
+  level: originalSpell.level ?? 1,
+  activeStatusEffects: originalSpell.activeStatusEffects ?? [],
+  iconName: originalSpell.iconName ?? 'Default',
+}} />
+      </div>
       <SpellEditingForm
         originalSpell={originalSpell}
         onInitiateSpellEdit={onInitiateSpellRefinement} 

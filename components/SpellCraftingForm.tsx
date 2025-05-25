@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import ActionButton from './ActionButton';
 import { WandIcon } from './IconComponents';
+import TagSelector, { TagOption } from './TagSelector';
 
 interface SpellCraftingFormProps {
   onInitiateSpellCraft: (prompt: string) => Promise<void>; // Renamed to reflect new flow
@@ -10,9 +11,16 @@ interface SpellCraftingFormProps {
   maxSpells: number;
 }
 
+const TAG_OPTIONS: TagOption[] = [
+  { label: 'AOE', value: 'AOE' },
+  { label: 'Single Target', value: 'Single Target' },
+  // Add more default tags as needed
+];
+
 const SpellCraftingForm: React.FC<SpellCraftingFormProps> = ({ onInitiateSpellCraft, isLoading, currentSpells, maxSpells }) => {
   const [prompt, setPrompt] = useState('');
   const [error, setError] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const canCraftMoreSpells = currentSpells < maxSpells;
 
@@ -28,8 +36,11 @@ const SpellCraftingForm: React.FC<SpellCraftingFormProps> = ({ onInitiateSpellCr
     }
     setError('');
     try {
-      await onInitiateSpellCraft(prompt); // This will now just trigger AI generation
-      // setPrompt(''); // Clearing prompt might be better done after final confirmation in App.tsx
+      // For now, concatenate tags to the prompt for downstream handling
+      const tagString = selectedTags.length ? `[${selectedTags.join(', ')}] ` : '';
+      await onInitiateSpellCraft(tagString + prompt);
+      // setPrompt('');
+      // setSelectedTags([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred during spell idea generation.");
     }
@@ -60,6 +71,13 @@ const SpellCraftingForm: React.FC<SpellCraftingFormProps> = ({ onInitiateSpellCr
         </p>
       </div>
       <form onSubmit={handleSubmit}>
+        <TagSelector
+          options={TAG_OPTIONS}
+          selected={selectedTags}
+          onChange={setSelectedTags}
+          allowCustom={true}
+          label="Spell Tags (choose one or more):"
+        />
         <div className="mb-4">
           <label htmlFor="spellPrompt" className="block text-sm font-medium text-slate-300 mb-1">
             Describe your spell concept:

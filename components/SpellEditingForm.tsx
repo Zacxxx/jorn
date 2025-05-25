@@ -4,6 +4,7 @@ import { Spell, ResourceCost } from '../types';
 import ActionButton from './ActionButton';
 import { WandIcon, GetSpellIcon } from './IconComponents';
 import { RESOURCE_ICONS } from '../constants';
+import TagSelector, { TagOption } from './TagSelector';
 
 interface SpellEditingFormProps {
   originalSpell: Spell;
@@ -12,17 +13,33 @@ interface SpellEditingFormProps {
   onCancel: () => void;
 }
 
+const TAG_OPTIONS: TagOption[] = [
+  { label: 'AOE', value: 'AOE' },
+  { label: 'Single Target', value: 'Single Target' },
+  // Add more default tags as needed
+];
+
+const getInitialTags = (spell: Spell): string[] => {
+  const tags: string[] = [];
+  if (spell.aoe || spell.targetType === 'aoe') tags.push('AOE');
+  if (spell.targetType === 'single') tags.push('Single Target');
+  // Optionally extract more tags from spell properties
+  return tags;
+};
+
 const SpellEditingForm: React.FC<SpellEditingFormProps> = ({ originalSpell, onInitiateSpellEdit, isLoading, onCancel }) => {
   const [name, setName] = useState(originalSpell.name);
   const [description, setDescription] = useState(originalSpell.description);
   const [refinementPrompt, setRefinementPrompt] = useState('');
   const [error, setError] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>(getInitialTags(originalSpell));
 
   useEffect(() => {
     setName(originalSpell.name);
     setDescription(originalSpell.description);
     setRefinementPrompt('');
     setError('');
+    setSelectedTags(getInitialTags(originalSpell));
   }, [originalSpell]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +50,9 @@ const SpellEditingForm: React.FC<SpellEditingFormProps> = ({ originalSpell, onIn
     }
     setError('');
     try {
-      await onInitiateSpellEdit(originalSpell, refinementPrompt); // Triggers AI refinement
+      // Prepend tags to the refinement prompt for AI/backend handling
+      const tagString = selectedTags.length ? `[${selectedTags.join(', ')}] ` : '';
+      await onInitiateSpellEdit(originalSpell, tagString + refinementPrompt);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred during spell refinement idea generation.");
     }
@@ -62,6 +81,13 @@ const SpellEditingForm: React.FC<SpellEditingFormProps> = ({ originalSpell, onIn
         </h2>
       </div>
       <form onSubmit={handleSubmit}>
+        <TagSelector
+          options={TAG_OPTIONS}
+          selected={selectedTags}
+          onChange={setSelectedTags}
+          allowCustom={true}
+          label="Spell Tags (edit tags):"
+        />
         <div className="mb-3 p-3 bg-slate-700/50 rounded-md">
             <p className="text-sm font-medium text-slate-300">Original Spell Details:</p>
             <p className="text-xs text-slate-400">Name: {name}</p>
