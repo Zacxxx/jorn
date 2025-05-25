@@ -1,6 +1,7 @@
 
 import React from 'react';
 import SpellCraftingForm from './SpellCraftingForm';
+import SpellCard from './SpellCard';
 import ActionButton from './ActionButton';
 
 interface SpellCraftingViewProps {
@@ -20,6 +21,29 @@ const SpellCraftingView: React.FC<SpellCraftingViewProps> = ({
 }) => {
   return (
     <div className="space-y-6">
+      {/* Static preview for a new spell (placeholder values) */}
+      <div className="mb-2">
+        <SpellCard
+          spell={{
+            id: 'preview',
+            name: 'New Spell Preview',
+            description: 'Your spell preview will appear here once crafted.',
+            iconName: 'Default',
+            damageType: 'Arcane',
+            damage: 0,
+            manaCost: 0,
+            aoe: false,
+            tags: [],
+            resourceCost: [],
+            body: 0,
+            mind: 0,
+            reflex: 0,
+            speed: 0,
+            level: 1,
+            activeStatusEffects: [],
+          }}
+        />
+      </div>
       <SpellCraftingForm 
         onInitiateSpellCraft={onInitiateSpellCraft} 
         isLoading={isLoading} 

@@ -74,6 +74,78 @@ const CombatView: React.FC<CombatViewProps> = ({
   onUseConsumable, onUseAbility, consumables, abilities,
   config = {}
 }) => {
+  // --- NEW LOGIC FOR AOE TARGETING ---
+  // State to store selected enemy ids (for AOE)
+  const [selectedEnemyIds, setSelectedEnemyIds] = useState<string[]>([]);
+  // State to store the currently selected spell (for UI highlight)
+  const [selectedSpell, setSelectedSpell] = useState<Spell | null>(null);
+
+  // Helper to determine if a spell is AOE
+  const isAOESpell = (spell: Spell | null | undefined) => {
+    if (!spell) return false;
+    if (spell.targetType) return spell.targetType === 'aoe';
+    return spell.aoe === true;
+  };
+
+  // When a spell is selected, update selectedEnemyIds if AOE
+  const handleSpellSelect = (spell: Spell) => {
+    setSelectedSpell(spell);
+    if (isAOESpell(spell)) {
+      // Select all alive enemy IDs
+      const allEnemyIds = currentEnemies.filter(e => e.hp > 0).map(e => e.id);
+      setSelectedEnemyIds(allEnemyIds);
+      // Optionally: call onSetTargetEnemy(null) to clear single target
+    } else {
+      setSelectedEnemyIds([]);
+    }
+  };
+
+  // When an enemy is clicked (single target)
+  const handleEnemyClick = (enemyId: string) => {
+    if (selectedSpell && isAOESpell(selectedSpell)) {
+      // Do nothing or show info: selection multiple automatique
+      return;
+    } else {
+      setSelectedEnemyIds([enemyId]);
+      onSetTargetEnemy(enemyId);
+    }
+  };
+
+  // When an action is triggered (attack/cast)
+  const handleAction = (action: Spell | Ability | Consumable, type: string) => {
+    if (!isPlayerTurn || playerActionSkippedByStun) return;
+    if (type === 'spell') {
+      if (selectedSpell && isAOESpell(selectedSpell)) {
+        // AOE: passer tous les IDs d'ennemis sélectionnés
+        if (selectedEnemyIds.length > 0) {
+          onPlayerAttack(action as Spell, selectedEnemyIds);
+        } else {
+          alert("Aucune cible valide pour le sort AOE");
+        }
+      } else {
+        // Single target
+        if (targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId);
+        else alert("Select a target!");
+      }
+    } else if (type === 'ability') {
+      onUseAbility((action as Ability).id, targetEnemyId);
+    } else if (type === 'consumable') {
+      onUseConsumable((action as Consumable).id, null);
+    }
+    // Reset spell selection after action
+    setSelectedSpell(null);
+    setSelectedEnemyIds([]);
+  };
+
+  // Synchronize selectedEnemyIds if enemies die or change
+  useEffect(() => {
+    if (selectedSpell && isAOESpell(selectedSpell)) {
+      const allEnemyIds = currentEnemies.filter(e => e.hp > 0).map(e => e.id);
+      setSelectedEnemyIds(allEnemyIds);
+    }
+  }, [currentEnemies, selectedSpell]);
+  // --- END NEW LOGIC ---
+
   const initialConfig: JornBattleConfig = (() => {
     const d = defaultJornBattleConfig; // Alias for default
     const p = config || {};          // Alias for props config, ensuring it's an object

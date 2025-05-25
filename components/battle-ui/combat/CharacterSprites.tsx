@@ -26,6 +26,7 @@ interface CharacterSpritesProps {
   setIsDragging: (isDragging: boolean) => void;
   setIsResizing: (isResizing: boolean) => void;
   setDragStart: (position: Position | null) => void; // Position is from types/layout
+  selectedEnemyIds?: string[];
 }
 
 export const CharacterSprites: React.FC<CharacterSpritesProps> = ({
@@ -47,6 +48,7 @@ export const CharacterSprites: React.FC<CharacterSpritesProps> = ({
   setIsDragging,
   setIsResizing,
   setDragStart,
+  selectedEnemyIds = []
 }) => {
 
   // --- Character Rendering Functions (Pokemon-battle.tsx inspired) ---
@@ -93,15 +95,20 @@ export const CharacterSprites: React.FC<CharacterSpritesProps> = ({
   }, [player, effectivePlayerStats, config.playerPosition, isEditMode, selectedElement, isDragging, onElementSelect, onMouseDown, onShowPlayerDetails]);
 
   const renderEnemySprites = useCallback(() => {
+    // AOE is active if more than 1 enemy is selected
+    const isAOEActive = selectedEnemyIds && selectedEnemyIds.length > 1;
     return currentEnemies.map((enemy, index) => {
       const position = config.enemyPositions[index] || config.enemyPositions[0];
       const elementKey = `enemySprite-${index}`;
       const isSelected = selectedElement === elementKey;
-
+      const enemyIsAOEActive = isAOEActive && selectedEnemyIds.includes(enemy.id);
       return (
         <div
           key={`enemy-${enemy.id}`}
-          className={`absolute transition-all duration-200 cursor-pointer hover:scale-105 ${isEditMode ? 'z-10' : ''} ${isSelected && isEditMode ? 'ring-4 ring-red-400/70 ring-offset-2 ring-offset-slate-900' : ''} ${isDragging && isSelected ? 'scale-110 shadow-2xl' : ''}`}
+          className={`absolute transition-all duration-200 cursor-pointer hover:scale-105 ${isEditMode ? 'z-10' : ''}
+            ${isSelected && isEditMode ? 'ring-4 ring-red-400/70 ring-offset-2 ring-offset-slate-900' : ''}
+            ${isDragging && isSelected ? 'scale-110 shadow-2xl' : ''}
+            ${enemyIsAOEActive ? 'ring-4 ring-purple-400 animate-pulse' : ''}`}
           style={{
             left: `${position.x}%`,
             top: `${position.y}%`,
@@ -125,6 +132,7 @@ export const CharacterSprites: React.FC<CharacterSpritesProps> = ({
           <EnemyBattleDisplay
             enemy={enemy}
             isTargeted={targetEnemyId === enemy.id}
+            isAOEActive={enemyIsAOEActive}
             onClick={() => onSetTargetEnemy(enemy.id)}
             onInfoClick={() => onShowEnemyDetails(enemy)}
           />
@@ -136,7 +144,7 @@ export const CharacterSprites: React.FC<CharacterSpritesProps> = ({
         </div>
       );
     });
-  }, [currentEnemies, targetEnemyId, onSetTargetEnemy, config.enemyPositions, isEditMode, selectedElement, isDragging, onElementSelect, onMouseDown, onShowEnemyDetails]);
+  }, [currentEnemies, targetEnemyId, onSetTargetEnemy, config.enemyPositions, isEditMode, selectedElement, isDragging, onElementSelect, onMouseDown, onShowEnemyDetails, selectedEnemyIds]);
 
   return (
     <>
