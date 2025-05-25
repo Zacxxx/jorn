@@ -14,7 +14,7 @@ import { CharacterSheetModal } from './components/CharacterSheetModal';
 import CraftingHubModal from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal'; 
 import GameMenuModal from './components/GameMenuModal'; 
-import CampView from './components/CampView';
+import CampView from './components/resting/CampView';
 import ExploreView from './components/exploration/ExploreView';
 
 import HomeScreenView from './components/HomeScreenView';
