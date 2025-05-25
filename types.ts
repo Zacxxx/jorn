@@ -280,7 +280,9 @@ export type GameState =
   | 'CHARACTER_SHEET'
   | 'SELECTING_ABILITY'
   | 'CRAFTING_HUB'
-  | 'CAMP_VIEW'; // Added new game state for camp view
+  | 'CAMP_VIEW'
+  | 'EXPLORE_VIEW'
+  | 'BIOME_SELECTED'; // Added for world map interaction
 
 
 export interface GeneratedSpellData {
@@ -369,6 +371,8 @@ export interface GeneratedQuestData {
 // UPDATED CharacterSheetTab
 export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Traits' | 'Quests' | 'Abilities' | 'Encyclopedia';
 
+export type EncyclopediaSubTabId = 'spells' | 'abilities' | 'traits' | 'items' | 'monsters' | 'elements' | 'biomes' | 'npcs';
+
 export interface UIElementConfig {
   position: { x: number; y: number };
   size: { width: number; height: number };
@@ -442,4 +446,62 @@ export interface JornBattleConfig {
     snapToGrid?: boolean;
     gridSize?: number;
   };
+}
+
+// New types for Exploration and Points of Interest
+
+export type NPCPersonality = 'neutral' | 'aggressive' | 'savage' | 'passive';
+
+export interface NPCDetails {
+  id: string;
+  name: string;
+  description: string;
+  personality: NPCPersonality;
+  isMonster: boolean; // If true, could potentially link to Bestiary entry
+  iconName: SpellIconName;
+  // Potentially add stats, dialogue snippets, quest associations etc.
+}
+
+export interface PointOfInterestProperties {
+  name: string;
+  description: string;
+  temperature?: string; // e.g., "cold", "temperate", "hot"
+  pointOfInterest?: string; // Specific AI generated notable feature
+  numberOfNPCs: number;
+  location: { x: number; y: number }; // For map positioning
+  biome: string; // e.g., "forest", "desert", "mountain"
+  structures?: string[]; // e.g., ["ruined tower", "small village"]
+  loot?: string[]; // Potential loot descriptors
+  explored: boolean;
+  // Add other relevant properties here
+  ambientSounds?: string[];
+  flora?: string[];
+  fauna?: string[];
+  primaryResources?: ResourceType[];
+  encounterDifficulty?: 'trivial' | 'easy' | 'medium' | 'hard' | 'deadly';
+}
+
+export interface PointOfInterest {
+  id: string;
+  properties: PointOfInterestProperties;
+  npcs: NPCDetails[];
+  // Can include generated map tile data, event triggers, etc.
+}
+
+export interface BiomeDetails {
+  id: string;
+  name: string;
+  description: string;
+  iconName: SpellIconName;
+  typicalFlora: string[];
+  typicalFauna: string[];
+  climate: string;
+  primaryResources?: ResourceType[];
+  // encounteredPointsOfInterest: string[]; // IDs of PoIs found in this biome type
+}
+
+// Placeholder for WorldMap data structure if needed directly in types
+export interface WorldMapData {
+  pointsOfInterest: PointOfInterest[];
+  // Could include overall map image, biome boundaries, etc.
 }

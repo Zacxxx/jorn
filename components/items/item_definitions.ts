@@ -1,4 +1,4 @@
-import { Equipment, Consumable, ResourceType, SpellIconName, EquipmentSlot, ConsumableEffectType, ItemElement } from '../../types';
+import { Equipment, ResourceType, SpellIconName, EquipmentSlot, ConsumableEffectType, ItemElement } from '../../types';
 
 export interface BaseEquipmentTemplate {
   idPrefix: string; // e.g., 'worn_leather_armor'

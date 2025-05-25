@@ -1,5 +1,5 @@
-import { Equipment, ResourceType, ResourceCost, Player } from '../../types';
-import { getEnhancementDetails, EnhancementLevelDetails } from './enhancement_rules';
+import { Equipment, ResourceType, ResourceCost } from '../../types';
+import { getEnhancementDetails } from './enhancement_rules';
 
 export interface EnhancementResult {
   success: boolean;
@@ -67,7 +67,7 @@ export const attemptEnhancement = (
     const newStats = { ...upgradedItem.statsBoost }; 
 
     for (const statKey in baseStats) {
-        const key = statKey as keyof Player.statsBoost; // Type assertion
+        const key = statKey as keyof Equipment['statsBoost']; // Corrected type
         const originalStatValue = baseStats[key] || 0;
         const currentStatValue = upgradedItem.statsBoost[key] || 0;
         

@@ -51,7 +51,6 @@ export const getEnhancementDetails = (currentLevel: number): EnhancementLevelDet
   // Or, more simply, it is the factor by which the *original* base stats are increased AT THIS LEVEL of enhancement.
   // Let's re-think this: the enhancement process should *increment* stats.
   // The multiplier will be applied to the *original base stat* of the item to determine the *additional* bonus for that level.
-  const statIncreaseFactor = 0.1 + (level -1) * 0.02; // Each level gives 10% of base, + 2% for each previous level
 
   return {
     level,
