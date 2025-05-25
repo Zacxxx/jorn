@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, ResourceType, Consumable, Quest, CharacterSheetTab, SpellIconName, Ability, EquipmentSlot as GenericEquipmentSlot, ActiveStatusEffect, InventoryFilterType, ItemType } from '../types';
+import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, ResourceType, Consumable, Quest, CharacterSheetTab, SpellIconName, Ability, EquipmentSlot as GenericEquipmentSlot, ActiveStatusEffect, InventoryFilterType, ItemType, EncyclopediaSubTabId } from '../types';
 import Modal from './Modal';
 import ActionButton from './ActionButton';
 import { 
-    GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon, 
+    GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon,
     HealIcon, SpeedIcon, SwordSlashIcon, ShieldIcon, BodyIcon, ReflexIcon, CheckmarkCircleIcon,
-    SearchIcon, FilterListIcon, CollectionIcon, SkullIcon
+    SearchIcon, FilterListIcon, CollectionIcon, SkullIcon, BookOpenIcon
 } from './IconComponents';
 import { 
     DETAILED_EQUIPMENT_SLOTS_LEFT_COL, DETAILED_EQUIPMENT_SLOTS_RIGHT_COL, 
@@ -486,7 +486,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   const [hoveredInventoryItem, setHoveredInventoryItem] = useState<InventoryGridItemType | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number, y: number } | null>(null);
   
-  const [encyclopediaSubTab, setEncyclopediaSubTab] = useState<'spells' | 'abilities' | 'traits' | 'items' | 'monsters' | 'elements'>('monsters');
+  const [encyclopediaSubTab, setEncyclopediaSubTab] = useState<EncyclopediaSubTabId>('monsters');
 
 
   useEffect(() => {
@@ -728,7 +728,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                                     console.log("Drop item attempt:", selectedInventoryItemDetail.id);
                                     // onDropItem(selectedInventoryItemDetail.id); // Future: implement drop
                                     setSelectedInventoryItemDetail(null);
-                                }} variant="danger_outline" size="sm" className="col-span-1">
+                                }} variant="danger" size="sm" className="col-span-1">
                                   Drop
                                 </ActionButton>
                             </div>
@@ -888,13 +888,15 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   };
 
   const renderEncyclopediaTabContent = () => {
-    const encyclopediaSubTabs = [
-        { id: 'monsters', label: 'Bestiary', icon: <SkullIcon /> },
-        { id: 'spells', label: 'Spells', icon: <WandIcon /> },
-        { id: 'abilities', label: 'Abilities', icon: <MindIcon /> },
-        { id: 'traits', label: 'Traits', icon: <StarIcon /> },
-        { id: 'items', label: 'Items', icon: <BagIcon /> },
-        { id: 'elements', label: 'Elements', icon: <GetSpellIcon iconName={'CollectionIcon'} className="w-4 h-4" /> },
+    const encyclopediaSubTabs: {id: EncyclopediaSubTabId, label: string, icon: React.ReactElement}[] = [
+        { id: 'monsters', label: 'Bestiary', icon: <SkullIcon className="w-4 h-4" /> },
+        { id: 'spells', label: 'Spells', icon: <WandIcon className="w-4 h-4" /> },
+        { id: 'abilities', label: 'Abilities', icon: <MindIcon className="w-4 h-4" /> },
+        { id: 'traits', label: 'Traits', icon: <StarIcon className="w-4 h-4" /> },
+        { id: 'items', label: 'Items', icon: <BagIcon className="w-4 h-4" /> },
+        { id: 'elements', label: 'Elements', icon: <CollectionIcon className="w-4 h-4" /> }, 
+        { id: 'biomes', label: 'Biomes', icon: <BookOpenIcon className="w-4 h-4" /> },
+        { id: 'npcs', label: 'NPCs', icon: <UserIcon className="w-4 h-4" /> }, 
     ];
 
     const bestiaryEntries = Object.values(player.bestiary);
@@ -905,10 +907,10 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                 {encyclopediaSubTabs.map(subTab => (
                     <ActionButton
                         key={subTab.id}
-                        onClick={() => setEncyclopediaSubTab(subTab.id as any)}
+                        onClick={() => setEncyclopediaSubTab(subTab.id) }
                         variant={encyclopediaSubTab === subTab.id ? 'info' : 'secondary'}
                         size="sm"
-                        icon={React.cloneElement(subTab.icon, {className: "w-4 h-4"})}
+                        icon={subTab.icon}
                         className="!text-xs flex-grow sm:flex-grow-0"
                     >
                         {subTab.label}
@@ -979,10 +981,24 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                     ELEMENT_DATA.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {ELEMENT_DATA.map(element => (
-                                <ElementDisplayCard key={element.id} element={element} />
+                                <ElementDisplayCard key={element.id} element={{...element, iconName: element.iconName as SpellIconName}} />
                             ))}
                         </div>
                     ) : <p className="text-center text-slate-400 italic py-6">No element data found.</p>
+                )}
+                {encyclopediaSubTab === 'biomes' && (
+                    <div className="text-center text-slate-400 italic py-6">
+                        <BookOpenIcon className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                        <p>Biome information will be available here as you explore.</p>
+                        <p className="text-xs mt-1">Data on discovered biomes, their characteristics, and points of interest within them will be logged.</p>
+                    </div>
+                )}
+                {encyclopediaSubTab === 'npcs' && (
+                    <div className="text-center text-slate-400 italic py-6">
+                        <UserIcon className="w-12 h-12 mx-auto mb-2 text-slate-500" />
+                        <p>Details about non-hostile NPCs encountered will appear here.</p>
+                        <p className="text-xs mt-1">Learn about characters, their stories, and potential quests or services.</p>
+                    </div>
                 )}
             </div>
         </div>

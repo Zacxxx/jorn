@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName } from './types'; 
+import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, EncyclopediaSubTabId } from './types'; 
 import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCES, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment } from './services/geminiService';
 import { attemptEnhancement, deductResources as deductEnhancementResources, generateItemId } from './components/items/item_utils';
@@ -15,6 +15,7 @@ import CraftingHubModal from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal'; 
 import GameMenuModal from './components/GameMenuModal'; 
 import CampView from './components/CampView';
+import ExploreView from './components/exploration/ExploreView';
 
 import HomeScreenView from './components/HomeScreenView';
 import SpellCraftingView from './components/SpellCraftingView';
@@ -129,9 +130,10 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   // State for opening ItemEnhancementModal directly from inventory
   const [directEnhanceItem, setDirectEnhanceItem] = useState<Equipment | null>(null);
   const [isDirectEnhanceModalOpen, setIsDirectEnhanceModalOpen] = useState(false);
+  const [targetEncyclopediaSubTab, setTargetEncyclopediaSubTab] = useState<EncyclopediaSubTabId | undefined>(undefined); // Added state
 
   const handleRest = () => setGameState('CAMP_VIEW');
-  const handleExplore = () => console.log("Explore action triggered"); // Placeholder
+  const handleExplore = () => setGameState('EXPLORE_VIEW'); // Updated
   const handleGuild = () => console.log("Guild action triggered"); // Placeholder
   const handleCommunity = () => console.log("Community action triggered"); // Placeholder
   const handleResearch = () => console.log("Research action triggered"); // Placeholder
@@ -236,7 +238,10 @@ export const App: React.FC<{}> = (): React.ReactElement => {
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(player));
-  }, [player]);
+    if (gameState !== 'CHARACTER_SHEET') { // Reset target sub-tab when not in character sheet
+      setTargetEncyclopediaSubTab(undefined);
+    }
+  }, [player, gameState]); // Added gameState to dependencies
 
 
   const fetchInitialMainQuestIfNeeded = useCallback(async () => {
@@ -1093,6 +1098,24 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
             isLoading={isLoading}
           />
         )}
+        {gameState === 'EXPLORE_VIEW' && (
+          <ExploreView
+            onPlay={handleFindEnemy} // Assuming 'PLAY' will trigger finding an enemy for now
+            onReturnHome={handleNavigateHome}
+            isLoading={isLoading}
+            onSetGameState={setGameState} // Added
+            onSetEncyclopediaSubTab={(subTab) => { // Renamed from onOpenCharacterSheet to be more specific to its new role
+              setDefaultCharacterSheetTab('Encyclopedia');
+              setTargetEncyclopediaSubTab(subTab); // Set the target sub-tab
+              setGameState('CHARACTER_SHEET');
+            }}
+            onOpenCharacterSheet={(tabId) => { // This prop in ExploreView is for general opening, let's ensure it's used if WorldMap needs it. 
+                                            // WorldMap uses onSetEncyclopediaSubTab now for 'Learn More'.
+                                            // This can be a generic open if ExploreView itself has other buttons for char sheet tabs.
+                handleOpenCharacterSheet(tabId as CharacterSheetTab); // Original broader functionality
+            }}
+          />
+        )}
         {gameState === 'SPELL_CRAFTING' && (
           <SpellCraftingView
             onInitiateSpellCraft={handleInitiateSpellCraft}
@@ -1252,6 +1275,7 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
         onUnprepareAbility={handleUnprepareAbility}
         isLoading={isLoading}
         initialTab={defaultCharacterSheetTab}
+        initialEncyclopediaSubTab={targetEncyclopediaSubTab} // Pass the new state here
         onOpenSpellCraftingScreen={() => setGameState('SPELL_CRAFTING')}
         onOpenTraitCraftingScreen={() => setGameState('TRAIT_CRAFTING')}
         canCraftNewTrait={player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) + 1)}

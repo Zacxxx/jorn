@@ -424,3 +424,16 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
     default: return <UnknownIcon className={className} />;
   }
 };
+
+export const SparklesIcon: React.FC<IconProps> = ({ className = "w-5 h-5", ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} {...props}>
+    <path fillRule="evenodd" d="M5 2a1 1 0 00-1 1v1h1a1 1 0 010 2H4v1a1 1 0 001 1h2a1 1 0 011 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 011-1h2a1 1 0 001-1V6h-1a1 1 0 110-2h1a1 1 0 001-1V3a1 1 0 00-1-1H5zM2 5a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H5a3 3 0 01-3-3V5zm3-1a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H5z" clipRule="evenodd" />
+    <path d="M10 7.25a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0V8a.75.75 0 01.75-.75zM12.25 10a.75.75 0 000-1.5H9.75a.75.75 0 000 1.5h2.5z" />
+  </svg>
+);
+
+export const PlayIcon: React.FC<IconProps> = ({ className = "w-6 h-6", ...props }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className} {...props}>
+    <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+  </svg>
+);
