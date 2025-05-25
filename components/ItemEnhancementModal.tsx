@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Equipment, ResourceCost, Player } from '../../types';
+import { Equipment, ResourceCost, Player, ResourceType } from '../types';
 import { getEnhancementDetails } from './items/enhancement_rules';
 import { hasEnoughResources } from './items/item_utils';
 import Modal from './Modal';
 import ActionButton from './ActionButton';
 import ItemDisplay from './ItemDisplay'; // Assuming you have or will create a component to display item details
 import { RESOURCE_ICONS } from '../constants'; // For displaying resource icons
+import { GetSpellIcon } from './IconComponents';
 
 interface ItemEnhancementModalProps {
   isOpen: boolean;
@@ -69,13 +70,12 @@ const ItemEnhancementModal: React.FC<ItemEnhancementModalProps> = ({
                 </h3>
                 <div className="bg-slate-700/50 p-3 rounded-md">
                   <h4 className="text-md font-medium text-slate-300 mb-2">Required Resources:</h4>
-                  {details.cost.length > 0 ? (
+                  {enhancementDetails.cost.length > 0 ? (
                     <ul className="space-y-1 text-sm">
-                      {details.cost.map((res, idx) => (
+                      {enhancementDetails.cost.map((res, idx) => (
                         <li key={idx} className={`flex items-center justify-between ${(playerInventory[res.type] || 0) < res.quantity ? 'text-red-400' : 'text-slate-300'}`}>
                           <span className='flex items-center'>
-                            {/* Add resource icon here if available */}
-                            {/* <GetSpellIcon iconName={RESOURCE_ICONS[res.type]} className="w-4 h-4 mr-1.5" /> */}
+                            <GetSpellIcon iconName={RESOURCE_ICONS[res.type as ResourceType] || 'CoinIcon'} className="w-4 h-4 mr-1.5 opacity-80" />
                             {res.type}
                           </span>
                           <span>{playerInventory[res.type] || 0} / {res.quantity}</span>
@@ -83,7 +83,7 @@ const ItemEnhancementModal: React.FC<ItemEnhancementModalProps> = ({
                       ))}
                     </ul>
                   ) : (
-                     <p className="text-sm text-slate-400">No resources required for this level (unlikely).</p>
+                     <p className="text-sm text-slate-400">No resources required for this level.</p>
                   )}
                   {!canAfford && <p className="text-xs text-red-400 mt-2">You do not have enough resources.</p>}
                 </div>
