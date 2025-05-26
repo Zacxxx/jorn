@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { MapData, Place, MapType, MAP_TYPES, ExportedMapData, AreaInfo, SessionState, APP_VERSION, ManualPoiFormData, AppMode, FinalizedMapEntry, FINALIZED_MAPS_KEY, APP_MODES } from './types';
+import { MapData, Place, MapType, MAP_TYPES, ExportedMapData, AreaInfo, SessionState, APP_VERSION, ManualPoiFormData, AppMode, FinalizedMapEntry, FINALIZED_MAPS_KEY, APP_MODES, IMAGE_GENERATION_MODELS, ImageGenerationModelType } from './types';
 import { ErrorDisplay } from './components/ui/ErrorDisplay';
 import { HelpModal } from './components/ui/HelpModal';
 import { LeftPanel } from './components/ui/LeftPanel';
@@ -50,6 +50,8 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
   const [finalizedMaps, setFinalizedMaps] = useState<FinalizedMapEntry[]>([]);
   const [viewingFinalizedMap, setViewingFinalizedMap] = useState<FinalizedMapEntry | null>(null);
 
+  // Image Generation Model Choice
+  const [imageGenerationModel, setImageGenerationModel] = useState<ImageGenerationModelType>(IMAGE_GENERATION_MODELS[0]); // Default to gemini
 
   const importFileRef = useRef<HTMLInputElement>(null!);
   const appContainerRef = useRef<HTMLDivElement>(null);
@@ -75,6 +77,7 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
         setNumPoisToGenerate(savedSession.numPoisToGenerate !== undefined ? savedSession.numPoisToGenerate : 3);
         setPrioritizeSuggestedPoiNames(savedSession.prioritizeSuggestedPoiNames !== undefined ? savedSession.prioritizeSuggestedPoiNames : true);
         setAppMode(savedSession.appMode || APP_MODES[0]);
+        setImageGenerationModel(savedSession.imageGenerationModel || IMAGE_GENERATION_MODELS[0]);
         
         if (savedSession.mapData?.mapType) {
           setMapType(savedSession.mapData.mapType);
@@ -100,7 +103,7 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
 
   useEffect(() => {
     // Only save if there's something meaningful to save to avoid clearing local storage on first load with empty state.
-    if (theme || customLore || areaInfo || mapData || isLeftPanelCollapsed || showOriginalOverlay || pixelGridOpacity !== 0.7 || numPoisToGenerate !==3 || !prioritizeSuggestedPoiNames || appMode !== APP_MODES[0]) {
+    if (theme || customLore || areaInfo || mapData || isLeftPanelCollapsed || showOriginalOverlay || pixelGridOpacity !== 0.7 || numPoisToGenerate !==3 || !prioritizeSuggestedPoiNames || appMode !== APP_MODES[0] || imageGenerationModel !== IMAGE_GENERATION_MODELS[0]) {
       try {
         const sessionToSave: SessionState = {
           appVersion: APP_VERSION,
@@ -115,7 +118,7 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
           numPoisToGenerate,
           prioritizeSuggestedPoiNames,
           appMode,
-          // finalizedMaps are saved separately
+          imageGenerationModel,
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sessionToSave));
       } catch (err) {
@@ -132,7 +135,8 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
   }, [
     theme, customLore, useCustomLore, areaInfo, mapData, 
     isLeftPanelCollapsed, showOriginalOverlay, pixelGridOpacity,
-    numPoisToGenerate, prioritizeSuggestedPoiNames, appMode, finalizedMaps
+    numPoisToGenerate, prioritizeSuggestedPoiNames, appMode, finalizedMaps,
+    imageGenerationModel
   ]);
 
   const handleToggleFullscreen = useCallback(() => {
@@ -196,7 +200,7 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
     setNumPoisToGenerate(3);
     setPrioritizeSuggestedPoiNames(true);
     setAppMode(APP_MODES[0]); // Reset to create mode
-    // Note: finalizedMaps are not reset by this function to preserve them across resets unless explicitly cleared
+    setImageGenerationModel(IMAGE_GENERATION_MODELS[0]); // Reset image model
     setViewingFinalizedMap(null);
 
 
@@ -307,6 +311,7 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
             theme: theme, 
             customLore: areaInfo.areaLore, 
             useCustomLore: true,
+            model: imageGenerationModel,
         });
 
         setMapData(prev => prev ? ({
@@ -337,7 +342,7 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
     } finally {
         setIsGeneratingImage(false);
     }
-  }, [areaInfo, mapData, theme]);
+  }, [areaInfo, mapData, theme, imageGenerationModel]);
 
 
   const handlePixelClick = useCallback((x: number, y: number) => {
@@ -748,6 +753,8 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
           onReturnToCreateMode={handleReturnToCreateMode}
           onFinalizeMap={handleFinalizeMap}
           canFinalize={!!(mapData && mapData.pixelGrid && mapData.areaInfo)}
+          imageGenerationModel={imageGenerationModel}
+          setImageGenerationModel={setImageGenerationModel}
         />
         
         {appMode === 'create' && (

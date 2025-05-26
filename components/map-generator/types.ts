@@ -1,4 +1,3 @@
-
 export const APP_VERSION = "1.1.0"; // Current application version
 
 export interface Place {
@@ -101,6 +100,9 @@ export const MAP_TYPES = [
 
 export type MapType = typeof MAP_TYPES[number];
 
+export const IMAGE_GENERATION_MODELS = ['gemini', 'gradio'] as const;
+export type ImageGenerationModelType = typeof IMAGE_GENERATION_MODELS[number];
+
 export const MAX_GRID_DIMENSION = 64; 
 
 export interface HelpModalProps {
@@ -155,6 +157,9 @@ export interface SessionState {
   numPoisToGenerate?: number; // Added for persisting POI generation options
   prioritizeSuggestedPoiNames?: boolean; // Added for persisting POI generation options
   appMode?: AppMode; // Added for app mode persistence
+  imageGenerationModel?: ImageGenerationModelType; // Added
+  gradioApiUrl?: string; // Keep optional for old sessions
+  hfToken?: string;      // Keep optional for old sessions
   finalizedMaps?: FinalizedMapEntry[]; // Added for finalized maps persistence
 }
 
@@ -166,4 +171,26 @@ export interface ManualPoiFormProps {
   onSave: (data: ManualPoiFormData) => void;
   onClose: () => void;
   isLoading?: boolean;
+}
+
+export interface FetchPoisParams {
+  areaInfo: AreaInfo;
+  customLore?: string;
+  useCustomLore?: boolean;
+  numberOfPois?: number;
+  prioritizeSuggestedNames?: boolean; 
+}
+
+// --- Step 3: Generate Map Image (with AI-determined MapType) ---
+export interface GenerateMapImageParams {
+  areaInfo: AreaInfo;
+  places: Place[];
+  theme: string;
+  customLore: string;
+  useCustomLore: boolean;
+  model: ImageGenerationModelType;
+}
+
+export interface GenerateMapImageResult {
+  // ... existing code ...
 }

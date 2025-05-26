@@ -1,5 +1,4 @@
-
-import { MapType, Place, InitialMapInfoResponse, PointsOfInterestResponse, AreaInfo, AreaInfoResponse, OptimalMapTypeResponse } from '../../types';
+import { MapType, Place, InitialMapInfoResponse, PointsOfInterestResponse, AreaInfo, AreaInfoResponse, OptimalMapTypeResponse, ImageGenerationModelType } from '../../types';
 import { 
   generateAreaInfo, AreaInfoParams, AreaInfoResult,
   generateInitialMapInfo, InitialMapInfoParams, InitialMapInfoResult, 
@@ -8,6 +7,10 @@ import {
 } from './textGenerationService';
 import { generateImageFromPrompt, ImageGenerationParams } from './imageGenerationService';
 import { v4 as uuidv4 } from 'uuid';
+import { ai, GEMINI_MODEL_NAME } from './config';
+import { GenerateImagesResponse } from "@google/genai";
+import { imageToPixelGrid } from '../../utils/imageToPixelGrid';
+import { Client, handle_file } from "@gradio/client";
 
 // --- Step 1: Generate Area Details ---
 export interface GenerateAreaDetailsParams extends AreaInfoParams {}
@@ -86,10 +89,11 @@ export const fetchGeneratedPois = async (params: FetchPoisParams): Promise<Place
 // --- Step 3: Generate Map Image (with AI-determined MapType) ---
 export interface GenerateMapImageParams {
   areaInfo: AreaInfo;
-  places: Place[]; // Detailed POIs
-  theme: string; // Original theme for context
-  customLore?: string;
-  useCustomLore?: boolean;
+  places: Place[];
+  theme: string;
+  customLore: string;
+  useCustomLore: boolean;
+  model: ImageGenerationModelType;
 }
 export interface GenerateMapImageResult {
   imageUrl: string;
@@ -97,50 +101,133 @@ export interface GenerateMapImageResult {
   mapTitle: string; // Title for the map, could be areaInfo.name or refined
   rawOptimalMapTypeResponse?: string;
 }
-export const generateMapImage = async (
-  params: GenerateMapImageParams
-): Promise<GenerateMapImageResult> => {
-  try {
-    // 3a. Determine Optimal Map Type
-    const mapTypeResult: DetermineMapTypeResult = await determineOptimalMapType({
-      areaInfo: params.areaInfo,
-      pois: params.places,
-    });
-    
-    if (!mapTypeResult.determinedMapType) {
-        console.warn("Could not determine optimal map type, defaulting to Region. Raw:", mapTypeResult.rawResponse?.substring(0,500));
+
+const GRADIO_SPACE_NAME = "ByteDance/DreamO";
+const HF_TOKEN = "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"; // Your hardcoded token
+
+export const generateMapImage = async ({
+    areaInfo,
+    places,
+    theme,
+    customLore,
+    useCustomLore,
+    model
+}: GenerateMapImageParams): Promise<GenerateMapImageResult> => {
+    try {
+        // Step 1: Determine Optimal Map Type (remains the same)
+        const mapTypeResult = await determineOptimalMapType({
+            areaInfo: areaInfo,
+            pois: places,
+        });
+        const determinedMapType = mapTypeResult.determinedMapType || 'Region'; // Fallback if needed
+
+        // Step 2: Generate the map image using the chosen model
+        let imageUrl: string;
+        if (model === 'gradio') {
+            console.log(`Duplicating Gradio Space: ${GRADIO_SPACE_NAME}`);
+            try {
+                const mapGenPrompt = 
+                    `A detailed fantasy map of "${areaInfo.name}", which is a ${determinedMapType}. ` +
+                    `Theme: ${theme}. Atmosphere: ${areaInfo.moodAtmosphere}. ` +
+                    `Key geography: ${areaInfo.geography}. ` +
+                    `Lore hint: ${customLore.substring(0, 150)}... ` +
+                    `Visually integrate areas suggestive of these points of interest: ${places.map(p => p.name).join(", ")}. ` +
+                    `Style: Antique parchment, rich textures, detailed illustration, no text labels, high fantasy, epic.`;
+
+                // Placeholder reference images (URLs to simple, generic images if needed by the model as placeholders)
+                // Using a small transparent png as a placeholder. Replace if a specific placeholder is better.
+                const placeholderImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
+                const app = await Client.duplicate(GRADIO_SPACE_NAME, { hf_token: HF_TOKEN as `hf_${string}` });
+                
+                console.log("Predicting with DreamO...");
+                const result = await app.predict("/generate_image", { 
+                    data: [
+                        handle_file(placeholderImageUrl), // ref_image1
+                        handle_file(placeholderImageUrl), // ref_image2
+                        "ip",                             // ref_task1
+                        "ip",                             // ref_task2
+                        mapGenPrompt,                     // prompt
+                        "-1",                             // seed
+                        1024,                             // width
+                        1024,                             // height
+                        512,                              // ref_res
+                        20,                               // num_steps (increased a bit from default 12 for potentially better quality)
+                        7,                                // guidance (increased a bit from default 3.5)
+                        true,                             // true_cfg (assuming boolean, but API says float 1)
+                        0,                                // cfg_start_step
+                        0,                                // cfg_end_step
+                        "text, labels, words, blurry, watermark, signature, UI elements, modern", // neg_prompt
+                        3.5,                              // neg_guidance
+                        0                                 // first_step_guidance
+                    ],
+                });
+
+                console.log("DreamO Raw Result:", result);
+
+                // Process the result - ByteDance/DreamO returns a tuple
+                if (typeof result?.data === 'object' && result.data !== null && Array.isArray(result.data) && result.data.length > 0) {
+                    const generatedImageObject = (result.data as any)[0]; // First element of the tuple is the image
+                    if (typeof generatedImageObject === 'object' && generatedImageObject !== null && typeof generatedImageObject.url === 'string') {
+                        imageUrl = generatedImageObject.url;
+                         // If the URL is relative, prepend the space URL (app.space_url might be useful here if available and URL is relative)
+                        if (!imageUrl.startsWith('http') && app.space_url) {
+                            try {
+                                imageUrl = new URL(imageUrl, app.space_url).toString();
+                            } catch (urlError) {
+                                console.warn("Could not construct absolute URL for image:", urlError);
+                                // Keep relative if construction fails, browser might handle it or might fail later.
+                            }
+                        }
+                    } else if (typeof generatedImageObject === 'string' && generatedImageObject.startsWith('data:image')) {
+                        imageUrl = generatedImageObject; // It's a base64 string
+                    } else {
+                        console.error("DreamO returned an unexpected data structure for the generated image:", generatedImageObject);
+                        throw new Error('DreamO returned an unexpected data structure for the generated image.');
+                    }
+                } else {
+                    console.error("DreamO returned an unexpected result structure:", result);
+                    throw new Error('DreamO returned an unexpected result structure.');
+                }
+            } catch (e: any) {
+                console.error("Gradio client error with DreamO:", e);
+                throw new Error(`Failed to generate image with DreamO: ${e.message || e}`);
+            }
+        } else { // Default to Gemini
+            imageUrl = await generateImageFromPrompt({
+                theme: areaInfo.name, // Using area name for more specific image theme
+                effectiveMapType: determinedMapType,
+                customLore: areaInfo.areaLore, // Using lore from areaInfo
+                useCustomLore: !!areaInfo.areaLore,
+                areaContext: areaInfo,
+                poisForVisualCues: places
+            });
+        }
+
+        if (!imageUrl) {
+            throw new Error('AI failed to generate the map image.');
+        }
+
+        // Step 3: Generate a map title (remains the same)
+        const titleResult = await generateMapTitle({ 
+            areaInfo,
+            mapType: determinedMapType,
+            pois: places 
+        });
+        const mapTitle = titleResult.mapTitle || areaInfo.name; // Fallback to area name
+
+        return {
+            imageUrl,
+            determinedMapType,
+            mapTitle,
+            rawOptimalMapTypeResponse: mapTypeResult.rawResponse,
+            rawMapTitleResponse: titleResult.rawResponse
+        };
+
+    } catch (error: any) {
+        console.error("Error in generateMapImage main function:", error);
+        throw new Error(`Failed to generate map image and details: ${error.message}`);
     }
-    const determinedMapType = mapTypeResult.determinedMapType || 'Region';
-
-    // 3b. Generate Image
-    const imageGenParams: ImageGenerationParams = {
-      theme: params.theme, 
-      effectiveMapType: determinedMapType,
-      customLore: params.areaInfo.areaLore, 
-      useCustomLore: true, 
-      areaContext: params.areaInfo, 
-      poisForVisualCues: params.places, 
-    };
-    const imageUrl = await generateImageFromPrompt(imageGenParams);
-
-    if (!imageUrl) {
-      throw new Error('AI failed to generate the map image.');
-    }
-    
-    const mapTitle = params.areaInfo.name; 
-
-    return {
-      imageUrl,
-      determinedMapType,
-      mapTitle,
-      rawOptimalMapTypeResponse: mapTypeResult.rawResponse,
-    };
-
-  } catch (error) {
-    console.error("Error in generateMapImage:", error);
-    if (error instanceof Error) throw error;
-    throw new Error('An unknown error occurred during map image generation.');
-  }
 };
 
 
@@ -187,7 +274,8 @@ export const generateMapDetails_Legacy = async (
         places: pois, 
         theme: params.theme, 
         customLore: params.customLore, 
-        useCustomLore: params.useCustomLore 
+        useCustomLore: params.useCustomLore,
+        model: 'gemini',
     };
     const imageResult = await generateMapImage(imageParams);
     

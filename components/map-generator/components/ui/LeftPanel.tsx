@@ -3,7 +3,7 @@ import { ThemeInput } from './ThemeInput';
 import { MapCustomization } from './MapCustomization';
 import { PoiList } from './PoiList';
 import { PoiInfoPanel } from './PoiInfoPanel';
-import { MapData, MapType, Place, AreaInfo, AppMode } from '../../types';
+import { MapData, MapType, Place, AreaInfo, AppMode, IMAGE_GENERATION_MODELS, ImageGenerationModelType } from '../../types';
 
 // --- Collapsible Section Component ---
 interface CollapsibleSectionProps {
@@ -146,6 +146,9 @@ interface LeftPanelProps {
   onReturnToCreateMode: () => void;
   onFinalizeMap: () => void;
   canFinalize: boolean;
+
+  imageGenerationModel: ImageGenerationModelType;
+  setImageGenerationModel: (model: ImageGenerationModelType) => void;
 }
 
 export const LeftPanel: React.FC<LeftPanelProps> = ({
@@ -158,7 +161,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onExportMap, onImportMap, canExport, importFileRef, onToggleHelpModal, onResetApp,
   numPoisToGenerate, setNumPoisToGenerate, prioritizeSuggestedPoiNames, setPrioritizeSuggestedPoiNames,
   onOpenManualPoiForm, onAutoPlacePois, canAutoPlace,
-  appMode, onBrowseMaps, onReturnToCreateMode, onFinalizeMap, canFinalize
+  appMode, onBrowseMaps, onReturnToCreateMode, onFinalizeMap, canFinalize,
+  imageGenerationModel, setImageGenerationModel
 }) => {
   const panelBaseClasses = "flex flex-col h-full transition-all duration-300 ease-in-out scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-750 overflow-y-auto";
   const panelVisibleClasses = "w-96 p-3 bg-slate-800/80 backdrop-blur-md border-r border-slate-700/70 text-slate-200";
@@ -327,7 +331,36 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
           </CollapsibleSection>
       )}
       
-       <CollapsibleSection title="Utilities" initiallyOpen={appMode === 'browse'}>
+       <CollapsibleSection title="Image Generation Settings" initiallyOpen={step === 3} defaultOpen={step === 3}>
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="imageGenModelSelect" className="block text-sm font-medium text-slate-300 mb-1">
+              Image Generation Model
+            </label>
+            <select
+              id="imageGenModelSelect"
+              name="imageGenModelSelect"
+              value={imageGenerationModel}
+              onChange={(e) => setImageGenerationModel(e.target.value as ImageGenerationModelType)}
+              className="block w-full p-2 border border-slate-500 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm bg-slate-700 text-slate-100 placeholder-slate-400 disabled:bg-slate-600 disabled:opacity-70"
+              disabled={isLoading}
+            >
+              {IMAGE_GENERATION_MODELS.map(model => (
+                <option key={model} value={model}>
+                  {model.charAt(0).toUpperCase() + model.slice(1)}
+                </option>
+              ))}
+            </select>
+            {imageGenerationModel === 'gradio' && (
+                 <p className="mt-2 text-xs text-slate-400">
+                    Gradio image generation will use the hardcoded ByteDance/DreamO Space.
+                 </p>
+            )}
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Utilities" initiallyOpen={appMode === 'browse'}>
             <div className="p-2 space-y-2">
                 {appMode === 'create' && (
                   <>

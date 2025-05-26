@@ -1,4 +1,3 @@
-
 import { GenerateImagesResponse } from "@google/genai";
 import { Place, MapType, AreaInfo } from '../../types'; 
 import { ai, IMAGE_MODEL_NAME } from './config';
@@ -22,7 +21,7 @@ export interface ImageGenerationParams {
 }
 
 /**
- * Generates a fantasy map image based on a detailed prompt.
+ * Generates a fantasy map image based on a detailed prompt using Gemini.
  */
 export const generateImageFromPrompt = async ({
   theme, // Original theme, might be less important than areaContext.description
@@ -82,12 +81,12 @@ export const generateImageFromPrompt = async ({
       config: { 
         numberOfImages: 1,
         outputMimeType: 'image/jpeg',
-        aspectRatio: '1:1' // Ensure model adheres if possible
+        aspectRatio: '1:1'
       },
   });
 
   if (!imageResponse.generatedImages || imageResponse.generatedImages.length === 0 || !imageResponse.generatedImages[0].image.imageBytes) {
-    throw new Error('Failed to generate map image from AI. No image data received.');
+    throw new Error('Failed to generate map image from AI (Gemini). No image data received.');
   }
   const base64ImageBytes: string = imageResponse.generatedImages[0].image.imageBytes;
   return `data:image/jpeg;base64,${base64ImageBytes}`;
