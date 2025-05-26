@@ -91,7 +91,7 @@ const Footer: React.FC<FooterProps> = ({
   }, [isPortrait, isLandscape]);
 
   return (
-    <footer className="bg-slate-900/80 border-t-2 border-slate-700/60 backdrop-blur-sm shadow-inner sticky bottom-0 z-[999] safe-area-inset-bottom">
+    <footer className="bg-slate-900/80 border-t-2 border-slate-700/60 backdrop-blur-sm shadow-inner fixed bottom-0 left-0 right-0 z-[999] safe-area-inset-bottom">
       <div className="container mx-auto px-2 py-1.5 sm:px-3 sm:py-2.5 max-w-6xl">
         {/* Mobile Layout */}
         <div className="sm:hidden">

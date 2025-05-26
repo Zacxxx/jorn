@@ -1215,17 +1215,16 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>
-      <Header
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+      <Header 
         player={player}
-        onOpenCharacterSheet={() => setGameState('CHARACTER_SHEET')}
-        onNavigateHome={() => setGameState('HOME')}
+        onOpenCharacterSheet={handleOpenCharacterSheet}
         onSaveGame={handleSaveGame}
-        onImportGame={handleImportGame}
         onExportGame={handleExportGame}
+        onImportGame={handleImportGame}
         onResetGame={handleResetGame}
       />
-      <main className="flex-grow container mx-auto px-2 py-2 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full overflow-y-auto styled-scrollbar touch-action-pan-y pb-safe-bottom">
+      <main className="flex-1 container mx-auto px-4 py-8 pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {gameState === 'HOME' && <HomeScreenView 
           onFindEnemy={handleFindEnemy}
           isLoading={isLoading} 
@@ -1379,85 +1378,15 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
           </div>
         )}
       </main>
-      <div className="mt-auto safe-area-inset-bottom">
-        <Footer
-          onOpenSpellbook={() => handleOpenCharacterSheet('Spells')}
-          onOpenCraftingHub={handleOpenCraftingHub}
-          onOpenInventory={() => handleOpenCharacterSheet('Inventory')}
-          onOpenTraitsPage={() => handleOpenCharacterSheet('Traits')}
-          onOpenQuestsPage={() => handleOpenCharacterSheet('Quests')}
-          onOpenEncyclopedia={handleOpenEncyclopedia}
-          onOpenGameMenu={handleOpenGameMenu}
-        />
-      </div>
-      {modalContent && (
-        <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md">
-          <p className={modalContent.type === 'error' ? 'text-red-400' : modalContent.type === 'success' ? 'text-green-400' : 'text-sky-300'}>
-            {modalContent.message}
-          </p>
-           <div className="mt-5 text-right">
-            <ActionButton onClick={() => setModalContent(null)} variant={modalContent.type === 'error' ? 'danger' : 'primary'}>
-              OK
-            </ActionButton>
-          </div>
-        </Modal>
-      )}
-      <CharacterSheetModal 
-        isOpen={gameState === 'CHARACTER_SHEET'}
-        onClose={() => setGameState('HOME')}
-        player={player}
-        effectiveStats={effectivePlayerStats}
-        onEquipItem={handleEquipItem}
-        onUnequipItem={handleUnequipItem}
-        maxRegisteredSpells={maxRegisteredSpells}
-        maxPreparedSpells={maxPreparedSpells}
-        maxPreparedAbilities={maxPreparedAbilities}
-        onEditSpell={handleInitiateEditSpell}
-        onPrepareSpell={handlePrepareSpell}
-        onUnprepareSpell={handleUnprepareSpell}
-        onPrepareAbility={handlePrepareAbility}
-        onUnprepareAbility={handleUnprepareAbility}
-        isLoading={isLoading}
-        initialTab={defaultCharacterSheetTab}
-        initialEncyclopediaSubTab={targetEncyclopediaSubTab} // Pass the new state here
-        onOpenSpellCraftingScreen={() => setGameState('SPELL_CRAFTING')}
-        onOpenTraitCraftingScreen={() => setGameState('TRAIT_CRAFTING')}
-        canCraftNewTrait={player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) + 1)}
-        onOpenEnhancementModal={handleOpenEnhancementModalFromInventory} // Pass the handler
-      />
-      <CraftingHubModal 
-        isOpen={gameState === 'CRAFTING_HUB'}
-        onClose={() => setGameState('HOME')}
-        onInitiateAppItemCraft={handleInitiateItemCraft}
-        isLoading={isLoading}
-        playerItems={player.items}
-        playerInventory={player.inventory}
-        onAttemptEnhanceItem={handleAttemptEnhanceItem}
-        isEnhancing={isEnhancing}
-      />
-      {directEnhanceItem && (
-        <ItemEnhancementModal
-          isOpen={isDirectEnhanceModalOpen}
-          onClose={() => { setIsDirectEnhanceModalOpen(false); setDirectEnhanceItem(null); }}
-          itemToEnhance={directEnhanceItem}
-          playerInventory={player.inventory}
-          onAttemptEnhance={(item) => {
-            handleAttemptEnhanceItem(item); // Reuse the existing enhancement logic
-            // Decide if the modal should close or update for next level
-            // For now, let App.tsx's handleAttemptEnhanceItem show a global message
-            // And this modal will simply close if the enhancement attempt happens
-            // setIsDirectEnhanceModalOpen(false); // Or manage this based on result/isEnhancing
-          }}
-          isLoading={isEnhancing} // Use the global isEnhancing state
-        />
-      )}
-      <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
-      <GameMenuModal 
-        isOpen={isGameMenuOpen} 
-        onClose={handleCloseGameMenu} 
-        onOpenCharacterSheet={() => { handleCloseGameMenu(); handleOpenCharacterSheet(); }}
-        onOpenHelpWiki={() => { handleCloseGameMenu(); handleOpenHelpWiki(); }}
-        onShowMessage={(title, msg) => setModalContent({title, message: msg, type: 'info'})}
+      <Footer 
+        onOpenSpellbook={handleOpenSpellbook}
+        onOpenCraftingHub={handleOpenCraftingHub}
+        onOpenInventory={handleOpenInventory}
+        onOpenTraitsPage={handleOpenTraitsPage}
+        onOpenQuestsPage={handleOpenQuestsPage}
+        onOpenEncyclopedia={handleOpenEncyclopedia}
+        onOpenGameMenu={handleOpenGameMenu}
+        onOpenProgression={handleOpenProgression}
       />
     </div>
   );

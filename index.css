@@ -51,11 +51,11 @@ code {
 
 /* Debug styles */
 .debug-grid-item {
-  @apply border border-dashed border-red-500/30;
+  @apply border border-dashed border-red-500;
 }
 
 .debug-flex-item {
-  @apply border border-dashed border-blue-500/30;
+  @apply border border-dashed border-blue-500;
 }
 
 /* Responsive utilities */
