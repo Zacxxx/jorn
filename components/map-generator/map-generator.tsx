@@ -686,10 +686,10 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
   }, [activePoiDetail, onPoiSelected]);
 
   return (
-    <div ref={appContainerRef} className={`h-full font-sans flex flex-col ${isRightPanelFullscreen ? 'bg-black' : ''}`}>
+    <div ref={appContainerRef} className={`h-full flex flex-col text-slate-200 font-['Inter',_sans-serif] bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50 overflow-hidden`}>
       {isRightPanelFullscreen && mapData && appMode === 'create' && ( 
-        <header className="w-full px-4 py-2 bg-black text-white flex justify-between items-center z-50 flex-shrink-0">
-           <h1 className="text-xl font-bold text-amber-500 font-serif tracking-tight truncate" title={mapData.title}>
+        <header className="w-full px-4 py-2 bg-slate-900 text-slate-100 flex justify-between items-center z-50 flex-shrink-0 border-b border-slate-700">
+           <h1 className="text-xl font-bold text-emerald-400 font-['Inter_Tight',_sans-serif] tracking-tight truncate" title={mapData.title}>
             {mapData.title}
            </h1>
            <RightPanel.Controls 
@@ -771,10 +771,10 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
         )}
         {/* Placeholder for Browse Mode UI */}
         {appMode === 'browse' && (
-            <div className="flex-grow flex items-center justify-center bg-white/40 backdrop-blur-sm p-4 text-stone-700">
+            <div className="flex-grow flex items-center justify-center bg-slate-800/70 backdrop-blur-md p-4 text-slate-300">
                 {/* This area will be replaced by MapBrowser.tsx and FinalizedMapViewer.tsx */}
                 <div className="text-center">
-                    <h2 className="text-2xl font-serif text-amber-700 mb-4">Browse Finalized Maps</h2>
+                    <h2 className="text-2xl font-['Inter_Tight',_sans-serif] text-emerald-400 mb-4">Browse Finalized Maps</h2>
                     {finalizedMaps.length === 0 ? (
                         <p>No finalized maps yet. Create and finalize a map to see it here.</p>
                     ) : (
@@ -797,11 +797,13 @@ const App: React.FC<MapGeneratorProps> = ({ onPoiSelected }) => {
       
       {error && !isLoading && 
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] p-4 max-w-md w-full">
-          <ErrorDisplay message={error} />
+          <div className="p-4 bg-red-700/80 backdrop-blur-md text-white rounded-md shadow-lg border border-red-900">
+            <ErrorDisplay message={error} />
+          </div>
         </div>
       }
       {loadingMessage && !error && (isGeneratingArea || isGeneratingPois || isGeneratingImage || (loadingMessage.includes("imported") || loadingMessage.includes("exported") || loadingMessage.includes("placed") || loadingMessage.includes("added") || loadingMessage.includes("finalized"))) && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] p-3 bg-sky-600 text-white text-sm rounded-md shadow-lg">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] p-3 bg-sky-700/80 backdrop-blur-md text-white text-sm rounded-md shadow-lg border border-sky-900">
             {loadingMessage}
         </div>
       )}

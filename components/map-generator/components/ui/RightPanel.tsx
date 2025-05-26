@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MapData, Place } from '../../types';
 import { MapDisplay } from './MapDisplay';
@@ -20,7 +19,7 @@ const RightPanelScreenControls: React.FC<RightPanelControlsProps> = ({
     {showCollapseToggle && (
       <button
         onClick={onToggleLeftPanel}
-        className="p-2 text-amber-600 hover:text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-full md:hidden"
+        className="p-2 text-slate-300 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full md:hidden"
         title={isLeftPanelCollapsed ? "Show Controls" : "Hide Controls"}
         aria-expanded={!isLeftPanelCollapsed}
         aria-controls="left-panel-content"
@@ -31,8 +30,8 @@ const RightPanelScreenControls: React.FC<RightPanelControlsProps> = ({
     <button
       onClick={onToggleFullscreen}
       className={`p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2
-                  ${isRightPanelFullscreen ? 'text-white hover:text-amber-300 focus:ring-amber-400 focus:ring-offset-black' 
-                                           : 'text-amber-600 hover:text-amber-800 focus:ring-amber-500 focus:ring-offset-white'}`} /* Adjusted offset for new bg */
+                  ${isRightPanelFullscreen ? 'text-slate-100 hover:text-emerald-300 focus:ring-emerald-400 focus:ring-offset-slate-900' 
+                                           : 'text-slate-300 hover:text-emerald-400 focus:ring-emerald-500 focus:ring-offset-slate-800'}`}
       title={isRightPanelFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
       aria-pressed={isRightPanelFullscreen}
     >
@@ -61,14 +60,17 @@ const MapDisplayOverlayControls: React.FC<MapDisplayOverlayControlsProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const wrapperClasses = isOverlayMode
-    ? "absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl text-white z-20 w-60 sm:w-72 border border-amber-500/60"
-    : "flex-shrink-0 bg-white/50 backdrop-blur-sm rounded-md shadow-sm border border-amber-400/50 mb-2 sm:mb-3"; /* Lighter bg for non-overlay */
+    ? "absolute bottom-4 right-4 bg-slate-900/80 backdrop-blur-md rounded-lg shadow-xl text-slate-100 z-20 w-60 sm:w-72 border border-emerald-600/70"
+    : "flex-shrink-0 bg-slate-700/60 backdrop-blur-md rounded-md shadow-sm border border-slate-600/50 mb-2 sm:mb-3";
   
-  const headerBg = isOverlayMode ? "bg-black/20 hover:bg-black/40" : "bg-amber-200/30 hover:bg-amber-200/60"; /* Lighter bg */
-  const titleColor = isOverlayMode ? "text-amber-200" : "text-stone-700";
-  const labelColor = isOverlayMode ? "text-gray-200" : "text-stone-600";
-  const valueColor = isOverlayMode ? "text-gray-300" : "text-stone-500";
+  const headerBg = isOverlayMode ? "bg-slate-800/50 hover:bg-slate-700/70" : "bg-slate-650/70 hover:bg-slate-600/80";
+  const titleColor = isOverlayMode ? "text-emerald-300" : "text-emerald-400";
+  const labelColor = isOverlayMode ? "text-slate-200" : "text-slate-300";
+  const valueColor = isOverlayMode ? "text-slate-300" : "text-slate-400";
   const contentPadding = isOverlayMode ? "p-3" : "p-2 sm:p-3";
+  const borderColor = isOverlayMode ? 'border-emerald-700/50' : 'border-slate-600/50';
+  const checkboxClasses = "h-4 w-4 text-emerald-500 border-slate-500 rounded focus:ring-emerald-500 mr-2 cursor-pointer";
+  const sliderClasses = `w-full h-2 rounded-lg appearance-none cursor-pointer flex-grow ${isOverlayMode ? 'bg-slate-600 accent-emerald-500' : 'bg-slate-500 accent-emerald-600'}`;
 
   return (
     <div className={`${wrapperClasses}`}>
@@ -82,7 +84,7 @@ const MapDisplayOverlayControls: React.FC<MapDisplayOverlayControlsProps> = ({
         <span className={`w-5 h-5 ${isCollapsed ? 'icon-chevron-down' : 'icon-chevron-up'} ${titleColor}`}></span>
       </button>
       {!isCollapsed && (
-        <div id="display-options-content" className={`${contentPadding} space-y-2 border-t ${isOverlayMode ? 'border-amber-500/30' : 'border-amber-400/50'}`}>
+        <div id="display-options-content" className={`${contentPadding} space-y-2 border-t ${borderColor}`}>
           {hasPixelGrid && (
             <>
             <div className="flex items-center justify-between">
@@ -92,7 +94,7 @@ const MapDisplayOverlayControls: React.FC<MapDisplayOverlayControlsProps> = ({
                     id="showOriginalOverlayCheckbox"
                     checked={showOriginalOverlay}
                     onChange={(e) => setShowOriginalOverlay(e.target.checked)}
-                    className="h-4 w-4 text-amber-600 border-amber-400 rounded focus:ring-amber-500 mr-2 cursor-pointer"
+                    className={checkboxClasses}
                     aria-describedby="showOriginalOverlayDescription"
                 />
                 Show Original Background
@@ -109,7 +111,7 @@ const MapDisplayOverlayControls: React.FC<MapDisplayOverlayControlsProps> = ({
                 max="100"
                 value={pixelGridOpacity * 100}
                 onChange={(e) => setPixelGridOpacity(parseFloat(e.target.value) / 100)}
-                className={`w-full h-2 rounded-lg appearance-none cursor-pointer flex-grow ${isOverlayMode ? 'bg-gray-700 accent-amber-500' : 'bg-amber-300 accent-amber-600'}`} /* Adjusted slider bg */
+                className={sliderClasses}
                 aria-label="Pixel Grid Opacity"
                 aria-describedby="pixelGridOpacityValue"
                 />
@@ -160,7 +162,7 @@ const RightPanelBase: RightPanelComponentType = ({
   
   const panelBaseClasses = "flex-grow flex flex-col overflow-hidden transition-all duration-300 ease-in-out";
   const panelPadding = isRightPanelFullscreen ? "p-0 sm:p-0 md:p-0" : "p-2 sm:p-3 md:p-4";
-  const panelBg = isRightPanelFullscreen ? "bg-black" : "bg-white/40 backdrop-blur-sm"; /* Lighter, translucent for non-fullscreen */
+  const panelBg = isRightPanelFullscreen ? "bg-slate-900" : "bg-slate-800/60 backdrop-blur-md";
 
   const isLoadingPixelGridOnly = isLoading && mapData?.imageUrl && !mapData?.pixelGrid; 
 
@@ -170,7 +172,7 @@ const RightPanelBase: RightPanelComponentType = ({
         <div className="flex items-center">
            <button
             onClick={onToggleLeftPanel}
-            className="p-1.5 text-amber-600 hover:text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-full mr-2 hidden md:block"
+            className="p-1.5 text-slate-300 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full mr-2 hidden md:block"
             title={isLeftPanelCollapsed ? "Show Controls" : "Hide Controls"}
             aria-expanded={!isLeftPanelCollapsed}
             aria-controls="left-panel-content"
@@ -197,9 +199,9 @@ const RightPanelBase: RightPanelComponentType = ({
           {!isRightPanelFullscreen && (
             <>
               <div className="flex-shrink-0 text-center mb-1 sm:mb-2">
-                <h2 className="text-xl sm:text-2xl font-bold text-amber-700 font-serif" title={mapData.title}>{mapData.title}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 font-['Inter_Tight',_sans-serif]" title={mapData.title}>{mapData.title}</h2>
                 {mapData.mapType && mapData.usedTheme && (
-                  <p className="text-xs sm:text-sm text-stone-500 italic">
+                  <p className="text-xs sm:text-sm text-slate-400 italic">
                     A '{mapData.mapType}' map. Theme: "{mapData.usedTheme?.length > 40 ? mapData.usedTheme.substring(0,37) + '...' : mapData.usedTheme }"
                   </p>
                 )}
@@ -242,13 +244,13 @@ const RightPanelBase: RightPanelComponentType = ({
         </div>
       )}
       {!mapData && !isLoading && !error && (
-        <div className="flex-grow flex flex-col items-center justify-center text-stone-500 p-8 text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-24 h-24 text-amber-400/70 mb-4">
+        <div className="flex-grow flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-24 h-24 text-emerald-500/70 mb-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m0 0v2.25m0-2.25h1.5m-1.5 0H8.25m0 0H6.75m0 0H5.25m0 0H3.75m0 0V7.5A2.25 2.25 0 0 1 6 5.25h12A2.25 2.25 0 0 1 20.25 7.5v7.5m0 0H18.75m0 0H17.25m0 0H15.75m0 0H14.25m0 0h-1.5m0 0H11.25m0 0H9.75m0 0H8.25m0 0H6.75m3-3.75h3.75M14.25 9h3.75M3.75 15h3.75M3.75 18h3.75m0 0h3.75m0 0h3.75m0 0h3.75M12 12v3.75m0 0H9.75M12 15.75H14.25" />
           </svg>
-          <h3 className="text-2xl font-serif text-amber-600 mb-2">Welcome, Cartographer!</h3>
+          <h3 className="text-2xl font-['Inter_Tight',_sans-serif] text-emerald-400 mb-2">Welcome, Cartographer!</h3>
           <p className="max-w-md">
-            Use the controls on the left to describe your world and generate a unique fantasy map.
+            Start by defining your area in Step 1 on the left. Generate details, POIs, and then the map image.
           </p>
         </div>
       )}

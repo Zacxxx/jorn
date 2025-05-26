@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface LoadingSpinnerProps {
@@ -15,9 +14,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ message, size = 
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center text-amber-700 ${className}`} role="status" aria-live="polite">
+    <div className={`flex flex-col items-center justify-center text-emerald-400 ${className}`} role="status" aria-live="polite">
       <div 
-        className={`animate-spin rounded-full ${sizeClasses[size]} border-amber-500 border-t-transparent`}
+        className={`animate-spin rounded-full ${sizeClasses[size]} border-emerald-500 border-t-transparent`}
       />
       {message && <p className="mt-3 text-sm sm:text-base font-medium">{message}</p>}
       <span className="sr-only">{message || 'Loading...'}</span>

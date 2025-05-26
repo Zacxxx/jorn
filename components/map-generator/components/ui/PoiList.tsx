@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Place } from '../../types';
 import { PoiCard } from './PoiCard';
@@ -22,14 +21,14 @@ export const PoiList: React.FC<PoiListProps> = ({
 }) => {
   if (isLoading && (!places || places.length === 0)) { // Show loading only if list is empty
     return (
-      <div className="p-3 mt-4 text-center text-sm text-stone-500 bg-amber-50 rounded-md border border-amber-200">
+      <div className="p-3 mt-4 text-center text-sm text-slate-400 bg-slate-700/70 rounded-md border border-slate-600/70">
         Loading POIs...
       </div>
     );
   }
   if (!places || places.length === 0) {
       return (
-         <div className="p-3 mt-4 text-center text-sm text-stone-500 bg-amber-50 rounded-md border border-amber-200">
+         <div className="p-3 mt-4 text-center text-sm text-slate-400 bg-slate-700/70 rounded-md border border-slate-600/70">
             No points of interest generated for this area yet.
         </div>
       );
@@ -50,11 +49,11 @@ export const PoiList: React.FC<PoiListProps> = ({
 
 
   return (
-    <div className="bg-amber-50/80 backdrop-blur-sm p-2 sm:p-3 rounded-lg shadow-inner border border-amber-300/60 mt-1">
-      <h3 className="text-sm sm:text-md font-semibold text-stone-700 mb-2 text-center">
+    <div className="bg-slate-750/70 backdrop-blur-md p-2 sm:p-3 rounded-lg shadow-inner border border-slate-600/70 mt-1">
+      <h3 className="text-sm sm:text-md font-semibold text-slate-200 mb-2 text-center">
         {titleText}
       </h3>
-      <div className="space-y-2 max-h-60 md:max-h-72 lg:max-h-80 overflow-y-auto custom-scrollbar-thin pr-1">
+      <div className="space-y-2 max-h-60 md:max-h-72 lg:max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-slate-700 pr-1">
         {places.map(place => (
           <PoiCard
             key={place.id}
@@ -68,10 +67,10 @@ export const PoiList: React.FC<PoiListProps> = ({
         ))}
       </div>
        {mapGenerated && places.length > 0 && !unplacedPoisExist && !placingPoiId && (
-        <p className="text-xs text-center text-green-600 mt-2">All POIs placed! Select any to view details.</p>
+        <p className="text-xs text-center text-green-400 mt-2">All POIs placed! Select any to view details.</p>
       )}
       {!mapGenerated && places.length > 0 && (
-        <p className="text-xs text-center text-amber-700 mt-2">Generate the map image to start placing your POIs.</p>
+        <p className="text-xs text-center text-amber-400 mt-2">Generate the map image to start placing your POIs.</p>
       )}
     </div>
   );

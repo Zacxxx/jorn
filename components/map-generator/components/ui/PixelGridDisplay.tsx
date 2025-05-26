@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Place } from '../../types'; 
 
@@ -21,17 +20,17 @@ interface PixelGridDisplayProps {
 
 const POI_MARKER_SIZE_FACTOR = 0.7; 
 const POI_FONT_SIZE_FACTOR = 0.4;  
-const POI_ACTIVE_BORDER_COLOR = '#f59e0b'; // amber-500
-const POI_DEFAULT_BG_COLOR = 'rgba(217, 119, 6, 0.7)'; // amber-600 with alpha
-const POI_HOVER_BG_COLOR = 'rgba(180, 83, 9, 0.8)'; // amber-700 with alpha
-const POI_TEXT_COLOR = '#FFFFFF';
-const HOVER_CELL_BG = 'rgba(255, 255, 255, 0.25)';
-const PLACING_VALID_BORDER = 'rgba(34, 197, 94, 0.9)'; // green-500
-const PLACING_INVALID_BORDER = 'rgba(239, 68, 68, 0.9)'; // red-500
-const PLACING_HIGHLIGHT_BG = 'rgba(74, 222, 128, 0.3)'; 
+const POI_ACTIVE_BORDER_COLOR = '#10b981'; // THEME: emerald-500 (was amber-500)
+const POI_DEFAULT_BG_COLOR = 'rgba(51, 65, 85, 0.7)'; // THEME: slate-700 alpha (was amber-600 alpha)
+const POI_HOVER_BG_COLOR = 'rgba(30, 41, 59, 0.8)'; // THEME: slate-800 alpha (was amber-700 alpha)
+const POI_TEXT_COLOR = '#FFFFFF'; // Keep white for contrast
+const HOVER_CELL_BG = 'rgba(71, 85, 105, 0.25)'; // THEME: slate-600 alpha (was white alpha)
+const PLACING_VALID_BORDER = 'rgba(34, 197, 94, 0.9)'; // green-500 (Keep)
+const PLACING_INVALID_BORDER = 'rgba(239, 68, 68, 0.9)'; // red-500 (Keep)
+const PLACING_HIGHLIGHT_BG = 'rgba(74, 222, 128, 0.3)'; // green-400 alpha (Keep)
 
-const TOOLTIP_BG_COLOR = 'rgba(30, 30, 30, 0.85)';
-const TOOLTIP_TEXT_COLOR = '#FFFFFF';
+const TOOLTIP_BG_COLOR = 'rgba(23, 37, 50, 0.85)'; // THEME: slate-800/900 alpha (was dark gray)
+const TOOLTIP_TEXT_COLOR = '#FFFFFF'; // Keep white
 const TOOLTIP_FONT_SIZE_FACTOR = 0.35;
 const TOOLTIP_PADDING_X_FACTOR = 0.3;
 const TOOLTIP_PADDING_Y_FACTOR = 0.15;
@@ -125,7 +124,7 @@ const PixelGridDisplay: React.FC<PixelGridDisplayProps> = React.memo(({
         }
         
         const fontSize = markerRadius * POI_FONT_SIZE_FACTOR * 2;
-        ctx.font = `bold ${fontSize}px sans-serif`;
+        ctx.font = `bold ${fontSize}px 'Inter', sans-serif`; // THEME: Font
         ctx.fillStyle = POI_TEXT_COLOR;
         ctx.fillText(poi.name.substring(0, 1).toUpperCase(), markerX, markerY + fontSize*0.1);
       }
@@ -153,7 +152,7 @@ const PixelGridDisplay: React.FC<PixelGridDisplayProps> = React.memo(({
       const { poi, cellX, cellY } = hoveredPoiForTooltip;
       
       const tooltipFontSize = Math.min(cellWidth, cellHeight) * TOOLTIP_FONT_SIZE_FACTOR;
-      ctx.font = `${tooltipFontSize}px sans-serif`;
+      ctx.font = `${tooltipFontSize}px 'Inter', sans-serif`; // THEME: Font
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom'; // Align text to bottom of tooltip box
 
@@ -244,7 +243,7 @@ const PixelGridDisplay: React.FC<PixelGridDisplayProps> = React.memo(({
 
   if (isLoading) {
     return (
-        <div className="w-full h-full flex justify-center items-center bg-amber-100/70 text-stone-600 text-lg font-medium" style={{...style, aspectRatio: (imageOriginalWidth && imageOriginalHeight) ? `${imageOriginalWidth}/${imageOriginalHeight}` : '1/1'}}>
+        <div className="w-full h-full flex justify-center items-center bg-slate-700/80 text-slate-300 text-lg font-medium" style={{...style, aspectRatio: (imageOriginalWidth && imageOriginalHeight) ? `${imageOriginalWidth}/${imageOriginalHeight}` : '1/1'}}>
             Processing pixel grid...
         </div>
     );

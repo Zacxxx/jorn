@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Place } from '../../types';
 
@@ -16,9 +15,9 @@ export const PoiCard: React.FC<PoiCardProps> = ({
   poi, onSelect, isPlacing, isPlaced, isActive, isLoadingAction, canPlace
 }) => {
   const baseClasses = "p-3 rounded-lg shadow-sm border transition-all duration-150 ease-in-out";
-  const interactionClasses = canPlace ? "cursor-pointer hover:bg-amber-50" : "cursor-default";
-  const selectedClasses = isActive ? "bg-amber-200 border-amber-500 ring-2 ring-amber-500" : "bg-white border-amber-300";
-  const placingClasses = isPlacing ? "bg-blue-100 border-blue-400 ring-2 ring-blue-400" : "";
+  const interactionClasses = canPlace ? "cursor-pointer hover:bg-slate-600" : "cursor-default";
+  const selectedClasses = isActive ? "bg-slate-650 border-emerald-500 ring-2 ring-emerald-500" : "bg-slate-700 border-slate-600";
+  const placingClasses = isPlacing ? "bg-sky-700/70 border-sky-500 ring-2 ring-sky-500" : "";
 
   const handleClick = () => {
     if (isLoadingAction) return;
@@ -32,16 +31,16 @@ export const PoiCard: React.FC<PoiCardProps> = ({
 
   if (isPlacing) {
     statusText = "Click on map to place";
-    statusColor = "text-blue-600";
+    statusColor = "text-sky-300";
   } else if (isPlaced) {
     statusText = "Placed on map";
-    statusColor = "text-green-600";
+    statusColor = "text-green-400";
   } else if (canPlace) {
     statusText = "Ready to place";
-    statusColor = "text-amber-600";
+    statusColor = "text-amber-400";
   } else {
     statusText = "Awaiting map image";
-    statusColor = "text-stone-500";
+    statusColor = "text-slate-500";
   }
 
 
@@ -55,8 +54,8 @@ export const PoiCard: React.FC<PoiCardProps> = ({
       aria-pressed={isActive || isPlacing}
       aria-label={`Point of Interest: ${poi.name}. Status: ${statusText}. Click to ${isPlaced && !isActive ? 'view details' : isPlaced && isActive ? 'deselect' : canPlace ? 'place on map' : 'view details'}.`}
     >
-      <h4 className="text-md font-semibold text-stone-800 truncate">{poi.name}</h4>
-      <p className="text-xs text-stone-600 mt-1 line-clamp-2">{poi.description}</p>
+      <h4 className="text-md font-semibold text-slate-100 truncate">{poi.name}</h4>
+      <p className="text-xs text-slate-300 mt-1 line-clamp-2">{poi.description}</p>
       <div className={`mt-2 text-xs font-semibold ${statusColor}`}>
         {statusText}
       </div>

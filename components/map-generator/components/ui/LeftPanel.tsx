@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ThemeInput } from './ThemeInput';
 import { MapCustomization } from './MapCustomization';
@@ -31,27 +30,27 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   }, [defaultOpen]);
 
   return (
-    <div className={`border border-amber-300/70 rounded-lg shadow-sm overflow-hidden ${className}`}>
+    <div className={`border border-slate-600/70 rounded-lg shadow-sm overflow-hidden ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex justify-between items-center p-3 text-left bg-amber-100/60 hover:bg-amber-200/70 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${titleClassName}`}
+        className={`w-full flex justify-between items-center p-3 text-left bg-slate-700/80 hover:bg-slate-650/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${titleClassName}`}
         aria-expanded={isOpen}
-        aria-controls={`section-content-${title.replace(/\s+/g, '-')}`}
+        aria-controls={`section-content-${title.replace(/\s+/g, '-').toLowerCase()}`}
       >
         <div className="flex items-center">
-          {icon && <span className="mr-2 w-5 h-5 text-amber-700">{icon}</span>}
-          <span className="font-semibold text-amber-700 text-sm tracking-wide">{title}</span>
+          {icon && <span className="mr-2 w-5 h-5 text-emerald-400">{icon}</span>}
+          <span className="font-semibold text-emerald-300 text-sm tracking-wide">{title}</span>
           {badge !== undefined && (
-            <span className="ml-2 px-2 py-0.5 text-xs font-medium text-amber-800 bg-amber-300 rounded-full">{badge}</span>
+            <span className="ml-2 px-2 py-0.5 text-xs font-medium text-emerald-100 bg-emerald-600/80 rounded-full">{badge}</span>
           )}
         </div>
         <div className="flex items-center">
-            {isLoading && <span className="icon-spinner w-4 h-4 mr-2 text-amber-600"></span>}
-            <span className={`w-5 h-5 text-amber-600 transform transition-transform duration-200 ${isOpen ? 'icon-chevron-up' : 'icon-chevron-down'}`}></span>
+            {isLoading && <span className="icon-spinner w-4 h-4 mr-2 text-emerald-400"></span>}
+            <span className={`w-5 h-5 text-slate-300 transform transition-transform duration-200 ${isOpen ? 'icon-chevron-up' : 'icon-chevron-down'}`}></span>
         </div>
       </button>
       {isOpen && (
-        <div id={`section-content-${title.replace(/\s+/g, '-')}`} className="p-3 bg-white/80 border-t border-amber-300/50">
+        <div id={`section-content-${title.replace(/\s+/g, '-').toLowerCase()}`} className="p-3 bg-slate-800/70 border-t border-slate-600/70">
           {children}
         </div>
       )}
@@ -69,13 +68,13 @@ const AreaInfoDisplay: React.FC<AreaInfoDisplayProps> = ({ areaInfo }) => {
     if (!value || (Array.isArray(value) && value.length === 0)) return null;
     return (
       <div className="mb-2">
-        <h5 className="text-xs font-semibold text-stone-600 uppercase tracking-wider mb-0.5">{label}</h5>
+        <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{label}</h5>
         {Array.isArray(value) ? (
-          <ul className="list-disc list-inside pl-1 text-sm text-stone-700">
+          <ul className="list-disc list-inside pl-1 text-sm text-slate-200">
             {value.map((item, idx) => <li key={idx}>{item}</li>)}
           </ul>
         ) : (
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{value}</p>
+          <p className="text-sm text-slate-200 whitespace-pre-wrap">{value}</p>
         )}
       </div>
     );
@@ -83,7 +82,7 @@ const AreaInfoDisplay: React.FC<AreaInfoDisplayProps> = ({ areaInfo }) => {
 
   return (
     <div className="space-y-2 text-sm">
-      <h4 className="text-lg font-bold text-amber-700 font-serif mb-2" title={areaInfo.name}>{areaInfo.name}</h4>
+      <h4 className="text-lg font-bold text-emerald-400 font-['Inter_Tight',_sans-serif] mb-2" title={areaInfo.name}>{areaInfo.name}</h4>
       <DetailItem label="Overall Description" value={areaInfo.description} />
       <DetailItem label="Geography" value={areaInfo.geography} />
       <DetailItem label="Climate" value={areaInfo.climate} />
@@ -161,7 +160,11 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   onOpenManualPoiForm, onAutoPlacePois, canAutoPlace,
   appMode, onBrowseMaps, onReturnToCreateMode, onFinalizeMap, canFinalize
 }) => {
-  if (isRightPanelFullscreen && appMode === 'create') { // Fullscreen only for create mode map
+  const panelBaseClasses = "flex flex-col h-full transition-all duration-300 ease-in-out scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-750 overflow-y-auto";
+  const panelVisibleClasses = "w-96 p-3 bg-slate-800/80 backdrop-blur-md border-r border-slate-700/70 text-slate-200";
+  const panelCollapsedClasses = "w-0 p-0 overflow-hidden";
+
+  if (isRightPanelFullscreen && appMode === 'create') {
     return null; 
   }
 
@@ -214,7 +217,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
         >
           <div className="space-y-3">
             <div>
-              <label htmlFor="numPoisToGenerate" className="block text-sm font-medium text-stone-700 mb-1">
+              <label htmlFor="numPoisToGenerate" className="block text-sm font-medium text-slate-300 mb-1">
                 Number of POIs to Generate (1-10)
               </label>
               <input
@@ -225,7 +228,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 onChange={(e) => setNumPoisToGenerate(Math.max(1, Math.min(10, parseInt(e.target.value, 10) || 1)))}
                 min="1"
                 max="10"
-                className="block w-full p-2 border border-amber-400 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm bg-white disabled:bg-stone-100"
+                className="block w-full p-2 border border-slate-500 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm bg-slate-700 text-slate-100 placeholder-slate-400 disabled:bg-slate-600 disabled:opacity-70"
                 disabled={isLoading || !areaInfo}
               />
             </div>
@@ -236,10 +239,10 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 type="checkbox"
                 checked={prioritizeSuggestedPoiNames}
                 onChange={(e) => setPrioritizeSuggestedPoiNames(e.target.checked)}
-                className="h-4 w-4 text-amber-600 border-amber-400 rounded focus:ring-amber-500 disabled:opacity-70"
+                className="h-4 w-4 text-emerald-500 border-slate-500 rounded focus:ring-emerald-500 disabled:opacity-70"
                 disabled={isLoading || !areaInfo || !areaInfo.suggestedPoiNames || areaInfo.suggestedPoiNames.length === 0}
               />
-              <label htmlFor="prioritizeSuggestedNames" className="ml-2 block text-sm font-medium text-stone-700">
+              <label htmlFor="prioritizeSuggestedNames" className="ml-2 block text-sm font-medium text-slate-300">
                 Prioritize suggested names from Area Info
                 {areaInfo?.suggestedPoiNames?.length === 0 && " (None available)"}
               </label>
@@ -247,12 +250,12 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             <button
               onClick={onGeneratePois}
               disabled={isLoading || !areaInfo}
-              className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-teal-400 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+              className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:bg-emerald-400/70 disabled:cursor-not-allowed transition duration-150 ease-in-out"
             >
               {isGeneratingPois ? ( <><span className="icon-spinner w-5 h-5 mr-2"></span>Generating POIs...</>
               ) : mapData?.places && mapData.places.filter(p => !p.isManuallyAdded).length > 0 ? `Regenerate AI POIs (${numPoisToGenerate})` : `Generate AI POIs (${numPoisToGenerate})`}
             </button>
-             <p className="mt-1 text-xs text-stone-500">
+             <p className="mt-1 text-xs text-slate-500">
                 {prioritizeSuggestedPoiNames && areaInfo?.suggestedPoiNames && areaInfo.suggestedPoiNames.length > 0 
                 ? `Will use up to ${numPoisToGenerate} of the ${areaInfo.suggestedPoiNames.length} suggested names, generating others if needed.` 
                 : `Will generate ${numPoisToGenerate} new POIs based on the area.`}
@@ -270,11 +273,11 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             <button
                 onClick={onGenerateMapImage}
                 disabled={isLoading || !areaInfo || !mapData.places || mapData.places.length === 0}
-                className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:bg-sky-400 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+                className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:bg-emerald-400/70 disabled:cursor-not-allowed transition duration-150 ease-in-out"
             >
                 {isGeneratingImage ? (<><span className="icon-spinner w-5 h-5 mr-2"></span>Generating Image...</>) : 'Generate Map Image'}
             </button>
-             <p className="mt-1 text-xs text-stone-500">
+             <p className="mt-1 text-xs text-slate-500">
                 AI will determine the best map type and create the image.
             </p>
          </CollapsibleSection>
@@ -316,7 +319,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                   </button>
               </div>
               {mapData?.pixelGrid && unplacedPoisCount > 0 && !placingPoiId && (
-                 <div className="p-1 mt-0 text-center text-xs text-stone-500">
+                 <div className="p-1 mt-0 text-center text-xs text-slate-500">
                     Select POIs from the list to place them, or use Auto-Place.
                   </div>
               )}
@@ -410,7 +413,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   );
 
   const renderPoiDetailView = () => (
-    activePoiDetail && appMode === 'create' && ( // Only show POI details in create mode
+    activePoiDetail && appMode === 'create' && (
         <CollapsibleSection title="POI Details" initiallyOpen={true}>
             <PoiInfoPanel 
                 poi={activePoiDetail} 
@@ -424,8 +427,8 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
 
   const renderBrowseModePanel = () => (
     <div className="p-3 space-y-4">
-      <h2 className="text-lg font-semibold text-amber-700 font-serif">Browse Mode</h2>
-      <p className="text-sm text-stone-600">Map browser will be displayed in the main area.</p>
+      <h2 className="text-lg font-semibold text-emerald-400 font-['Inter_Tight',_sans-serif]">Browse Mode</h2>
+      <p className="text-sm text-slate-600">Map browser will be displayed in the main area.</p>
        <button
             onClick={onReturnToCreateMode}
             className="w-full flex items-center justify-center px-4 py-2.5 border border-amber-600 text-base font-medium rounded-md shadow-sm text-amber-700 bg-amber-100 hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition duration-150 ease-in-out"
@@ -462,23 +465,35 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
 
 
   return (
-    <aside 
-      className={`
-        flex-shrink-0 bg-white/60 backdrop-blur-md shadow-lg
-        transition-all duration-300 ease-in-out
-        relative 
-        ${isCollapsed ? 'w-12 sm:w-14' : 'w-full sm:w-80 md:w-96 lg:w-[420px]'}
-        h-full flex flex-col
-        border-r border-amber-400/60 
-        order-first 
-      `}
-      aria-label="Controls and Information Panel"
-    >
-        <div className={`p-3 flex justify-between items-center border-b border-amber-300/50 ${isCollapsed ? 'hidden' : ''}`}>
-            <h1 className="text-lg font-bold text-amber-800 font-serif tracking-tight">
-              {appMode === 'browse' ? 'Map Browser' : 'AI Map Generator'}
-            </h1>
+    <div className={`${panelBaseClasses} ${isCollapsed ? panelCollapsedClasses : panelVisibleClasses}`}>
+      {!isCollapsed && (
+        <div className="flex justify-between items-center mb-3 px-1 pt-1">
+          <h2 className="text-2xl font-bold text-emerald-400 font-['Inter_Tight',_sans-serif]">Map Generator</h2>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={onToggleHelpModal}
+              className="p-2 rounded-md hover:bg-slate-700 text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              title="Help / About"
+            >
+              <span className="icon-question-circle w-5 h-5"></span>
+            </button>
+            <button 
+              onClick={onResetApp}
+              className="p-2 rounded-md hover:bg-slate-700 text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              title="Reset Application State"
+            >
+              <span className="icon-refresh w-5 h-5"></span>
+            </button>
+            <button 
+              onClick={onToggleCollapse}
+              className="p-2 rounded-md hover:bg-slate-700 text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              title={isCollapsed ? "Expand Panel" : "Collapse Panel"}
+            >
+              <span className={`w-5 h-5 ${isCollapsed ? 'icon-panel-left-open' : 'icon-panel-left-close'}`}></span>
+            </button>
+          </div>
         </div>
+      )}
       <div 
         id="left-panel-content"
         className={`flex-grow overflow-y-auto custom-scrollbar-thin ${isCollapsed ? 'hidden' : 'block'} 
@@ -489,22 +504,6 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             renderBrowseModePanel()
         }
       </div>
-      
-      <button
-        onClick={onToggleCollapse}
-        className={`
-          absolute top-1/2 -translate-y-1/2 
-          ${isCollapsed ? 'right-1/2 translate-x-1/2 sm:right-1/2 sm:translate-x-1/2' : '-right-3 translate-x-0'} 
-          z-20 p-2 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-md
-          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2
-          transition-all duration-300 ease-in-out
-        `}
-        title={isCollapsed ? "Expand Panel" : "Collapse Panel"}
-        aria-expanded={!isCollapsed}
-        aria-controls="left-panel-content" 
-      >
-        <span className={`block w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-300 ${isCollapsed ? 'icon-arrow-right-double' : 'icon-arrow-left-double'}`}></span>
-      </button>
-    </aside>
+    </div>
   );
 };

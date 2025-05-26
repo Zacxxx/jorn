@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MapData, Place } from '../../types';
 import { PixelGridDisplay } from './PixelGridDisplay';
@@ -34,7 +33,7 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
 
   return (
     <div 
-      className={`relative rounded-md overflow-hidden shadow-inner bg-black ${className || ''}`} 
+      className={`relative rounded-md overflow-hidden shadow-inner bg-slate-900 ${className || ''}`}
       style={aspectRatioStyle} 
     >
       {mapData.imageUrl && (
@@ -66,12 +65,12 @@ export const MapDisplay: React.FC<MapDisplayProps> = ({
           style={{ zIndex: 1, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
         />
       ) : !mapData.imageUrl && !isLoadingPixelGrid && (
-        <div className="w-full h-full flex justify-center items-center bg-amber-200/50 text-stone-600 p-4 text-center">
+        <div className="w-full h-full flex justify-center items-center bg-slate-700/50 text-slate-400 p-4 text-center">
             Map image and pixel grid will appear here once generated.
         </div>
       )}
       {isLoadingPixelGrid && ( 
-         <div className="absolute inset-0 w-full h-full flex justify-center items-center bg-amber-100/80 text-stone-700 z-10 text-lg font-medium">
+         <div className="absolute inset-0 w-full h-full flex justify-center items-center bg-slate-700/80 text-slate-300 z-10 text-lg font-medium">
             Processing pixel grid...
         </div>
       )}

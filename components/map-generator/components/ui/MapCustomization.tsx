@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapType, MAP_TYPES } from '../../types'; // MAP_TYPES might be used for display only
 
@@ -31,7 +30,7 @@ export const MapCustomization: React.FC<MapCustomizationProps> = ({
     <div className="space-y-4">
       {/* Map Type selection is now mostly AI driven, so this might be for display or advanced override */}
       <div>
-        <label htmlFor="mapTypeDisplay" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="mapTypeDisplay" className="block text-sm font-medium text-slate-300 mb-1">
           Map Type (AI Determined)
         </label>
         <input
@@ -39,14 +38,14 @@ export const MapCustomization: React.FC<MapCustomizationProps> = ({
           id="mapTypeDisplay"
           value={mapType === 'Automatic' && step < 3 ? 'AI Will Determine' : mapType}
           readOnly
-          className="block w-full p-2 border border-amber-300 rounded-md shadow-sm bg-stone-100 text-stone-500 sm:text-sm"
+          className="block w-full p-2 border border-slate-600 rounded-md shadow-sm bg-slate-700 text-slate-400 sm:text-sm"
           aria-label="Current or AI determined map type"
         />
          {isMapTypeAIDetermined && step < 3 && (
-             <p className="mt-1 text-xs text-stone-500">The AI will select the most appropriate map type based on the area details and POIs during image generation.</p>
+             <p className="mt-1 text-xs text-slate-400">The AI will select the most appropriate map type based on the area details and POIs during image generation.</p>
          )}
          {step >=3 && mapType !== 'Automatic' && (
-            <p className="mt-1 text-xs text-stone-500">Map type determined by AI: {mapType}.</p>
+            <p className="mt-1 text-xs text-slate-400">Map type determined by AI: {mapType}.</p>
          )}
       </div>
 
@@ -58,10 +57,10 @@ export const MapCustomization: React.FC<MapCustomizationProps> = ({
             type="checkbox"
             checked={useCustomLore}
             onChange={(e) => setUseCustomLore(e.target.checked)}
-            className="h-4 w-4 text-amber-600 border-amber-400 rounded focus:ring-amber-500 disabled:opacity-70"
+            className="h-4 w-4 text-emerald-500 border-slate-500 rounded focus:ring-emerald-500 disabled:opacity-70"
             disabled={isLoading || step > 1} // Disable after area gen, as lore is baked in
           />
-          <label htmlFor="useCustomLore" className="ml-2 block text-sm font-medium text-stone-700">
+          <label htmlFor="useCustomLore" className="ml-2 block text-sm font-medium text-slate-300">
             Add Custom Lore (for Area Generation)
           </label>
         </div>
@@ -70,7 +69,7 @@ export const MapCustomization: React.FC<MapCustomizationProps> = ({
             id="customLore"
             name="customLore"
             rows={4}
-            className="block w-full p-2 border border-amber-400 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm bg-white disabled:bg-stone-100 placeholder-stone-400"
+            className="block w-full p-2 border border-slate-500 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm bg-slate-700 text-slate-100 placeholder-slate-400 disabled:bg-slate-600 disabled:text-slate-400 disabled:opacity-70"
             placeholder="e.g., The ancient war of the Twin Dragons reshaped this land..."
             value={customLore}
             onChange={(e) => setCustomLore(e.target.value)}
@@ -78,7 +77,7 @@ export const MapCustomization: React.FC<MapCustomizationProps> = ({
             aria-describedby="lore-description"
           />
         )}
-        <p id="lore-description" className="mt-1 text-xs text-stone-500">
+        <p id="lore-description" className="mt-1 text-xs text-slate-400">
           {step > 1 ? "Area lore is now established. Regenerate area to change." : (useCustomLore ? "This lore will heavily influence the initial area generation." : "Check box to add lore for initial area generation.")}
         </p>
       </div>
@@ -87,7 +86,7 @@ export const MapCustomization: React.FC<MapCustomizationProps> = ({
           <button
             onClick={onGeneratePrimary}
             disabled={isLoading}
-            className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:bg-amber-400 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+            className="w-full flex items-center justify-center px-4 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:bg-emerald-500/70 disabled:cursor-not-allowed transition duration-150 ease-in-out"
           >
             {isLoading ? (
               <>

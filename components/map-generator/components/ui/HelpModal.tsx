@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HelpModalProps } from '../../types';
 
@@ -7,41 +6,41 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center p-4 z-50"
+      className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-md flex justify-center items-center p-4 z-[100]"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="helpModalTitle"
     >
       <div 
-        className="bg-amber-50 text-stone-800 p-6 sm:p-8 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-amber-300 custom-scrollbar-thin"
+        className="bg-slate-800 text-slate-200 p-6 sm:p-8 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-slate-700 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-750"
         onClick={(e) => e.stopPropagation()} 
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="helpModalTitle" className="text-2xl sm:text-3xl font-bold text-amber-700 font-serif">Help & Guidance</h2>
+          <h2 id="helpModalTitle" className="text-2xl sm:text-3xl font-bold text-emerald-400 font-['Inter_Tight',_sans-serif]">Help & Guidance</h2>
           <button 
             onClick={onClose} 
-            className="p-2 text-stone-500 hover:text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-full"
+            className="p-2 text-slate-400 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-full"
             aria-label="Close help modal"
           >
             <span className="icon-close w-6 h-6 block"></span>
           </button>
         </div>
 
-        <div className="space-y-6 text-sm sm:text-base text-stone-700 leading-relaxed">
+        <div className="space-y-6 text-sm sm:text-base text-slate-300 leading-relaxed">
           <section>
-            <h3 className="text-lg font-semibold text-amber-600 font-serif mb-2">Welcome to the AI Fantasy Map Generator!</h3>
+            <h3 className="text-lg font-semibold text-emerald-300 font-['Inter_Tight',_sans-serif] mb-2">Welcome to the AI Fantasy Map Generator!</h3>
             <p>
               This tool uses AI to guide you through creating detailed fantasy areas, points of interest, and unique map images.
             </p>
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-amber-600 font-serif mb-2">Map Generation: A Step-by-Step Process</h3>
+            <h3 className="text-lg font-semibold text-emerald-300 font-['Inter_Tight',_sans-serif] mb-2">Map Generation: A Step-by-Step Process</h3>
             <ol className="list-decimal list-outside ml-6 space-y-4">
               <li>
-                <strong className="font-semibold text-stone-800">Step 1: Generate Area Details</strong>
-                <ul className="list-disc list-outside ml-6 mt-1 space-y-1 text-stone-600">
+                <strong className="font-semibold text-slate-100">Step 1: Generate Area Details</strong>
+                <ul className="list-disc list-outside ml-6 mt-1 space-y-1 text-slate-400">
                   <li>
                     <strong>Describe Your Theme:</strong> In the "Define Your Area" section, provide a rich description of the world or area you want to map.
                   </li>
@@ -61,8 +60,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </ul>
               </li>
               <li>
-                <strong className="font-semibold text-stone-800">Step 2: Generate Points of Interest (POIs)</strong>
-                 <ul className="list-disc list-outside ml-6 mt-1 space-y-1 text-stone-600">
+                <strong className="font-semibold text-slate-100">Step 2: Generate Points of Interest (POIs)</strong>
+                 <ul className="list-disc list-outside ml-6 mt-1 space-y-1 text-slate-400">
                   <li>
                     Once Area Details are generated, the "Generate Points of Interest" button in its section becomes active.
                   </li>
@@ -77,8 +76,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </ul>
               </li>
               <li>
-                <strong className="font-semibold text-stone-800">Step 3: Generate Map Image</strong>
-                 <ul className="list-disc list-outside ml-6 mt-1 space-y-1 text-stone-600">
+                <strong className="font-semibold text-slate-100">Step 3: Generate Map Image</strong>
+                 <ul className="list-disc list-outside ml-6 mt-1 space-y-1 text-slate-400">
                   <li>
                     After POIs are generated, the "Generate Map Image" button becomes active.
                   </li>
@@ -97,8 +96,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-amber-600 font-serif mb-2">Interacting with Your Map & POIs:</h3>
-            <ul className="list-disc list-outside ml-6 space-y-2 text-stone-600">
+            <h3 className="text-lg font-semibold text-emerald-300 font-['Inter_Tight',_sans-serif] mb-2">Interacting with Your Map & POIs:</h3>
+            <ul className="list-disc list-outside ml-6 space-y-2 text-slate-400">
               <li>
                 <strong>Placing POIs:</strong> After the map image is generated, POIs from the list can be placed. Click a POI, then click on the map grid.
               </li>
@@ -115,8 +114,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           </section>
           
           <section>
-            <h3 className="text-lg font-semibold text-amber-600 font-serif mb-2">Exporting & Importing:</h3>
-             <ul className="list-disc list-outside ml-6 space-y-2 text-stone-600">
+            <h3 className="text-lg font-semibold text-emerald-300 font-['Inter_Tight',_sans-serif] mb-2">Exporting & Importing:</h3>
+             <ul className="list-disc list-outside ml-6 space-y-2 text-slate-400">
                 <li>
                   <strong>Export:</strong> After all steps are complete (Area Info, POIs, Map Image, Pixel Grid), "Export Map" saves your entire creation (including Area Info) to a JSON file.
                 </li>
@@ -127,8 +126,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           </section>
 
            <section>
-            <h3 className="text-lg font-semibold text-amber-600 font-serif mb-2">Tips for Best Results:</h3>
-            <ul className="list-disc list-outside ml-6 space-y-2 text-stone-600">
+            <h3 className="text-lg font-semibold text-emerald-300 font-['Inter_Tight',_sans-serif] mb-2">Tips for Best Results:</h3>
+            <ul className="list-disc list-outside ml-6 space-y-2 text-slate-400">
               <li>
                 <strong>Be specific with your initial theme.</strong> This heavily influences the Area Details.
               </li>
@@ -144,7 +143,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           <div className="mt-8 text-center">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-amber-600 text-white font-semibold rounded-lg shadow-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-amber-50 transition-colors"
+              className="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-colors"
             >
               Got it, let's create!
             </button>
