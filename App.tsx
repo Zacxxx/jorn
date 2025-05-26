@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, EncyclopediaSubTabId } from './types'; 
+import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, EncyclopediaSubTabId, PointOfInterest } from './types'; 
 import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCES, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment } from './services/geminiService';
 import { attemptEnhancement, deductResources as deductEnhancementResources, generateItemId } from './components/items/item_utils';
@@ -544,7 +544,8 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     return { isDefeated: false, isStunned: playerEffectsResult.isStunned };
   }, [player, effectivePlayerStats, addLog, setGameState, setPlayerActionSkippedByStun]); 
 
-  const handleFindEnemy = async () => {
+  // Modified to accept POI, though not used in current enemy generation logic
+  const handleFindEnemy = async (poi?: PointOfInterest | any) => { 
     if (getPreparedSpells().length === 0 && getPreparedAbilities().length === 0 && !player.items.some(i => i.itemType === 'Consumable')) { 
         setModalContent({ title: "Unprepared", message: "Prepare spells/abilities or have consumables before seeking battle.", type: 'info'}); 
         return; 
@@ -1099,21 +1100,13 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
           />
         )}
         {gameState === 'EXPLORE_VIEW' && (
-          <ExploreView
-            onPlay={handleFindEnemy} // Assuming 'PLAY' will trigger finding an enemy for now
-            onReturnHome={handleNavigateHome}
+          <ExploreView 
+            onPlay={handleFindEnemy} // Added onPlay prop back
             isLoading={isLoading}
-            onSetGameState={setGameState} // Added
-            onSetEncyclopediaSubTab={(subTab) => { // Renamed from onOpenCharacterSheet to be more specific to its new role
-              setDefaultCharacterSheetTab('Encyclopedia');
-              setTargetEncyclopediaSubTab(subTab); // Set the target sub-tab
-              setGameState('CHARACTER_SHEET');
-            }}
-            onOpenCharacterSheet={(tabId) => { // This prop in ExploreView is for general opening, let's ensure it's used if WorldMap needs it. 
-                                            // WorldMap uses onSetEncyclopediaSubTab now for 'Learn More'.
-                                            // This can be a generic open if ExploreView itself has other buttons for char sheet tabs.
-                handleOpenCharacterSheet(tabId as CharacterSheetTab); // Original broader functionality
-            }}
+            onReturnHome={handleNavigateHome}
+            onSetGameState={setGameState}
+            onSetEncyclopediaSubTab={setTargetEncyclopediaSubTab} // Pass the setter for the sub-tab
+            onOpenCharacterSheet={handleOpenCharacterSheet} // Pass the function to open character sheet
           />
         )}
         {gameState === 'SPELL_CRAFTING' && (

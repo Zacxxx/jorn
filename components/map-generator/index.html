@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced AI Fantasy Map Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body, #root {
+      height: 100%;
+      overflow: hidden; /* Prevent main page scroll */
+    }
+    body {
+      font-family: 'Georgia', serif; /* More thematic font */
+      background-color: #FDF5E6; /* Old Lace - warmer parchment */
+      color: #44403c; /* stone-700, slightly adjusted for contrast if needed */
+      transition: background-color 0.3s, color 0.3s; 
+    }
+    /* Custom scrollbar for a more thematic feel */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F0EAD6; /* Slightly darker parchment */
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D4A373; /* Earthy brown/amber */
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #BF8A6B; /* Darker earthy shade */
+    }
+
+    /* Custom selection color */
+    ::selection {
+      background-color: #fcd34d; /* amber-300 */
+      color: #78350f; /* amber-900 */
+    }
+
+    /* Standardize focus-visible for accessibility and consistent look */
+    *:focus-visible {
+      outline: 2px solid #fbbf24; /* amber-400 */
+      outline-offset: 2px;
+      border-radius: 2px; /* Optional: slight rounding for the outline itself */
+    }
+    /* Remove default outline for elements that have focus-visible */
+    *:focus:not(:focus-visible) {
+      outline: none;
+    }
+    
+    /* Add default transitions to buttons and selects for smoother interactions */
+    button,
+    select,
+    input[type="checkbox"],
+    input[type="range"] {
+      transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, opacity 0.15s ease-in-out;
+    }
+    textarea, input[type="text"], input[type="file"] {
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+
+    /* Screen reader only utility class */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Custom thin scrollbar for internal elements */
+    .custom-scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar-thin::-webkit-scrollbar-track {
+      background: #F0EAD6; /* Match main scrollbar track */
+      border-radius: 6px;
+    }
+    .custom-scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #D4A373; /* Match main scrollbar thumb */
+      border-radius: 6px;
+    }
+    .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #BF8A6B; 
+    }
+
+    /* Define icons used in the app for reusability and cleaner JSX */
+    /* Ensure icon class has display: inline-block or block and w/h for visibility */
+    .icon-help:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>');
+    }
+    .icon-close:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>');
+    }
+    .icon-back-arrow:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" /></svg>');
+    }
+    .icon-visit-poi:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>');
+    }
+    .icon-spinner { /* Adjusted for Tailwind: use directly on a span/div that has w/h classes */
+      display: inline-block; /* Or block */
+      vertical-align: middle;
+    }
+    .icon-spinner:before {
+      content: url('data:image/svg+xml,<svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>');
+    }
+    .icon-menu:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>');
+    }
+    .icon-arrow-left-double:before {
+       content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" /></svg>');
+    }
+    .icon-arrow-right-double:before {
+       content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5" /></svg>');
+    }
+    .icon-fullscreen-enter:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75v4.5m0-4.5h-4.5m4.5 0L15 9m4.5 11.25v-4.5m0 4.5h-4.5m4.5 0L15 15" /></svg>');
+    }
+    .icon-fullscreen-exit:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9V4.5M15 9h4.5M15 9l5.25-5.25M15 15v4.5M15 15h4.5M15 15l5.25 5.25" /></svg>');
+    }
+    .icon-chevron-up:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>');
+    }
+    .icon-chevron-down:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>');
+    }
+    .icon-download:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>');
+    }
+    .icon-upload:before {
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>');
+    }
+
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/client": "https://esm.sh/react-dom@^19.1.0/client",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.0.1",
+    "uuid": "https://esm.sh/uuid@^9.0.1" 
+  }
+}
+</script>
+</head>
+<body class="text-stone-700">
+  <div id="root" class="h-full flex flex-col"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>
