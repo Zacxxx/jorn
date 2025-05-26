@@ -2,6 +2,8 @@
 
 Jorn is a sophisticated React-based RPG game that combines traditional role-playing elements with modern web technologies. The game features a rich combat system, character customization, spell crafting, and an engaging quest system.
 
+:)
+
 ## 🚀 Features
 
 - **Combat System**: Turn-based combat with detailed battle displays for both player and enemies
