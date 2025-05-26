@@ -22,7 +22,7 @@ const Footer: React.FC<FooterProps> = ({
     onOpenGameMenu
 }) => {
   return (
-    <footer className="bg-slate-900/80 border-t-2 border-slate-700/60 mt-auto backdrop-blur-sm shadow-inner sticky bottom-0 z-[999]">
+    <footer className="bg-slate-900/80 border-t-2 border-slate-700/60 backdrop-blur-sm shadow-inner sticky bottom-0 z-[999] safe-area-inset-bottom">
       <div className="container mx-auto px-2 py-1.5 sm:px-3 sm:py-2.5 max-w-6xl">
         {/* Mobile Grid Layout */}
         <div className="sm:hidden grid grid-cols-4 gap-1.5 mb-1.5">
@@ -30,8 +30,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenSpellbook} 
             variant="primary" 
             size="sm"
-            icon={<BookIcon className="w-4 h-4"/>}
-            className="shadow-sky-500/30 hover:shadow-sky-500/50 text-[11px] h-9"
+            icon={<BookIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
+            className="shadow-sky-500/30 hover:shadow-sky-500/50 text-[11px] h-9 min-h-[44px]"
             title="Open Spellbook"
           >
             Spells
@@ -40,8 +40,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenInventory} 
             variant="secondary" 
             size="sm"
-            icon={<BagIcon className="w-4 h-4"/>}
-            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9"
+            icon={<BagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
+            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px]"
             title="Open Inventory"
           >
             Items
@@ -50,8 +50,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenCraftingHub} 
             variant="info" 
             size="sm"
-            icon={<GearIcon className="w-4 h-4"/>}
-            className="shadow-teal-500/30 hover:shadow-teal-500/50 text-[11px] h-9"
+            icon={<GearIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
+            className="shadow-teal-500/30 hover:shadow-teal-500/50 text-[11px] h-9 min-h-[44px]"
             title="Open Crafting Hub"
           >
             Craft
@@ -60,8 +60,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenTraitsPage} 
             variant="success" 
             size="sm"
-            icon={<StarIcon className="w-4 h-4"/>}
-            className="shadow-green-500/30 hover:shadow-green-500/50 text-[11px] h-9"
+            icon={<StarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
+            className="shadow-green-500/30 hover:shadow-green-500/50 text-[11px] h-9 min-h-[44px]"
             title="View/Define Traits"
           >
             Traits
@@ -70,8 +70,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenQuestsPage} 
             variant="warning" 
             size="sm"
-            icon={<BookIcon className="w-4 h-4"/>}
-            className="shadow-yellow-500/30 hover:shadow-yellow-500/50 text-[11px] h-9"
+            icon={<BookIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
+            className="shadow-yellow-500/30 hover:shadow-yellow-500/50 text-[11px] h-9 min-h-[44px]"
             title="View Quest Log"
           >
             Quests
@@ -80,8 +80,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenEncyclopedia} 
             variant="secondary" 
             size="sm"
-            icon={<CollectionIcon className="w-4 h-4"/>} 
-            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9"
+            icon={<CollectionIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>} 
+            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px]"
             title="Open Encyclopedia"
           >
             Wiki
@@ -90,8 +90,8 @@ const Footer: React.FC<FooterProps> = ({
             onClick={onOpenGameMenu} 
             variant="secondary" 
             size="sm"
-            icon={<Bars3Icon className="w-4 h-4"/>}
-            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9"
+            icon={<Bars3Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
+            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px]"
             title="Open Game Menu"
           >
             Menu
@@ -109,7 +109,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="info" 
               size="sm"
               icon={<GearIcon className="w-4 h-4"/>}
-              className="shadow-teal-500/30 hover:shadow-teal-500/50"
+              className="shadow-teal-500/30 hover:shadow-teal-500/50 min-h-[44px]"
               title="Open Crafting Hub"
             >
               Crafting
@@ -119,7 +119,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="secondary" 
               size="sm"
               icon={<BagIcon className="w-4 h-4"/>}
-              className="shadow-slate-500/30 hover:shadow-slate-500/50"
+              className="shadow-slate-500/30 hover:shadow-slate-500/50 min-h-[44px]"
               title="Open Inventory"
             >
               Inventory
@@ -129,7 +129,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="primary" 
               size="sm"
               icon={<BookIcon className="w-4 h-4"/>}
-              className="shadow-sky-500/30 hover:shadow-sky-500/50"
+              className="shadow-sky-500/30 hover:shadow-sky-500/50 min-h-[44px]"
               title="Open Spellbook"
             >
               Spells
@@ -139,7 +139,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="success" 
               size="sm"
               icon={<StarIcon className="w-4 h-4"/>}
-              className="shadow-green-500/30 hover:shadow-green-500/50"
+              className="shadow-green-500/30 hover:shadow-green-500/50 min-h-[44px]"
               title="View/Define Traits"
             >
               Traits
@@ -149,7 +149,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="warning" 
               size="sm"
               icon={<BookIcon className="w-4 h-4"/>}
-              className="shadow-yellow-500/30 hover:shadow-yellow-500/50"
+              className="shadow-yellow-500/30 hover:shadow-yellow-500/50 min-h-[44px]"
               title="View Quest Log"
             >
               Quests
@@ -159,7 +159,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="secondary" 
               size="sm"
               icon={<CollectionIcon className="w-4 h-4"/>} 
-              className="shadow-slate-500/30 hover:shadow-slate-500/50"
+              className="shadow-slate-500/30 hover:shadow-slate-500/50 min-h-[44px]"
               title="Open Encyclopedia"
             >
               Encyclopedia
@@ -169,7 +169,7 @@ const Footer: React.FC<FooterProps> = ({
               variant="secondary" 
               size="sm"
               icon={<Bars3Icon className="w-4 h-4"/>}
-              className="shadow-slate-500/30 hover:shadow-slate-500/50"
+              className="shadow-slate-500/30 hover:shadow-slate-500/50 min-h-[44px]"
               title="Open Game Menu"
             >
               Menu
