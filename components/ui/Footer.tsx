@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ActionButton from '../battle-ui/layout/ActionButton';
-import { BookIcon, GearIcon, StarIcon, BagIcon, Bars3Icon, CollectionIcon, ChevronUpIcon, ChevronDownIcon } from '../books/IconComponents';
+import { BookIcon, GearIcon, StarIcon, BagIcon, Bars3Icon, CollectionIcon, ChevronUpIcon, ChevronDownIcon, ChartBarIcon } from '../books/IconComponents';
 import useMobileFeatures from '../../hooks/useMobileFeatures';
 
 interface FooterProps {
@@ -11,6 +11,7 @@ interface FooterProps {
   onOpenQuestsPage: () => void;
   onOpenEncyclopedia: () => void;
   onOpenGameMenu: () => void;
+  onOpenProgression: () => void;
 }
 
 const Footer: React.FC<FooterProps> = ({ 
@@ -20,7 +21,8 @@ const Footer: React.FC<FooterProps> = ({
     onOpenTraitsPage,
     onOpenQuestsPage,
     onOpenEncyclopedia,
-    onOpenGameMenu
+    onOpenGameMenu,
+    onOpenProgression
 }) => {
   const { isPortrait, isMobile, isLandscape } = useMobileFeatures();
   const [isExpanded, setIsExpanded] = useState(true);
@@ -33,8 +35,9 @@ const Footer: React.FC<FooterProps> = ({
     { onClick: onOpenCraftingHub, variant: 'info', icon: GearIcon, label: 'Craft', title: 'Open Crafting Hub' },
     { onClick: onOpenTraitsPage, variant: 'success', icon: StarIcon, label: 'Traits', title: 'View/Define Traits' },
     { onClick: onOpenQuestsPage, variant: 'warning', icon: BookIcon, label: 'Quests', title: 'View Quest Log' },
+    { onClick: onOpenProgression, variant: 'info', icon: ChartBarIcon, label: 'Progression', title: 'View Progression' },
     { onClick: onOpenEncyclopedia, variant: 'secondary', icon: CollectionIcon, label: 'Wiki', title: 'Open Encyclopedia' },
-    { onClick: onOpenGameMenu, variant: 'secondary', icon: Bars3Icon, label: 'Menu', title: 'Open Game Menu' },
+    { onClick: onOpenGameMenu, variant: 'secondary', icon: Bars3Icon, label: 'Options', title: 'Open Game Menu' },
   ];
 
   const renderActionButton = (action: typeof allActions[0], isMobile: boolean, isMenuButton: boolean = false) => (
@@ -45,7 +48,7 @@ const Footer: React.FC<FooterProps> = ({
       icon={<action.icon className={isMenuButton ? "w-3.5 h-3.5 sm:w-4 sm:h-4" : "w-6 h-6"}/>}
       className={`shadow-${action.variant}-500/30 hover:shadow-${action.variant}-500/50 
         ${isMenuButton ? 'text-[11px] h-9 min-h-[44px]' : 'text-base h-16 min-h-[64px]'}
-        touch-manipulation
+        touch-manipulation w-full
         ${isMobile ? 'truncate' : ''}`}
       title={action.title}
     >
