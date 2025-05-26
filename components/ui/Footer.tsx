@@ -24,8 +24,8 @@ const Footer: React.FC<FooterProps> = ({
   return (
     <footer className="bg-slate-900/80 border-t-2 border-slate-700/60 backdrop-blur-sm shadow-inner sticky bottom-0 z-[999] safe-area-inset-bottom">
       <div className="container mx-auto px-2 py-1.5 sm:px-3 sm:py-2.5 max-w-6xl">
-        {/* Mobile Grid Layout */}
-        <div className="sm:hidden grid grid-cols-4 gap-1.5 mb-1.5">
+        {/* Mobile Grid Layout - Portrait Mode */}
+        <div className="sm:hidden grid grid-cols-2 gap-1.5 mb-1.5 portrait:grid-cols-4 landscape:grid-cols-4">
           <ActionButton 
             onClick={onOpenSpellbook} 
             variant="primary" 
