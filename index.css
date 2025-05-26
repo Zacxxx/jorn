@@ -49,6 +49,15 @@ code {
 @tailwind components;
 @tailwind utilities;
 
+/* Debug styles */
+.debug-grid-item {
+  @apply border border-dashed border-red-500/30;
+}
+
+.debug-flex-item {
+  @apply border border-dashed border-blue-500/30;
+}
+
 /* Responsive utilities */
 @layer utilities {
   .text-balance {
