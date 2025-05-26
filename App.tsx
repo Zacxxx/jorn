@@ -1078,9 +1078,9 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
 
 
   return (
-    <div className="flex flex-col min-h-screen h-screen bg-slate-900 text-slate-100 antialiased overflow-hidden" style={{fontFamily: "'Inter', sans-serif"}}>
+    <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain" style={{fontFamily: "'Inter', sans-serif"}}>
       <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet()} onNavigateHome={handleNavigateHome} />
-      <main className="flex-grow container mx-auto px-2 py-3 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full overflow-y-auto styled-scrollbar">
+      <main className="flex-grow container mx-auto px-2 py-2 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full overflow-y-auto styled-scrollbar touch-action-pan-y">
         {gameState === 'HOME' && <HomeScreenView 
           onFindEnemy={handleFindEnemy}
           isLoading={isLoading} 
@@ -1228,6 +1228,8 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
             isLoading={isLoading}
           />
         )}
+        {isLoading && (gameState !== 'IN_COMBAT' && gameState !== 'GAME_OVER_VICTORY' && gameState !== 'GAME_OVER_DEFEAT') && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[2000]">
         {isLoading && (gameState !== 'IN_COMBAT' && gameState !== 'GAME_OVER_VICTORY' && gameState !== 'GAME_OVER_DEFEAT') && <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-[2000]"><LoadingSpinner text="AI Thinking..." size="lg"/></div>}
       </main>
       <Footer
