@@ -1206,6 +1206,16 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
       equippedItems: {},
       abilities: STARTER_ABILITIES,
       preparedAbilityIds: STARTER_ABILITIES.length > 0 ? [STARTER_ABILITIES[0].id] : [],
+      iconName: 'UserIcon',
+      bestiary: {},
+    };
+    setPlayer(newPlayer);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newPlayer));
+    console.log("Game reset successfully");
+  }, []);
+
+  return (
+    <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>
 
   return (
     <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>
