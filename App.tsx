@@ -1093,6 +1093,119 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
 // processPlayerTurnStartEffects's identity changes if its deps change.
 }, [gameState, isPlayerTurn, turn, processPlayerTurnStartEffects, enemyTurnLogic, currentActingEnemyIndex, player.activeStatusEffects, currentEnemies, player.hp, combatLog.length]);
 
+  const handleSaveGame = useCallback(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(player));
+      // You could add a toast notification here
+      console.log("Game saved successfully");
+    } catch (err) {
+      console.error("Failed to save game:", err);
+    }
+  }, [player]);
+
+  const handleExportGame = useCallback(() => {
+    try {
+      const exportData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        player: player
+      };
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = `jorn_save_${new Date().toISOString().slice(0,10)}.json`;
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export game:", err);
+    }
+  }, [player]);
+
+  const handleImportGame = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const importedData = JSON.parse(content);
+        
+        if (!importedData.player || !importedData.version) {
+          throw new Error("Invalid save file format");
+        }
+
+        // Validate the imported player data
+        const validatedPlayer: Player = {
+          ...INITIAL_PLAYER_STATS,
+          name: importedData.player.name || INITIAL_PLAYER_NAME,
+          body: importedData.player.body ?? PLAYER_BASE_BODY,
+          mind: importedData.player.mind ?? PLAYER_BASE_MIND,
+          reflex: importedData.player.reflex ?? PLAYER_BASE_REFLEX,
+          hp: importedData.player.hp,
+          mp: importedData.player.mp,
+          ep: importedData.player.ep ?? INITIAL_PLAYER_EP,
+          level: importedData.player.level ?? 1,
+          xp: importedData.player.xp ?? 0,
+          xpToNextLevel: importedData.player.xpToNextLevel ?? 100,
+          spells: Array.isArray(importedData.player.spells) ? importedData.player.spells : [STARTER_SPELL],
+          preparedSpellIds: Array.isArray(importedData.player.preparedSpellIds) ? importedData.player.preparedSpellIds : [STARTER_SPELL.id],
+          traits: Array.isArray(importedData.player.traits) ? importedData.player.traits : [],
+          quests: Array.isArray(importedData.player.quests) ? importedData.player.quests : [],
+          activeStatusEffects: Array.isArray(importedData.player.activeStatusEffects) ? importedData.player.activeStatusEffects : [],
+          inventory: importedData.player.inventory || { ...INITIAL_PLAYER_INVENTORY },
+          items: Array.isArray(importedData.player.items) ? importedData.player.items : [],
+          equippedItems: importedData.player.equippedItems || {},
+          abilities: Array.isArray(importedData.player.abilities) ? importedData.player.abilities : STARTER_ABILITIES,
+          preparedAbilityIds: Array.isArray(importedData.player.preparedAbilityIds) ? importedData.player.preparedAbilityIds : [STARTER_ABILITIES[0].id],
+          iconName: importedData.player.iconName || 'UserIcon',
+          maxHp: importedData.player.maxHp || 0,
+          maxMp: importedData.player.maxMp || 0,
+          maxEp: importedData.player.maxEp || 0,
+          speed: importedData.player.speed || 0,
+          bestiary: importedData.player.bestiary || {},
+        };
+
+        setPlayer(validatedPlayer);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(validatedPlayer));
+        console.log("Game imported successfully");
+      } catch (err) {
+        console.error("Failed to import game:", err);
+        // You could add a toast notification here
+      }
+    };
+    reader.readAsText(file);
+  }, []);
+
+  const handleResetGame = useCallback(() => {
+    const newPlayer = {
+      ...INITIAL_PLAYER_STATS,
+      name: INITIAL_PLAYER_NAME,
+      body: PLAYER_BASE_BODY,
+      mind: PLAYER_BASE_MIND,
+      reflex: PLAYER_BASE_REFLEX,
+      hp: 0,
+      maxHp: 0,
+      mp: 0,
+      maxMp: 0,
+      ep: INITIAL_PLAYER_EP,
+      maxEp: 0,
+      speed: 0,
+      inventory: { ...INITIAL_PLAYER_INVENTORY },
+      spells: [STARTER_SPELL],
+      preparedSpellIds: [STARTER_SPELL.id],
+      traits: [],
+      quests: [],
+      activeStatusEffects: [],
+      items: [],
+      equippedItems: {},
+      abilities: STARTER_ABILITIES,
+      preparedAbilityIds: STARTER_ABILITIES.length > 0 ? [STARTER_ABILITIES[0].id] : [],
 
   return (
     <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>

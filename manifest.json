@@ -4,9 +4,45 @@
   "description": "Embark on an adventure: craft spells, forge items, define your traits, and challenge formidable foes!",
   "icons": [
     {
+      "src": "/icons/icon-72x72.png",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "type": "image/png",
+      "sizes": "128x128",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "type": "image/png",
+      "sizes": "144x144",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "type": "image/png",
+      "sizes": "152x152",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/icons/icon-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "type": "image/png",
+      "sizes": "384x384",
       "purpose": "any maskable"
     },
     {
@@ -18,9 +54,40 @@
   ],
   "start_url": "/",
   "scope": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#1e293b",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "categories": ["games", "entertainment", "rpg"],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot1.png",
+      "type": "image/png",
+      "sizes": "1080x1920",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/screenshot2.png",
+      "type": "image/png",
+      "sizes": "1920x1080",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Spellbook",
+      "short_name": "Spells",
+      "description": "Open your spellbook",
+      "url": "/spellbook",
+      "icons": [{ "src": "/icons/spellbook-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Open Inventory",
+      "short_name": "Items",
+      "description": "View your inventory",
+      "url": "/inventory",
+      "icons": [{ "src": "/icons/inventory-96x96.png", "sizes": "96x96" }]
+    }
+  ]
 } 

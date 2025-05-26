@@ -1,81 +1,173 @@
 const CACHE_NAME = 'jorn-cache-v1';
-const urlsToCache = [
+const STATIC_CACHE = 'static-cache-v1';
+const DYNAMIC_CACHE = 'dynamic-cache-v1';
+
+// Assets to cache immediately
+const STATIC_ASSETS = [
   '/',
   '/index.html',
-  // Add other important assets here like main JS/CSS bundles if not automatically handled by your build process
-  // '/static/js/bundle.js', // Example
-  // '/static/css/main.css', // Example
-  '/manifest.json'
+  '/manifest.json',
+  '/index.css',
+  '/index.tsx',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  // Add other static assets here
 ];
 
+// Cache strategies
+const CACHE_STRATEGIES = {
+  STATIC: 'static',
+  DYNAMIC: 'dynamic',
+  NETWORK_FIRST: 'network-first',
+  CACHE_FIRST: 'cache-first'
+};
+
+// Helper function to determine cache strategy
+function getCacheStrategy(url) {
+  if (STATIC_ASSETS.includes(url)) {
+    return CACHE_STRATEGIES.STATIC;
+  }
+  if (url.includes('/api/')) {
+    return CACHE_STRATEGIES.NETWORK_FIRST;
+  }
+  return CACHE_STRATEGIES.DYNAMIC;
+}
+
+// Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Caching app shell');
-        return cache.addAll(urlsToCache);
+    Promise.all([
+      caches.open(STATIC_CACHE).then((cache) => {
+        console.log('Service Worker: Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      }),
+      caches.open(DYNAMIC_CACHE).then((cache) => {
+        console.log('Service Worker: Dynamic cache ready');
+        return cache;
       })
-      .catch(error => {
-        console.error('Service Worker: Failed to cache app shell', error);
-      })
+    ])
   );
+  self.skipWaiting();
 });
 
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('Service Worker: Activating...');
-  // Remove old caches
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('Service Worker: Clearing old cache', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+              console.log('Service Worker: Clearing old cache', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of all clients
+      self.clients.claim()
+    ])
   );
-  return self.clients.claim();
 });
 
+// Fetch event - handle different caching strategies
 self.addEventListener('fetch', (event) => {
-  // console.log('Service Worker: Fetching', event.request.url);
+  const url = new URL(event.request.url);
+  
+  // Skip non-GET requests
   if (event.request.method !== 'GET') {
-    // For non-GET requests, use the network directly.
-    // This is important for things like API calls (POST, PUT, DELETE etc.)
     event.respondWith(fetch(event.request));
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          // console.log('Service Worker: Found in cache', event.request.url);
-          return response; // Serve from cache
-        }
-        // console.log('Service Worker: Not in cache, fetching from network', event.request.url);
-        return fetch(event.request).then(
-          (networkResponse) => {
-            // Optional: Cache new requests dynamically if needed
-            // Be careful with caching everything, especially API responses that change frequently
-            // if (networkResponse && networkResponse.status === 200) {
-            //   const responseToCache = networkResponse.clone();
-            //   caches.open(CACHE_NAME)
-            //     .then(cache => {
-            //       cache.put(event.request, responseToCache);
-            //     });
-            // }
-            return networkResponse;
-          }
-        );
-      })
-      .catch(error => {
-        console.error('Service Worker: Fetch error', error);
-        // Optionally, you could return a fallback offline page here
-        // return caches.match('/offline.html');
-      })
+  // Handle different caching strategies
+  const strategy = getCacheStrategy(url.pathname);
+  
+  switch (strategy) {
+    case CACHE_STRATEGIES.STATIC:
+      event.respondWith(cacheFirst(event.request, STATIC_CACHE));
+      break;
+    case CACHE_STRATEGIES.NETWORK_FIRST:
+      event.respondWith(networkFirst(event.request));
+      break;
+    default:
+      event.respondWith(cacheFirst(event.request, DYNAMIC_CACHE));
+  }
+});
+
+// Cache First Strategy
+async function cacheFirst(request, cacheName) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(cacheName);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    console.error('Cache First Strategy failed:', error);
+    // Return a fallback response if available
+    return caches.match('/offline.html');
+  }
+}
+
+// Network First Strategy
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(DYNAMIC_CACHE);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    console.error('Network First Strategy failed:', error);
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    // Return a fallback response if available
+    return caches.match('/offline.html');
+  }
+}
+
+// Handle background sync
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-data') {
+    event.waitUntil(syncData());
+  }
+});
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data.text(),
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/badge-72x72.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      {
+        action: 'explore',
+        title: 'View Details',
+        icon: '/icons/checkmark.png'
+      },
+      {
+        action: 'close',
+        title: 'Close',
+        icon: '/icons/close.png'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('Jorn', options)
   );
 }); 
