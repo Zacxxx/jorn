@@ -1214,6 +1214,11 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
     console.log("Game reset successfully");
   }, []);
 
+  const handleOpenProgression = () => {
+    setDefaultCharacterSheetTab('Progression');
+    setGameState('CHARACTER_SHEET');
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
       <Header 
