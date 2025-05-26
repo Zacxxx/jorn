@@ -30,6 +30,23 @@ import ItemEnhancementModal from './components/crafting/itemcrafting/ItemEnhance
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV13'; // Incremented version for bestiary
 
 export const App: React.FC<{}> = (): React.ReactElement => {
+  // Add useEffect for iOS Safari height fix
+  useEffect(() => {
+    const setAppHeight = () => {
+      const doc = document.documentElement;
+      doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
+    setAppHeight(); // Initial call
+    
+    return () => {
+      window.removeEventListener('resize', setAppHeight);
+      window.removeEventListener('orientationchange', setAppHeight);
+    };
+  }, []);
+
   const [player, setPlayer] = useState<Player>(() => {
     const savedPlayer = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedPlayer) {
@@ -1078,7 +1095,7 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
 
 
   return (
-    <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain safe-area-inset" style={{fontFamily: "'Inter', sans-serif"}}>
+    <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>
       <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet()} onNavigateHome={handleNavigateHome} />
       <main className="flex-grow container mx-auto px-2 py-2 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full overflow-y-auto styled-scrollbar touch-action-pan-y pb-safe-bottom">
         {gameState === 'HOME' && <HomeScreenView 
@@ -1234,7 +1251,7 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
           </div>
         )}
       </main>
-      <div className="mt-auto">
+      <div className="mt-auto safe-area-inset-bottom">
         <Footer
           onOpenSpellbook={() => handleOpenCharacterSheet('Spells')}
           onOpenCraftingHub={handleOpenCraftingHub}

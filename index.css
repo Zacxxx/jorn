@@ -4,16 +4,19 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --app-height: 100%;
 }
 
 html {
   height: -webkit-fill-available;
+  height: var(--app-height);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  min-height: var(--app-height);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -27,6 +30,13 @@ body {
   padding-bottom: var(--safe-area-inset-bottom);
   padding-left: var(--safe-area-inset-left);
   padding-right: var(--safe-area-inset-right);
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  body {
+    min-height: -webkit-fill-available;
+  }
 }
 
 code {
@@ -52,12 +62,28 @@ code {
   .overscroll-contain {
     overscroll-behavior: contain;
   }
+
+  .safe-area-inset {
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+  }
+
+  .safe-area-inset-bottom {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+
+  .safe-area-inset-top {
+    padding-top: var(--safe-area-inset-top);
+  }
 }
 
 /* Custom scrollbar styles */
 .styled-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #334155 #1e293b;
+  -webkit-overflow-scrolling: touch;
 }
 
 .styled-scrollbar::-webkit-scrollbar {
@@ -90,6 +116,11 @@ code {
   .styled-scrollbar::-webkit-scrollbar-thumb {
     border-width: 1px;
   }
+
+  /* Prevent pull-to-refresh on iOS */
+  body {
+    overscroll-behavior-y: none;
+  }
 }
 
 /* Prevent text size adjustment on orientation change */
@@ -104,6 +135,13 @@ html {
   a {
     min-height: 44px;
     min-width: 44px;
+  }
+}
+
+/* Add a script to handle iOS Safari height */
+@layer base {
+  .ios-height-fix {
+    height: var(--app-height);
   }
 }
 

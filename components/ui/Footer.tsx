@@ -31,7 +31,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="primary" 
             size="sm"
             icon={<BookIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
-            className="shadow-sky-500/30 hover:shadow-sky-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-sky-500/30 hover:shadow-sky-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="Open Spellbook"
           >
             Spells
@@ -41,7 +41,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="secondary" 
             size="sm"
             icon={<BagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
-            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="Open Inventory"
           >
             Items
@@ -51,7 +51,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="info" 
             size="sm"
             icon={<GearIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
-            className="shadow-teal-500/30 hover:shadow-teal-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-teal-500/30 hover:shadow-teal-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="Open Crafting Hub"
           >
             Craft
@@ -61,7 +61,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="success" 
             size="sm"
             icon={<StarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
-            className="shadow-green-500/30 hover:shadow-green-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-green-500/30 hover:shadow-green-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="View/Define Traits"
           >
             Traits
@@ -71,7 +71,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="warning" 
             size="sm"
             icon={<BookIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
-            className="shadow-yellow-500/30 hover:shadow-yellow-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-yellow-500/30 hover:shadow-yellow-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="View Quest Log"
           >
             Quests
@@ -81,7 +81,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="secondary" 
             size="sm"
             icon={<CollectionIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>} 
-            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="Open Encyclopedia"
           >
             Wiki
@@ -91,7 +91,7 @@ const Footer: React.FC<FooterProps> = ({
             variant="secondary" 
             size="sm"
             icon={<Bars3Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>}
-            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px]"
+            className="shadow-slate-500/30 hover:shadow-slate-500/50 text-[11px] h-9 min-h-[44px] touch-manipulation"
             title="Open Game Menu"
           >
             Menu
