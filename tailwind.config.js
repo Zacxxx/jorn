@@ -30,6 +30,11 @@ module.exports = {
         '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
         '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
       },
+      colors: {
+        red: {
+          500: '#ef4444',
+        },
+      },
     },
   },
   plugins: [],

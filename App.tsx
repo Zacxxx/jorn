@@ -1216,10 +1216,15 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
 
   return (
     <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>
-
-  return (
-    <div className="flex flex-col min-h-screen h-[100dvh] bg-slate-900 text-slate-100 antialiased overflow-hidden overscroll-contain ios-height-fix" style={{fontFamily: "'Inter', sans-serif"}}>
-      <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet()} onNavigateHome={handleNavigateHome} />
+      <Header
+        player={player}
+        onOpenCharacterSheet={() => setGameState('CHARACTER_SHEET')}
+        onNavigateHome={() => setGameState('HOME')}
+        onSaveGame={handleSaveGame}
+        onImportGame={handleImportGame}
+        onExportGame={handleExportGame}
+        onResetGame={handleResetGame}
+      />
       <main className="flex-grow container mx-auto px-2 py-2 sm:px-3 sm:py-4 md:py-6 max-w-5xl w-full overflow-y-auto styled-scrollbar touch-action-pan-y pb-safe-bottom">
         {gameState === 'HOME' && <HomeScreenView 
           onFindEnemy={handleFindEnemy}
@@ -1457,3 +1462,5 @@ addLog(isPlayerCharacter ? 'Player' : 'Enemy', `${effect.name} on ${charName} ha
     </div>
   );
 };
+
+export default App;

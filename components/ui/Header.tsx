@@ -91,11 +91,6 @@ const Header: React.FC<HeaderProps> = ({
             >
               <span className="hidden sm:inline">User</span>
               <span className="sm:hidden">User</span>
-              {showUserMenu ? (
-                <ChevronUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1" />
-              ) : (
-                <ChevronDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1" />
-              )}
             </ActionButton>
 
             {/* User Menu Dropdown */}
