@@ -103,7 +103,7 @@ export interface GenerateMapImageResult {
 }
 
 const GRADIO_SPACE_NAME = "ByteDance/DreamO";
-const HF_TOKEN = "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"; // Your hardcoded token
+// const HF_TOKEN = "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"; // Your hardcoded token
 
 export const generateMapImage = async ({
     areaInfo,
@@ -126,6 +126,11 @@ export const generateMapImage = async ({
         if (model === 'gradio') {
             console.log(`Duplicating Gradio Space: ${GRADIO_SPACE_NAME}`);
             try {
+                const hfToken = process.env.HF_TOKEN;
+                if (!hfToken) {
+                    throw new Error("Hugging Face token (HF_TOKEN) is not set in environment variables. This is required for Gradio image generation.");
+                }
+
                 const mapGenPrompt = 
                     `A detailed fantasy map of "${areaInfo.name}", which is a ${determinedMapType}. ` +
                     `Theme: ${theme}. Atmosphere: ${areaInfo.moodAtmosphere}. ` +
@@ -138,7 +143,7 @@ export const generateMapImage = async ({
                 // Using a small transparent png as a placeholder. Replace if a specific placeholder is better.
                 const placeholderImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
-                const app = await Client.duplicate(GRADIO_SPACE_NAME, { hf_token: HF_TOKEN as `hf_${string}` });
+                const app = await Client.duplicate(GRADIO_SPACE_NAME, { hf_token: hfToken as `hf_${string}` });
                 
                 console.log("Predicting with DreamO...");
                 const result = await app.predict("/generate_image", { 
