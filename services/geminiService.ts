@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { 
     GEMINI_MODEL_TEXT, AVAILABLE_SPELL_ICONS, DEFAULT_TRAIT_ICON, DEFAULT_QUEST_ICON, 
@@ -774,4 +773,44 @@ Return ONLY the array of JSON objects.`;
         const fallbackAmount = Math.floor(chestLevel / 10) + chestRarity * 5;
         return [{ type: 'gold', amount: fallbackAmount > 0 ? fallbackAmount : 10 }];
     }
+}
+
+export async function discoverRecipeFromPrompt(prompt: string, playerLevel: number): Promise<any> {
+  const systemInstruction = `You are a recipe discovery assistant for a fantasy RPG crafting system. 
+  Based on the player's prompt, suggest a crafting recipe that would make sense.
+  
+  Return a JSON object with:
+  - name: Recipe name (string)
+  - description: Recipe description (string)
+  - category: One of 'consumable', 'equipment', 'component', 'misc'
+  - resultItemId: Generated item ID (string)
+  - resultQuantity: Number of items produced (1-5)
+  - ingredients: Array of { itemId: string, quantity: number, type: ResourceType }
+  - requirements: Array of { type: 'level' | 'skill' | 'location' | 'tool', value: string | number }
+  - craftingTime: Time in hours (1-24)
+  - discoveryPrompt: The original prompt (string)
+  
+  Available resource types: ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}
+  Player level: ${playerLevel}
+  
+  Make the recipe balanced and appropriate for the player's level.`;
+
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: GEMINI_MODEL_TEXT,
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: { role: "system", parts: [{ text: systemInstruction }]},
+        responseMimeType: "application/json",
+        temperature: 0.8,
+      },
+    });
+    
+    const rawData = parseJsonFromGeminiResponse(response.text);
+    return rawData;
+
+  } catch (error) {
+    console.error("Error discovering recipe:", error);
+    throw new Error(`Failed to discover recipe: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

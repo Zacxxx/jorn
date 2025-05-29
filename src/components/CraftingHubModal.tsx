@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Player, ItemType } from '../types';
+import { ItemType } from '../types';
 import Modal from '../../ui/Modal';
 import ItemCraftingForm from '../../components/ItemCraftingForm';
 import ActionButton from '../../ui/ActionButton';
-import { PotionGenericIcon, GearIcon, ScrollIcon, WandIcon, FlaskIcon, BookIcon, SearchIcon } from './IconComponents';
+import { PotionGenericIcon, GearIcon, WandIcon, FlaskIcon, BookIcon, SearchIcon } from './IconComponents';
 
 interface CraftingHubModalProps {
   isOpen: boolean;
@@ -35,8 +35,8 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
     await onInitiateAppItemCraft(prompt, activeItemCraftType);
   };
   
-  const MainViewButton: React.FC<{ icon: React.ReactNode, label: string, view: CraftingHubMainView, isActive: boolean, onClick: () => void }> = 
-  ({ icon, label, view, isActive, onClick }) => (
+  const MainViewButton: React.FC<{ icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }> = 
+  ({ icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
         className={`flex-1 flex items-center justify-center p-3.5 md:p-4 rounded-t-lg transition-all duration-150 border-b-4
@@ -57,21 +57,18 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
         <MainViewButton
           icon={<WandIcon />}
           label="Spellcraft"
-          view="Spells"
           isActive={activeMainView === 'Spells'}
           onClick={() => setActiveMainView('Spells')}
         />
         <MainViewButton
           icon={<GearIcon />} 
           label="Item Crafting"
-          view="Items"
           isActive={activeMainView === 'Items'}
           onClick={() => setActiveMainView('Items')}
         />
         <MainViewButton
           icon={<BookIcon />} 
           label="Recipe Crafting"
-          view="Recipes"
           isActive={activeMainView === 'Recipes'}
           onClick={() => setActiveMainView('Recipes')}
         />

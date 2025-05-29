@@ -1,19 +1,18 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, ResourceType, Consumable, Quest, CharacterSheetTab, SpellIconName, Ability, EquipmentSlot as GenericEquipmentSlot, ActiveStatusEffect, InventoryFilterType, ItemType, MasterItemDefinition, MasterResourceItem, MasterConsumableItem, LootChestItem, UniqueConsumable, ResourceCost, SpellComponent, Enemy } from '../types';
+import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, Ability, EquipmentSlot as GenericEquipmentSlot, InventoryFilterType, MasterItemDefinition, MasterResourceItem, MasterConsumableItem, LootChestItem, UniqueConsumable, Quest, CharacterSheetTab, SpellIconName } from '../types';
 import Modal from '../ui/Modal';
 import ActionButton from '../ui/ActionButton';
 import {
     GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon,
-    HealIcon, SpeedIcon, SwordSlashIcon, ShieldIcon, BodyIcon, ReflexIcon, CheckmarkCircleIcon,
-    SearchIcon, FilterListIcon, CollectionIcon, SkullIcon, ChestIcon, FlaskIcon, AtomIcon
+    HealIcon, SpeedIcon, SwordSlashIcon, ShieldIcon, BodyIcon, ReflexIcon,
+    ChestIcon, CollectionIcon
 } from './IconComponents';
 import {
     DETAILED_EQUIPMENT_SLOTS_LEFT_COL, DETAILED_EQUIPMENT_SLOTS_RIGHT_COL,
-    DETAILED_SLOT_PLACEHOLDER_ICONS, RESOURCE_ICONS, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, STATUS_EFFECT_ICONS, DEFAULT_ENCYCLOPEDIA_ICON, GENERIC_TO_DETAILED_SLOT_MAP,
+    DETAILED_SLOT_PLACEHOLDER_ICONS, RESOURCE_ICONS, STATUS_EFFECT_ICONS, DEFAULT_ENCYCLOPEDIA_ICON, GENERIC_TO_DETAILED_SLOT_MAP,
     DEFAULT_TRAIT_ICON
 } from '../constants';
-import SpellbookDisplay, { SpellCard } from './SpellbookDisplay';
+import SpellbookDisplay from './SpellbookDisplay';
 import AbilityBookDisplay from './AbilityBookDisplay';
 import { MASTER_ITEM_DEFINITIONS } from '../services/itemService';
 import { getRarityColorClass } from '../utils';
@@ -34,7 +33,6 @@ interface CharacterSheetModalProps {
   onUnprepareSpell: (spell: Spell) => void;
   onPrepareAbility: (ability: Ability) => void;
   onUnprepareAbility: (ability: Ability) => void;
-  isLoading: boolean;
   initialTab?: CharacterSheetTab;
   onOpenSpellCraftingScreen?: () => void;
   onOpenTraitCraftingScreen?: () => void;
@@ -288,7 +286,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
           </ActionButton>
         </div>
       )}
-      {canOpenLootChest && onOpenLootChest && itemAsLootChest.id && (
+      {canOpenLootChest && itemAsLootChest.id && (
         <div className="mt-1 xs:mt-1.5">
              <ActionButton onClick={handleMainAction} size="sm" variant="primary" icon={<ChestIcon className="w-3 h-3"/>} className="w-full !py-0.5 text-[0.6rem] xs:text-[0.65rem]">
                 Open Chest
@@ -392,7 +390,7 @@ const ItemTooltip: React.FC<ItemTooltipProps> = ({ item, position }) => {
 
     const uniqueItemDetails = !isStackable ? item as UniqueConsumable : undefined;
     const hasResourceCost = uniqueItemDetails && (displayItem.itemType === 'Consumable' || displayItem.itemType === 'Equipment') ? Boolean(uniqueItemDetails.resourceCost) : false;
-    const resourceCostToDisplay = hasResourceCost ? uniqueItemDetails.resourceCost : [];
+    const resourceCostToDisplay = hasResourceCost && uniqueItemDetails ? uniqueItemDetails.resourceCost : [];
 
 
     const style: React.CSSProperties = {
@@ -523,7 +521,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   isOpen, onClose, player, effectiveStats, onEquipItem, onUnequipItem,
   maxRegisteredSpells, maxPreparedSpells, maxPreparedAbilities, onEditSpell,
   onPrepareSpell, onUnprepareSpell, onPrepareAbility, onUnprepareAbility,
-  isLoading, initialTab, onOpenSpellCraftingScreen,
+  initialTab, onOpenSpellCraftingScreen,
   onOpenTraitCraftingScreen, canCraftNewTrait, onOpenLootChest,
   onUseConsumableFromInventory
 }) => {
