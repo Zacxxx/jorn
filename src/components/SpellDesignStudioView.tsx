@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
-import { Player, SpellComponent, ResourceCost, SpellIconName, ResourceType, MasterResourceItem, MasterItemDefinition } from '../types';
+import { Player, SpellComponent, ResourceCost, SpellIconName, ResourceType, MasterResourceItem, MasterItemDefinition, TagName } from '../types';
 import ActionButton from '../ui/ActionButton';
 // import LoadingSpinner from './LoadingSpinner'; // Assuming it might be used later
-import { GetSpellIcon, WandIcon, AtomIcon, GoldCoinIcon } from './IconComponents';
+import { GetSpellIcon, WandIcon, AtomIcon, GoldCoinIcon, TagIcon } from './IconComponents';
 import SpellComponentCard from './SpellComponentCard'; // Corrected import
 import { AVAILABLE_SPELL_ICONS, RESOURCE_ICONS, AVAILABLE_RESOURCES } from '../constants';
 import { MASTER_ITEM_DEFINITIONS } from '../services/itemService'; 
@@ -19,6 +18,7 @@ interface SpellDesignStudioViewProps {
     playerDescription?: string;
     playerIcon?: SpellIconName;
     playerPrompt?: string;
+    selectedTags?: TagName[];
   }) => Promise<void>;
   isLoading: boolean;
   onReturnHome: () => void;
@@ -64,6 +64,7 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
   const [componentConfigs, setComponentConfigs] = useState<Record<string, Record<string, string | number>>>({});
   const [manuallyInvestedResources, setManuallyInvestedResources] = useState<ResourceCost[]>([]);
   const [playerPrompt, setPlayerPrompt] = useState(initialPrompt || ''); 
+  const [selectedTags, setSelectedTags] = useState<TagName[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -73,6 +74,22 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
   }, [initialPrompt]);
 
   const canCraftMoreSpells = player.spells.length < maxSpells;
+
+  // Get all available tags from selected components
+  const getAvailableTagsFromComponents = (): { tag: TagName; componentName: string }[] => {
+    const tagMap = new Map<TagName, string>();
+    selectedComponentIds.forEach(componentId => {
+      const component = availableComponents.find(c => c.id === componentId);
+      if (component && component.tags) {
+        component.tags.forEach(tag => {
+          if (!tagMap.has(tag)) {
+            tagMap.set(tag, component.name);
+          }
+        });
+      }
+    });
+    return Array.from(tagMap.entries()).map(([tag, componentName]) => ({ tag, componentName }));
+  };
 
   const handleComponentToggle = (componentId: string) => {
     setSelectedComponentIds(prev =>
@@ -89,6 +106,12 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
             setComponentConfigs(prev => ({...prev, [componentId]: initialConfig}));
         }
     }
+  };
+
+  const handleTagToggle = (tag: TagName) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
   };
 
   const handleParamChange = (componentId: string, paramKey: string, value: string | number) => {
@@ -179,6 +202,7 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
         playerDescription: spellDescription.trim() || undefined,
         playerIcon: spellIcon === 'Default' ? undefined : spellIcon,
         playerPrompt: playerPrompt.trim() || undefined,
+        selectedTags: selectedTags,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to finalize spell design.');
@@ -245,6 +269,40 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
           </div>
         </div>
         
+        {/* Component Tags Selection */}
+        {selectedComponentIds.length > 0 && getAvailableTagsFromComponents().length > 0 && (
+          <div className="p-4 bg-slate-700/50 rounded-md border border-slate-600">
+            <h3 className="text-lg font-semibold text-sky-200 mb-3 flex items-center">
+              <TagIcon className="w-5 h-5 mr-2 text-purple-400"/>
+              Component Tags - Guarantee Effects ({selectedTags.length} selected)
+            </h3>
+            <p className="text-xs text-slate-400 mb-3">Select tags from your components to guarantee their effects in the final spell:</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {getAvailableTagsFromComponents().map(({ tag, componentName }) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleTagToggle(tag)}
+                  className={`p-2 rounded-md border text-left text-xs transition-all ${
+                    selectedTags.includes(tag) 
+                      ? 'bg-purple-700 border-purple-500 shadow-lg' 
+                      : 'bg-slate-600 border-slate-500 hover:border-purple-600'
+                  }`}
+                  title={`From ${componentName}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-slate-100">{tag}</span>
+                    {selectedTags.includes(tag) && (
+                      <span className="text-purple-300">✓</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">From: {componentName}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {selectedComponentIds.length > 0 && (
         <div className="p-4 bg-slate-700/50 rounded-md border border-slate-600">
           <h3 className="text-lg font-semibold text-sky-200 mb-3">Configure Selected Components</h3>
