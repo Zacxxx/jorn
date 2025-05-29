@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './fallback-styles.css';
+
 :root {
   --ui-modal-max-w-sm: 24rem; /* 384px */
   --ui-modal-max-w-md: 28rem; /* 448px */
