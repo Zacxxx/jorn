@@ -1,8 +1,6 @@
-
 import React from 'react';
 import Modal from './Modal';
 import ActionButton from './ActionButton';
-import { BookIcon } from './IconComponents';
 
 interface HelpWikiModalProps {
   isOpen: boolean;

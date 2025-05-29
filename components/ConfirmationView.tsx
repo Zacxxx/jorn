@@ -1,11 +1,8 @@
-
-
 import React from 'react';
 import Modal from './Modal';
 import ActionButton from './ActionButton';
 import { GameState, GeneratedSpellData, GeneratedConsumableData, GeneratedEquipmentData, Spell, ResourceCost, ItemType, SpellIconName } from '../types'; // UPDATED
 import { GetSpellIcon } from './IconComponents';
-import { RESOURCE_ICONS } from '../constants';
 
 interface ConfirmationViewProps {
   gameState: GameState; 

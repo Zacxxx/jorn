@@ -1,9 +1,8 @@
-
 import React from 'react';
 import ActionButton from './ActionButton';
 import CombatLogDisplay from './CombatLogDisplay';
 import EnemyDisplay from './EnemyDisplay';
-import { CombatActionLog, Enemy, GameState } from '../types';
+import { CombatActionLog, Enemy } from '../types';
 import { SkullIcon } from './IconComponents';
 
 interface GameOverViewProps {

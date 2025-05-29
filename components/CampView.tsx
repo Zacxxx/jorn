@@ -6,8 +6,7 @@ import {
   UserIcon, 
   MapIcon, 
   HeroBackIcon,
-  PlusIcon,
-  CheckmarkCircleIcon
+  PlusIcon
 } from './IconComponents';
 
 interface CampViewProps {
@@ -15,7 +14,6 @@ interface CampViewProps {
   effectiveStats: PlayerEffectiveStats;
   onReturnHome: () => void;
   onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
-  onShowMessage: (title: string, message: string) => void;
 }
 
 type RestType = 'short' | 'long' | 'custom';
@@ -26,7 +24,6 @@ const CampView: React.FC<CampViewProps> = ({
   effectiveStats,
   onReturnHome,
   onRestComplete,
-  onShowMessage,
 }) => {
   const [selectedRestType, setSelectedRestType] = useState<RestType>('short');
   const [customDuration, setCustomDuration] = useState<number>(4);

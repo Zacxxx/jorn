@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats, SpellIconName } from '../types';
-import { GetSpellIcon, UserIcon, SkullIcon, WandIcon, MindIcon, PotionGenericIcon, SwordsIcon, ShieldIcon, SpeedIcon, BookIcon, HealIcon, BodyIcon, ReflexIcon, FleeIcon, StarIcon } from './IconComponents';
+import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats } from '../types';
+import { GetSpellIcon, WandIcon, PotionGenericIcon, SwordsIcon, ShieldIcon, BookIcon, FleeIcon, StarIcon } from './IconComponents';
 import ActionButton from './ActionButton';
 import LoadingSpinner from './LoadingSpinner';
 import Modal from './Modal';
@@ -9,7 +9,6 @@ import PlayerStatsDisplay from './PlayerStatsDisplay';
 import EnemyDisplay from './EnemyDisplay'; 
 import PlayerBattleDisplay from './PlayerBattleDisplay';
 import EnemyBattleDisplay from './EnemyBattleDisplay';
-import { STATUS_EFFECT_ICONS } from '../constants';
 
 // --- Types for CombatView ---
 interface CombatViewProps {
@@ -46,13 +45,12 @@ interface IconProps {
 interface ActionCategoryButtonProps {
   label: string;
   icon: React.ReactNode;
-  view: DynamicAreaView;
   isActive: boolean;
   onClick: () => void;
   disabled: boolean;
   isMobile?: boolean;
 }
-const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon, view, isActive, onClick, disabled, isMobile }) => (
+const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon, isActive, onClick, disabled, isMobile }) => (
   <ActionButton
     onClick={onClick}
     variant={isActive ? 'primary' : 'secondary'}
@@ -298,7 +296,6 @@ const CombatView: React.FC<CombatViewProps> = ({
                 key={cat.view}
                 label={cat.label}
                 icon={cat.icon}
-                view={cat.view}
                 isActive={activeDynamicView === cat.view}
                 onClick={() => handleCategoryChange(cat.view)}
                 disabled={cat.view !== 'log' && !canPlayerAct}
@@ -368,7 +365,6 @@ const CombatView: React.FC<CombatViewProps> = ({
                 key={cat.view}
                 label={cat.label}
                 icon={cat.icon}
-                view={cat.view}
                 isActive={activeDynamicView === cat.view}
                 onClick={() => handleCategoryChange(cat.view)}
                 disabled={cat.view !== 'log' && !canPlayerAct}

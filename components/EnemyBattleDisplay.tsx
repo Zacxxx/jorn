@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Enemy } from '../types';
-import { GetSpellIcon, SkullIcon, HealIcon, type IconProps } from './IconComponents';
+import { GetSpellIcon, HealIcon, type IconProps } from './IconComponents';
 import { STATUS_EFFECT_ICONS } from '../constants';
 
 interface EnemyBattleDisplayProps {

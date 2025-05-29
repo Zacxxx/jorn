@@ -1,6 +1,6 @@
 import React from 'react';
 import ActionButton from './ActionButton';
-import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon } from './IconComponents'; 
+import { SkullIcon, MapIcon, BookIcon, TentIcon } from './IconComponents'; 
 
 interface HomeScreenViewProps {
   onFindEnemy: () => void;

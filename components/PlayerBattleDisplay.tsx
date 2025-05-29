@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
-import { GetSpellIcon, UserIcon, HealIcon, WandIcon, ReflexIcon, type IconProps } from './IconComponents';
+import { GetSpellIcon, HealIcon, WandIcon, ReflexIcon, type IconProps } from './IconComponents';
 import { STATUS_EFFECT_ICONS } from '../constants';
 
 interface PlayerBattleDisplayProps {
