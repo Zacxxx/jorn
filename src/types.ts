@@ -24,7 +24,7 @@ export type SpellIconName =
   | 'HeroBackIcon' | 'BodyIcon' | 'ReflexIcon' | 'SpeedIcon' | 'HelmetIcon' | 'NecklaceIcon' | 'RingIcon'
   | 'BeltIcon' | 'BootsIcon' | 'GlovesIcon' | 'ShoulderArmorIcon' | 'CloakIcon' | 'BackpackIcon'
   | 'Bars3Icon' | 'SearchIcon' | 'CollectionIcon' | 'FleeIcon' | 'AtomIcon' | 'FlaskIcon'
-  | 'GoldCoinIcon' | 'EssenceIcon' | 'MapIcon' | 'UploadIcon' | 'DownloadIcon' | 'ChestIcon'
+  | 'GoldCoinIcon' | 'EssenceIcon' | 'MapIcon' | 'TentIcon' | 'UploadIcon' | 'DownloadIcon' | 'ChestIcon'
   | 'ElementFire' | 'ElementIce' | 'ElementLightning' | 'ElementEarth' | 'ElementAir' | 'ElementLight' | 'ElementDark' | 'ElementArcane' | 'ElementNature' | 'ElementPoison' | 'ElementHealing'
   | 'TagGeneric' | 'Default';
 

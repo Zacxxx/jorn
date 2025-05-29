@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Player } from '../types';
 import ActionButton from '../../ui/ActionButton';
 import { FlaskIcon, BookIcon, HeroBackIcon, SearchIcon, GoldCoinIcon, EssenceIcon } from './IconComponents';
-import { discoverRecipeFromPrompt } from '../services/geminiService';
+import { discoverRecipeFromPrompt } from '../../services/geminiService';
 import LoadingSpinner from '../../ui/LoadingSpinner';
-import { getDiscoveryPrompts, getAllRecipes } from '../services/craftingService';
+import { getDiscoveryPrompts, getAllRecipes } from '../../services/craftingService';
 
 interface RecipeDiscoveryViewProps {
   player: Player;
@@ -46,9 +46,9 @@ const RecipeDiscoveryView: React.FC<RecipeDiscoveryViewProps> = ({
     setCustomPrompt('');
   };
 
-  const getDiscoveryHint = (recipe: Recipe): string => {
-    const ingredients = recipe.ingredients.map(ing => ing.type).join(', ');
-    const requirements = recipe.requirements.map(req => {
+  const getDiscoveryHint = (recipe: any): string => {
+    const ingredients = recipe.ingredients.map((ing: any) => ing.type).join(', ');
+    const requirements = recipe.requirements.map((req: any) => {
       switch (req.type) {
         case 'level': return `Level ${req.value}`;
         case 'location': return `Requires ${req.value}`;

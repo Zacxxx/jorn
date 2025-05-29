@@ -4,9 +4,9 @@ import ActionButton from '../../ui/ActionButton';
 // import LoadingSpinner from './LoadingSpinner'; // Assuming it might be used later
 import { GetSpellIcon, WandIcon, AtomIcon, GoldCoinIcon, TagIcon } from './IconComponents';
 import SpellComponentCard from './SpellComponentCard'; // Corrected import
-import { AVAILABLE_SPELL_ICONS, RESOURCE_ICONS, AVAILABLE_RESOURCES } from '../constants';
-import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService'; 
-import { generateSpellFromDesign } from '../services/geminiService';
+import { AVAILABLE_SPELL_ICONS, RESOURCE_ICONS, AVAILABLE_RESOURCES } from '../../constants';
+import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
+import { generateSpellFromDesign } from '../../services/geminiService';
 
 interface SpellDesignStudioViewProps {
   player: Player;

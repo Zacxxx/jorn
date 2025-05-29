@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Player, Shop, ShopItem, ShopService } from '../types';
 import ActionButton from '../../ui/ActionButton';
 import { GetSpellIcon, GoldCoinIcon, HeroBackIcon, FlaskIcon, GearIcon, BookIcon } from './IconComponents';
-import { getLocation, getShopById, getNPCById } from '../services/locationService';
+import { getLocation, getShopById, getNPCById } from '../../services/locationService';
 import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 
 interface ShopViewProps {

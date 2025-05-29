@@ -3,10 +3,10 @@ import { Player, SpellComponent, ResourceType, GeneratedSpellComponentData } fro
 import ActionButton from '../../ui/ActionButton';
 import { GetSpellIcon, FlaskIcon, GoldCoinIcon, AtomIcon, CheckmarkCircleIcon, EssenceIcon, SearchIcon, WandIcon } from './IconComponents';
 import SpellComponentCard from './SpellComponentCard'; // Corrected import
-import { RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST } from '../constants';
+import { RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST } from '../../constants';
 import { getRarityColorClass } from '../../utils'; 
 import LoadingSpinner from '../../ui/LoadingSpinner';
-import { generateSpellComponentFromResearch } from '../services/geminiService';
+import { generateSpellComponentFromResearch } from '../../services/geminiService';
 
 interface ResearchLabViewProps {
   player: Player;

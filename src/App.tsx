@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, SpellComponent, ElementName, LootChestItem, GeneratedSpellComponentData, LootDrop, MasterItemDefinition, UniqueConsumable, MasterResourceItem, MasterConsumableItem } from './types';
-import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCE_TYPES_FOR_AI, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, INITIAL_PLAYER_LOCATION, EXAMPLE_SPELL_COMPONENTS, RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
-import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest, discoverRecipeFromPrompt } from './services/geminiService';
-import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
-import { getScalingFactorFromRarity } from './utils';
-import { getAllRecipes, getRecipeById, discoverRecipe } from './services/craftingService';
+import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCE_TYPES_FOR_AI, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, INITIAL_PLAYER_LOCATION, EXAMPLE_SPELL_COMPONENTS, RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from '../constants';
+import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest, discoverRecipeFromPrompt } from '../services/geminiService';
+import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from '../services/itemService';
+import { getScalingFactorFromRarity } from '../utils';
+import { getAllRecipes, getRecipeById, discoverRecipe } from '../services/craftingService';
 
 
 import ActionButton from '../ui/ActionButton';
 import Modal from '../ui/Modal';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, EssenceIcon } from './IconComponents';
+import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, EssenceIcon } from '../components/IconComponents';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { CharacterSheetModal } from '../components/CharacterSheetModal';
@@ -19,7 +19,7 @@ import HelpWikiModal from '../components/HelpWikiModal';
 import GameMenuModal from '../components/GameMenuModal';
 import SpellDesignStudioView from './SpellDesignStudioView';
 import ResearchLabView from './ResearchLabView';
-import ResearchView from './ResearchView'; // Renamed from GeneralResearch, now ResearchArchives
+import ResearchView from './ResearchView'; // Renamed from GeneralResearchView
 import MapView from '../components/MapView';
 
 import HomeScreenView from './HomeScreenView';
@@ -1140,7 +1140,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
             applyStatusEffect('player', { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
         }
     } else if (targetId) {
-        targetEntity = currentEnemies.find(e => e.id === targetId);
+        targetEntity = currentEnemies.find(e => e.id === targetId) || null;
          if (targetEntity && ability.effectType === 'ENEMY_DEBUFF' && ability.targetStatusEffect && ability.duration) {
             applyStatusEffect(targetId, { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
         }
@@ -1879,7 +1879,15 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} isLoading={isLoading} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={() => setGameState('SPELL_CRAFTING')} onOpenTraitCraftingScreen={() => setGameState('TRAIT_CRAFTING')} canCraftNewTrait={player.traits.length < maxTraits} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
       {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => setGameState('SPELL_DESIGN_STUDIO')} onOpenTheorizeLab={() => setGameState('THEORIZE_COMPONENT')} onOpenRecipeDiscovery={handleOpenRecipeDiscovery} onOpenCraftingWorkshop={handleOpenCraftingWorkshop}/>}
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
-      <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onExportSave={handleExportSave} onImportSave={handleImportSave} />
+      <GameMenuModal 
+        isOpen={isGameMenuOpen} 
+        onClose={handleCloseGameMenu} 
+        onExportSave={handleExportSave} 
+        onImportSave={handleImportSave}
+        onOpenCharacterSheet={() => { setDefaultCharacterSheetTab('Main'); setGameState('CHARACTER_SHEET'); handleCloseGameMenu(); }}
+        onOpenHelpWiki={() => { setIsHelpWikiOpen(true); handleCloseGameMenu(); }}
+        onShowMessage={(title, message) => showMessageModal(title, message, 'info')}
+      />
       <MobileMenuModal 
         isOpen={isMobileMenuOpen} 
         onClose={handleCloseMobileMenu}
