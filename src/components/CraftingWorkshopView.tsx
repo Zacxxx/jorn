@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Player, CraftingRecipe } from '../types';
-import ActionButton from '../ui/ActionButton';
-import { FlaskIcon, BookIcon, HeroBackIcon, GearIcon, GoldCoinIcon, CheckmarkCircleIcon } from './IconComponents';
-import { getDiscoveredRecipes, canCraftRecipe, hasRequiredIngredients } from '../services/craftingService';
-import { MASTER_ITEM_DEFINITIONS } from '../services/itemService';
+import React, { useState, useEffect } from 'react';
+import { Player, Recipe, MasterItemDefinition } from '../types';
+import ActionButton from '../../ui/ActionButton';
+import { FlaskIcon, BookIcon, HeroBackIcon, SearchIcon, GoldCoinIcon, CheckmarkCircleIcon, GearIcon } from './IconComponents';
+import { getAllRecipes, getRecipeById, hasRequiredIngredients, canCraftRecipe } from '../services/craftingService';
+import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 import { GetSpellIcon } from './IconComponents';
 
 interface CraftingWorkshopViewProps {
@@ -22,9 +22,9 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
   onShowMessage,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'consumable' | 'equipment' | 'component'>('all');
-  const [selectedRecipe, setSelectedRecipe] = useState<CraftingRecipe | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   
-  const discoveredRecipes = getDiscoveredRecipes().filter(recipe => 
+  const discoveredRecipes = getAllRecipes().filter(recipe => 
     player.discoveredRecipes.includes(recipe.id)
   );
   
@@ -32,12 +32,12 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
     ? discoveredRecipes 
     : discoveredRecipes.filter(recipe => recipe.category === selectedCategory);
 
-  const canCraft = (recipe: CraftingRecipe): boolean => {
-    return canCraftRecipe(recipe, player.level, player.currentLocationId) && 
-           hasRequiredIngredients(recipe, player.inventory);
+  const canCraft = (recipe: Recipe): boolean => {
+    return hasRequiredIngredients(recipe, player.inventory) && 
+           canCraftRecipe(recipe, player.level, player.currentLocationId);
   };
 
-  const getMissingIngredients = (recipe: CraftingRecipe): string[] => {
+  const getMissingIngredients = (recipe: Recipe): string[] => {
     return recipe.ingredients
       .filter(ingredient => (player.inventory[ingredient.itemId] || 0) < ingredient.quantity)
       .map(ingredient => {
@@ -49,7 +49,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
       });
   };
 
-  const getUnmetRequirements = (recipe: CraftingRecipe): string[] => {
+  const getUnmetRequirements = (recipe: Recipe): string[] => {
     const unmet: string[] = [];
     recipe.requirements.forEach(req => {
       switch (req.type) {
@@ -74,7 +74,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
     return unmet;
   };
 
-  const handleCraft = async (recipe: CraftingRecipe) => {
+  const handleCraft = async (recipe: Recipe) => {
     if (!canCraft(recipe)) {
       const missing = getMissingIngredients(recipe);
       const unmet = getUnmetRequirements(recipe);

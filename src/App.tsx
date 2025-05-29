@@ -7,34 +7,34 @@ import { getScalingFactorFromRarity } from './utils';
 import { getAllRecipes, getRecipeById, discoverRecipe } from './services/craftingService';
 
 
-import ActionButton from './ui/ActionButton';
-import Modal from './ui/Modal';
-import LoadingSpinner from './ui/LoadingSpinner';
-import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, EssenceIcon } from './components/IconComponents';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import { CharacterSheetModal } from './components/CharacterSheetModal';
-import CraftingHubModal from './components/CraftingHubModal';
-import HelpWikiModal from './components/HelpWikiModal';
-import GameMenuModal from './components/GameMenuModal';
-import SpellDesignStudioView from './components/SpellDesignStudioView';
-import ResearchLabView from './components/ResearchLabView';
-import ResearchView from './components/ResearchView'; // Renamed from GeneralResearch, now ResearchArchives
-import MapView from './components/MapView';
+import ActionButton from '../ui/ActionButton';
+import Modal from '../ui/Modal';
+import LoadingSpinner from '../ui/LoadingSpinner';
+import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, EssenceIcon } from './IconComponents';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { CharacterSheetModal } from '../components/CharacterSheetModal';
+import CraftingHubModal from './CraftingHubModal';
+import HelpWikiModal from '../components/HelpWikiModal';
+import GameMenuModal from '../components/GameMenuModal';
+import SpellDesignStudioView from './SpellDesignStudioView';
+import ResearchLabView from './ResearchLabView';
+import ResearchView from './ResearchView'; // Renamed from GeneralResearch, now ResearchArchives
+import MapView from '../components/MapView';
 
-import HomeScreenView from './components/HomeScreenView';
-import SpellCraftingView from './components/SpellCraftingView';
-import TraitCraftingView from './components/TraitCraftingView';
-import SpellEditingView from './components/SpellEditingView';
-import CombatView from './components/CombatView';
-import ConfirmationView from './components/ConfirmationView';
-import GameOverView from './components/GameOverView';
-import MobileMenuModal from './components/MobileMenuModal';
-import CampView from './components/CampView';
-import SettlementView from './components/SettlementView';
-import ShopView from './components/ShopView';
-import RecipeDiscoveryView from './components/RecipeDiscoveryView';
-import CraftingWorkshopView from './components/CraftingWorkshopView';
+import HomeScreenView from './HomeScreenView';
+import SpellCraftingView from '../components/SpellCraftingView';
+import TraitCraftingView from '../components/TraitCraftingView';
+import SpellEditingView from '../components/SpellEditingView';
+import CombatView from '../components/CombatView';
+import ConfirmationView from '../components/ConfirmationView';
+import GameOverView from '../components/GameOverView';
+import MobileMenuModal from '../components/MobileMenuModal';
+import CampView from '../components/CampView';
+import SettlementView from './SettlementView';
+import ShopView from './ShopView';
+import RecipeDiscoveryView from './RecipeDiscoveryView';
+import CraftingWorkshopView from './CraftingWorkshopView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 

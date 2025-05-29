@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Player, Shop, ShopItem, ShopService } from '../types';
-import ActionButton from '../ui/ActionButton';
-import { FlaskIcon, GoldCoinIcon, HeroBackIcon, UserIcon, GearIcon } from './IconComponents';
-import { getShopById, getNPCById } from '../services/locationService';
-import { MASTER_ITEM_DEFINITIONS } from '../services/itemService';
+import ActionButton from '../../ui/ActionButton';
+import { GetSpellIcon, GoldCoinIcon, HeroBackIcon, FlaskIcon, GearIcon, BookIcon } from './IconComponents';
+import { getLocation, getShopById, getNPCById } from '../services/locationService';
+import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 
 interface ShopViewProps {
   player: Player;
@@ -75,7 +75,7 @@ const ShopView: React.FC<ShopViewProps> = ({
           </span>
           {shopkeeper && (
             <span className="flex items-center">
-              <UserIcon className="w-4 h-4 mr-1" />
+              <BookIcon className="w-4 h-4 mr-1" />
               {shopkeeper.name}
             </span>
           )}

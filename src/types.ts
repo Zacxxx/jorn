@@ -58,7 +58,8 @@ export type GameState =
   | 'IN_COMBAT' | 'GAME_OVER_VICTORY' | 'GAME_OVER_DEFEAT' | 'SPELL_CRAFT_CONFIRMATION'
   | 'SPELL_EDIT_CONFIRMATION' | 'ITEM_CRAFTING' | 'ITEM_CRAFT_CONFIRMATION' | 'SELECTING_POTION'
   | 'CHARACTER_SHEET' | 'SELECTING_ABILITY' | 'CRAFTING_HUB' | 'EXPLORING_MAP' | 'CAMP'
-  | 'SETTLEMENT_VIEW' | 'SHOP_VIEW' | 'TAVERN_VIEW' | 'NPC_DIALOGUE' | 'HOMESTEAD_VIEW';
+  | 'SETTLEMENT_VIEW' | 'SHOP_VIEW' | 'TAVERN_VIEW' | 'NPC_DIALOGUE' | 'HOMESTEAD_VIEW'
+  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP';
 export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia';
 export type InventoryFilterType = 'All' | ItemType;
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';
@@ -668,3 +669,5 @@ export interface CraftingRequirement {
   type: 'level' | 'skill' | 'location' | 'tool';
   value: string | number;
 }
+
+export type Recipe = CraftingRecipe;

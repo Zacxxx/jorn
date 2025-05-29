@@ -6,7 +6,11 @@ export const GEMINI_MODEL_TEXT = 'gemini-2.5-flash-preview-04-17';
 export const INITIAL_PLAYER_NAME = "Hero"; 
 export const INITIAL_PLAYER_GOLD = 50; 
 export const INITIAL_PLAYER_ESSENCE = 10; 
+export const INITIAL_PLAYER_LOCATION = "loc_001"; // Starting location ID
 
+export const INITIAL_PLAYER_EP = 50;
+export const PLAYER_EP_REGEN_PER_TURN = 5;
+export const DEFENDING_DEFENSE_BONUS_PERCENTAGE = 0.5; 
 
 export const STARTER_SPELL: Spell = {
   id: 'starter-strike',
@@ -23,10 +27,6 @@ export const STARTER_SPELL: Spell = {
   tags: ['Arcane', 'Projectile'], 
   scalingFactor: 0,
 };
-
-export const INITIAL_PLAYER_EP = 50;
-export const PLAYER_EP_REGEN_PER_TURN = 5;
-export const DEFENDING_DEFENSE_BONUS_PERCENTAGE = 0.5; 
 
 export const STARTER_ABILITIES: Ability[] = [
   {

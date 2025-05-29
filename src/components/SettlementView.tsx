@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player, Settlement, Shop, Tavern, NPC, PointOfInterest } from '../types';
-import ActionButton from '../ui/ActionButton';
+import ActionButton from '../../ui/ActionButton';
 import { BuildingIcon, UserIcon, FlaskIcon, BookIcon, MapIcon, HeroBackIcon, GoldCoinIcon } from './IconComponents';
 import { getLocation } from '../services/locationService';
 

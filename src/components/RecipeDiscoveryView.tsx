@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Player, CraftingRecipe } from '../types';
-import ActionButton from '../ui/ActionButton';
+import { Player } from '../types';
+import ActionButton from '../../ui/ActionButton';
 import { FlaskIcon, BookIcon, HeroBackIcon, SearchIcon, GoldCoinIcon, EssenceIcon } from './IconComponents';
+import { discoverRecipeFromPrompt } from '../services/geminiService';
+import LoadingSpinner from '../../ui/LoadingSpinner';
 import { getDiscoveryPrompts, getAllRecipes } from '../services/craftingService';
-import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface RecipeDiscoveryViewProps {
   player: Player;
@@ -45,7 +46,7 @@ const RecipeDiscoveryView: React.FC<RecipeDiscoveryViewProps> = ({
     setCustomPrompt('');
   };
 
-  const getDiscoveryHint = (recipe: CraftingRecipe): string => {
+  const getDiscoveryHint = (recipe: Recipe): string => {
     const ingredients = recipe.ingredients.map(ing => ing.type).join(', ');
     const requirements = recipe.requirements.map(req => {
       switch (req.type) {
