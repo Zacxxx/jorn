@@ -14,7 +14,7 @@ import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, Essence
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { CharacterSheetModal } from './components/CharacterSheetModal';
-import { CraftingHubModal } from './components/CraftingHubModal';
+import CraftingHubModal from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal';
 import GameMenuModal from './components/GameMenuModal';
 import SpellDesignStudioView from './components/SpellDesignStudioView';
