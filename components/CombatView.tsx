@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats, SpellIconName } from '../types';
 import { GetSpellIcon, UserIcon, SkullIcon, WandIcon, MindIcon, PotionGenericIcon, SwordsIcon, ShieldIcon, SpeedIcon, BookIcon, HealIcon, BodyIcon, ReflexIcon, FleeIcon, StarIcon } from './IconComponents';
@@ -239,6 +237,7 @@ const CombatView: React.FC<CombatViewProps> = ({
                     <CombatActionGridSlot key={item.id} actionItem={item} player={player}
                         onClick={(action) => {
                             if (!canPlayerAct) return;
+                            handleGridSlotMouseLeave();
                             if (type === 'spell') { if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); else alert("Select a target!"); }
                             else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
                             else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
