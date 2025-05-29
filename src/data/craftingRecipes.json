@@ -1,0 +1,235 @@
+{
+  "recipes": {
+    "basic_health_potion": {
+      "id": "basic_health_potion",
+      "name": "Basic Health Potion",
+      "description": "A simple healing potion that restores a moderate amount of health.",
+      "category": "consumable",
+      "resultItemId": "health_potion_basic",
+      "resultQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "healing_herb",
+          "quantity": 2,
+          "type": "Verdant Leaf"
+        },
+        {
+          "itemId": "crystal_shard_minor",
+          "quantity": 1,
+          "type": "Crystal Shard"
+        }
+      ],
+      "requirements": [
+        {
+          "type": "level",
+          "value": 1
+        }
+      ],
+      "craftingTime": 1,
+      "discoveryPrompt": "How can I create a basic healing potion using herbs and magical crystals?",
+      "discovered": false
+    },
+    "iron_sword_basic": {
+      "id": "iron_sword_basic",
+      "name": "Basic Iron Sword",
+      "description": "A sturdy iron sword suitable for beginning adventurers.",
+      "category": "equipment",
+      "resultItemId": "iron_sword_crafted",
+      "resultQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "iron_ore",
+          "quantity": 3,
+          "type": "Iron Ore"
+        },
+        {
+          "itemId": "emberbloom_petal",
+          "quantity": 1,
+          "type": "Emberbloom Petal"
+        }
+      ],
+      "requirements": [
+        {
+          "type": "level",
+          "value": 3
+        },
+        {
+          "type": "location",
+          "value": "blacksmith"
+        }
+      ],
+      "craftingTime": 4,
+      "discoveryPrompt": "What materials and techniques are needed to forge a basic iron sword?",
+      "discovered": false
+    },
+    "mana_crystal": {
+      "id": "mana_crystal",
+      "name": "Refined Mana Crystal",
+      "description": "A purified crystal that enhances magical abilities.",
+      "category": "component",
+      "resultItemId": "mana_crystal_refined",
+      "resultQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "crystal_shard",
+          "quantity": 5,
+          "type": "Crystal Shard"
+        },
+        {
+          "itemId": "arcane_dust",
+          "quantity": 3,
+          "type": "Arcane Dust"
+        },
+        {
+          "itemId": "mystic_orb_fragment",
+          "quantity": 1,
+          "type": "Mystic Orb"
+        }
+      ],
+      "requirements": [
+        {
+          "type": "level",
+          "value": 5
+        },
+        {
+          "type": "skill",
+          "value": "arcane_crafting"
+        }
+      ],
+      "craftingTime": 6,
+      "discoveryPrompt": "How can I refine raw crystal shards into a powerful mana-enhancing crystal?",
+      "discovered": false
+    },
+    "leather_armor_reinforced": {
+      "id": "leather_armor_reinforced",
+      "name": "Reinforced Leather Armor",
+      "description": "Leather armor strengthened with metal studs and magical thread.",
+      "category": "equipment",
+      "resultItemId": "leather_armor_reinforced",
+      "resultQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "leather_hide",
+          "quantity": 4,
+          "type": "Verdant Leaf"
+        },
+        {
+          "itemId": "iron_ore",
+          "quantity": 2,
+          "type": "Iron Ore"
+        },
+        {
+          "itemId": "shadowsilk_thread",
+          "quantity": 3,
+          "type": "Shadowsilk Thread"
+        }
+      ],
+      "requirements": [
+        {
+          "type": "level",
+          "value": 4
+        },
+        {
+          "type": "tool",
+          "value": "crafting_kit"
+        }
+      ],
+      "craftingTime": 3,
+      "discoveryPrompt": "What's the best way to reinforce leather armor with metal and magical materials?",
+      "discovered": false
+    },
+    "essence_elixir": {
+      "id": "essence_elixir",
+      "name": "Essence Elixir",
+      "description": "A potent elixir that temporarily boosts magical essence regeneration.",
+      "category": "consumable",
+      "resultItemId": "essence_elixir",
+      "resultQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "mystic_orb_fragment",
+          "quantity": 2,
+          "type": "Mystic Orb"
+        },
+        {
+          "itemId": "arcane_dust",
+          "quantity": 4,
+          "type": "Arcane Dust"
+        },
+        {
+          "itemId": "healing_herb",
+          "quantity": 1,
+          "type": "Verdant Leaf"
+        }
+      ],
+      "requirements": [
+        {
+          "type": "level",
+          "value": 6
+        },
+        {
+          "type": "location",
+          "value": "alchemy_station"
+        }
+      ],
+      "craftingTime": 2,
+      "discoveryPrompt": "How can I create an elixir that enhances magical essence using mystical ingredients?",
+      "discovered": false
+    },
+    "enchanted_focus": {
+      "id": "enchanted_focus",
+      "name": "Enchanted Spell Focus",
+      "description": "A magical focus that reduces spell casting costs.",
+      "category": "equipment",
+      "resultItemId": "enchanted_focus",
+      "resultQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "ancient_bone",
+          "quantity": 1,
+          "type": "Ancient Bone"
+        },
+        {
+          "itemId": "crystal_shard",
+          "quantity": 3,
+          "type": "Crystal Shard"
+        },
+        {
+          "itemId": "shadowsilk_thread",
+          "quantity": 2,
+          "type": "Shadowsilk Thread"
+        },
+        {
+          "itemId": "arcane_dust",
+          "quantity": 5,
+          "type": "Arcane Dust"
+        }
+      ],
+      "requirements": [
+        {
+          "type": "level",
+          "value": 8
+        },
+        {
+          "type": "skill",
+          "value": "enchanting"
+        }
+      ],
+      "craftingTime": 8,
+      "discoveryPrompt": "What ancient techniques can I use to create a focus that enhances spellcasting efficiency?",
+      "discovered": false
+    }
+  },
+  "discoveryPrompts": [
+    "How can I improve my basic equipment using available materials?",
+    "What alchemical recipes exist for creating powerful consumables?",
+    "Are there ways to enhance magical items through crafting?",
+    "What traditional smithing techniques can I learn?",
+    "How do I combine different magical essences effectively?",
+    "What are the secrets of enchanting mundane items?",
+    "How can I create items that boost my magical abilities?",
+    "What recipes exist for creating protective gear?",
+    "How do I craft items that restore health and mana?",
+    "What advanced crafting techniques are available to experienced adventurers?"
+  ]
+} 

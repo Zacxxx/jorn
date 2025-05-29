@@ -1,0 +1,546 @@
+{
+  "locations": {
+    "eldergrove": {
+      "id": "eldergrove",
+      "name": "Eldergrove",
+      "description": "A peaceful starting town nestled in a valley, surrounded by ancient oak trees. Known for its welcoming atmosphere and skilled craftsmen.",
+      "type": "settlement",
+      "discovered": true,
+      "dangerLevel": 1,
+      "connectedLocations": {
+        "ironhold": 8,
+        "whispering_woods": 2,
+        "crystal_caves": 4
+      },
+      "pointsOfInterest": [
+        {
+          "id": "eldergrove_shrine",
+          "name": "Ancient Shrine",
+          "description": "A mysterious shrine dedicated to forgotten gods, emanating a faint magical aura.",
+          "type": "mystery",
+          "interactionType": "explore",
+          "rewards": [
+            {
+              "type": "xp",
+              "amount": 50
+            }
+          ],
+          "cooldown": 24
+        }
+      ],
+      "settlement": {
+        "id": "eldergrove_settlement",
+        "name": "Eldergrove",
+        "description": "A cozy town where everyone knows each other's name.",
+        "type": "town",
+        "population": 1200,
+        "travelTimeFromOtherSettlements": {
+          "ironhold": 8
+        },
+        "quests": ["eldergrove_welcome", "herb_gathering"],
+        "shops": [
+          {
+            "id": "general_store",
+            "name": "Eldergrove General Store",
+            "description": "A well-stocked shop with everyday necessities and basic adventuring gear.",
+            "type": "general",
+            "keeper": "merchant_elena",
+            "items": [
+              {
+                "itemId": "health_potion_minor",
+                "price": 25,
+                "stock": 10,
+                "restockTime": 24
+              },
+              {
+                "itemId": "mana_potion_minor",
+                "price": 30,
+                "stock": 8,
+                "restockTime": 24
+              },
+              {
+                "itemId": "iron_ore",
+                "price": 15,
+                "stock": 20,
+                "restockTime": 48
+              }
+            ],
+            "services": [
+              {
+                "id": "basic_repair",
+                "name": "Basic Equipment Repair",
+                "description": "Repair damaged equipment to restore its effectiveness.",
+                "price": 10,
+                "type": "repair"
+              }
+            ]
+          },
+          {
+            "id": "blacksmith",
+            "name": "Ironwood Smithy",
+            "description": "A traditional blacksmith shop run by a master craftsman.",
+            "type": "weapons",
+            "keeper": "blacksmith_gareth",
+            "items": [
+              {
+                "itemId": "iron_sword",
+                "price": 150,
+                "stock": 3,
+                "restockTime": 72
+              },
+              {
+                "itemId": "leather_armor",
+                "price": 100,
+                "stock": 5,
+                "restockTime": 72
+              }
+            ],
+            "services": [
+              {
+                "id": "weapon_crafting",
+                "name": "Custom Weapon Crafting",
+                "description": "Craft custom weapons from provided materials.",
+                "price": 50,
+                "type": "craft"
+              }
+            ]
+          }
+        ],
+        "taverns": [
+          {
+            "id": "dancing_dragon",
+            "name": "The Dancing Dragon",
+            "description": "A lively tavern known for its hearty meals and local gossip.",
+            "keeper": "innkeeper_marta",
+            "rooms": [
+              {
+                "type": "common",
+                "pricePerNight": 5,
+                "available": true
+              },
+              {
+                "type": "private",
+                "pricePerNight": 15,
+                "available": true
+              }
+            ],
+            "services": [
+              {
+                "id": "hearty_meal",
+                "name": "Hearty Meal",
+                "description": "A filling meal that restores health and provides temporary bonuses.",
+                "price": 8,
+                "type": "meal"
+              }
+            ],
+            "rumors": [
+              {
+                "id": "crystal_caves_rumor",
+                "text": "Strange lights have been seen in the Crystal Caves lately. Some say ancient magic stirs within.",
+                "source": "Old Tom",
+                "truthfulness": 0.8,
+                "relatedQuestId": "crystal_investigation"
+              }
+            ]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "merchant_elena",
+            "name": "Elena Brightwater",
+            "description": "A cheerful merchant who runs the general store with enthusiasm.",
+            "occupation": "Merchant",
+            "personality": "Friendly and helpful, always eager to assist new adventurers.",
+            "iconName": "UserIcon",
+            "relationship": 0,
+            "quests": ["herb_gathering"],
+            "services": ["general_store"],
+            "dialogue": [
+              {
+                "id": "greeting",
+                "trigger": "greeting",
+                "text": "Welcome to Eldergrove! I'm Elena, and this is my shop. Need anything for your adventures?"
+              }
+            ]
+          },
+          {
+            "id": "blacksmith_gareth",
+            "name": "Gareth Ironwood",
+            "description": "A burly blacksmith with calloused hands and a warm smile.",
+            "occupation": "Blacksmith",
+            "personality": "Gruff but kind-hearted, takes pride in his craft.",
+            "iconName": "UserIcon",
+            "relationship": 0,
+            "quests": [],
+            "services": ["blacksmith"],
+            "dialogue": [
+              {
+                "id": "greeting",
+                "trigger": "greeting",
+                "text": "Ah, another adventurer! My forge is at your service. Need a blade sharpened or armor mended?"
+              }
+            ]
+          },
+          {
+            "id": "innkeeper_marta",
+            "name": "Marta Goldenheart",
+            "description": "A motherly innkeeper who treats all guests like family.",
+            "occupation": "Innkeeper",
+            "personality": "Warm and nurturing, knows all the local gossip.",
+            "iconName": "UserIcon",
+            "relationship": 0,
+            "quests": [],
+            "services": ["dancing_dragon"],
+            "dialogue": [
+              {
+                "id": "greeting",
+                "trigger": "greeting",
+                "text": "Welcome to The Dancing Dragon, dear! Come in, come in! Are you hungry? Thirsty? Need a room?"
+              }
+            ]
+          }
+        ],
+        "pointsOfInterest": [
+          {
+            "id": "town_well",
+            "name": "Eldergrove Well",
+            "description": "The central well of the town, said to have the purest water in the region.",
+            "type": "landmark",
+            "interactionType": "explore"
+          }
+        ]
+      }
+    },
+    "ironhold": {
+      "id": "ironhold",
+      "name": "Ironhold",
+      "description": "A fortified city built into a mountainside, known for its military might and advanced crafting techniques.",
+      "type": "settlement",
+      "discovered": false,
+      "dangerLevel": 3,
+      "connectedLocations": {
+        "eldergrove": 8,
+        "dragonspine_peaks": 6,
+        "ancient_battlefield": 4
+      },
+      "pointsOfInterest": [
+        {
+          "id": "ironhold_gates",
+          "name": "Great Iron Gates",
+          "description": "Massive gates forged from enchanted iron, standing as a testament to the city's defensive prowess.",
+          "type": "landmark",
+          "interactionType": "explore"
+        }
+      ],
+      "settlement": {
+        "id": "ironhold_settlement",
+        "name": "Ironhold",
+        "description": "A militaristic city where order and discipline reign supreme.",
+        "type": "city",
+        "population": 8500,
+        "travelTimeFromOtherSettlements": {
+          "eldergrove": 8
+        },
+        "quests": ["ironhold_recruitment", "mountain_patrol"],
+        "shops": [
+          {
+            "id": "armory",
+            "name": "Ironhold Armory",
+            "description": "The finest weapons and armor in the region, crafted by master smiths.",
+            "type": "weapons",
+            "keeper": "weaponmaster_thane",
+            "items": [
+              {
+                "itemId": "steel_sword",
+                "price": 300,
+                "stock": 5,
+                "restockTime": 48
+              },
+              {
+                "itemId": "chainmail_armor",
+                "price": 250,
+                "stock": 3,
+                "restockTime": 72
+              },
+              {
+                "itemId": "enchanted_shield",
+                "price": 400,
+                "stock": 2,
+                "restockTime": 96
+              }
+            ],
+            "services": [
+              {
+                "id": "weapon_enchanting",
+                "name": "Weapon Enchanting",
+                "description": "Enhance weapons with magical properties.",
+                "price": 200,
+                "type": "enchant"
+              }
+            ]
+          },
+          {
+            "id": "magic_emporium",
+            "name": "Arcane Emporium",
+            "description": "A shop specializing in magical components and spell-crafting materials.",
+            "type": "magic",
+            "keeper": "mage_lyralei",
+            "items": [
+              {
+                "itemId": "arcane_crystal",
+                "price": 100,
+                "stock": 8,
+                "restockTime": 72
+              },
+              {
+                "itemId": "mana_potion_greater",
+                "price": 75,
+                "stock": 6,
+                "restockTime": 48
+              }
+            ],
+            "services": [
+              {
+                "id": "spell_identification",
+                "name": "Spell Identification",
+                "description": "Identify unknown magical items and spells.",
+                "price": 25,
+                "type": "identify"
+              }
+            ]
+          }
+        ],
+        "taverns": [
+          {
+            "id": "iron_tankard",
+            "name": "The Iron Tankard",
+            "description": "A sturdy tavern frequented by soldiers and mercenaries.",
+            "keeper": "barkeep_magnus",
+            "rooms": [
+              {
+                "type": "common",
+                "pricePerNight": 10,
+                "available": true
+              },
+              {
+                "type": "private",
+                "pricePerNight": 25,
+                "available": true
+              },
+              {
+                "type": "luxury",
+                "pricePerNight": 50,
+                "available": true
+              }
+            ],
+            "services": [
+              {
+                "id": "soldiers_feast",
+                "name": "Soldier's Feast",
+                "description": "A protein-rich meal that boosts physical capabilities.",
+                "price": 15,
+                "type": "meal"
+              }
+            ],
+            "rumors": [
+              {
+                "id": "dragon_sighting",
+                "text": "Scouts report dragon activity in the Dragonspine Peaks. The garrison is on high alert.",
+                "source": "Captain Aldric",
+                "truthfulness": 0.9,
+                "relatedQuestId": "dragon_investigation"
+              }
+            ]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "weaponmaster_thane",
+            "name": "Thane Ironforge",
+            "description": "A veteran weaponmaster with scars telling tales of countless battles.",
+            "occupation": "Weaponmaster",
+            "personality": "Stern and disciplined, but respects those who prove their worth.",
+            "iconName": "UserIcon",
+            "relationship": 0,
+            "quests": ["weapon_mastery_trial"],
+            "services": ["armory"],
+            "dialogue": [
+              {
+                "id": "greeting",
+                "trigger": "greeting",
+                "text": "You seek weapons? Good. A warrior is only as strong as their blade. What do you require?"
+              }
+            ]
+          },
+          {
+            "id": "mage_lyralei",
+            "name": "Lyralei Starweaver",
+            "description": "An elegant elven mage with deep knowledge of arcane arts.",
+            "occupation": "Court Mage",
+            "personality": "Intellectual and curious, always seeking to expand magical knowledge.",
+            "iconName": "UserIcon",
+            "relationship": 0,
+            "quests": ["arcane_research"],
+            "services": ["magic_emporium"],
+            "dialogue": [
+              {
+                "id": "greeting",
+                "trigger": "greeting",
+                "text": "Greetings, fellow seeker of knowledge. My emporium holds many secrets of the arcane arts."
+              }
+            ]
+          },
+          {
+            "id": "barkeep_magnus",
+            "name": "Magnus Stoutheart",
+            "description": "A former soldier turned tavern keeper, built like a mountain.",
+            "occupation": "Tavern Keeper",
+            "personality": "Boisterous and loyal, has a story for every drink served.",
+            "iconName": "UserIcon",
+            "relationship": 0,
+            "quests": [],
+            "services": ["iron_tankard"],
+            "dialogue": [
+              {
+                "id": "greeting",
+                "trigger": "greeting",
+                "text": "Welcome to The Iron Tankard! Pull up a chair and I'll pour you something strong!"
+              }
+            ]
+          }
+        ],
+        "pointsOfInterest": [
+          {
+            "id": "training_grounds",
+            "name": "Military Training Grounds",
+            "description": "Where the city's elite soldiers hone their skills in combat.",
+            "type": "crafting",
+            "interactionType": "craft",
+            "requirements": [
+              {
+                "type": "level",
+                "value": 5,
+                "operator": "gte"
+              }
+            ],
+            "rewards": [
+              {
+                "type": "xp",
+                "amount": 100
+              }
+            ],
+            "cooldown": 48
+          }
+        ]
+      }
+    },
+    "whispering_woods": {
+      "id": "whispering_woods",
+      "name": "Whispering Woods",
+      "description": "A mystical forest where the trees seem to whisper ancient secrets to those who listen carefully.",
+      "type": "wilderness",
+      "discovered": true,
+      "dangerLevel": 2,
+      "connectedLocations": {
+        "eldergrove": 2,
+        "crystal_caves": 3
+      },
+      "pointsOfInterest": [
+        {
+          "id": "herb_grove",
+          "name": "Medicinal Herb Grove",
+          "description": "A clearing where rare healing herbs grow in abundance.",
+          "type": "resource",
+          "interactionType": "gather",
+          "rewards": [
+            {
+              "type": "resource",
+              "itemId": "healing_herb",
+              "amount": 3
+            }
+          ],
+          "cooldown": 12
+        },
+        {
+          "id": "ancient_tree",
+          "name": "The Elderoak",
+          "description": "An enormous ancient oak tree that radiates magical energy.",
+          "type": "mystery",
+          "interactionType": "explore",
+          "requirements": [
+            {
+              "type": "level",
+              "value": 3,
+              "operator": "gte"
+            }
+          ],
+          "rewards": [
+            {
+              "type": "xp",
+              "amount": 75
+            }
+          ],
+          "cooldown": 72
+        }
+      ]
+    },
+    "crystal_caves": {
+      "id": "crystal_caves",
+      "name": "Crystal Caves",
+      "description": "Underground caverns filled with luminescent crystals that pulse with magical energy.",
+      "type": "dungeon",
+      "discovered": false,
+      "dangerLevel": 4,
+      "connectedLocations": {
+        "eldergrove": 4,
+        "whispering_woods": 3
+      },
+      "pointsOfInterest": [
+        {
+          "id": "crystal_formation",
+          "name": "Arcane Crystal Formation",
+          "description": "A massive formation of pure arcane crystals.",
+          "type": "resource",
+          "interactionType": "gather",
+          "requirements": [
+            {
+              "type": "level",
+              "value": 5,
+              "operator": "gte"
+            }
+          ],
+          "rewards": [
+            {
+              "type": "resource",
+              "itemId": "arcane_crystal",
+              "amount": 2
+            }
+          ],
+          "cooldown": 24
+        }
+      ]
+    }
+  },
+  "homestead": {
+    "id": "player_homestead",
+    "name": "Your Homestead",
+    "description": "A modest plot of land that serves as your personal base of operations.",
+    "properties": {
+      "garden": {
+        "level": 1,
+        "description": "A small garden where you can grow herbs and basic ingredients.",
+        "upgrades": ["expanded_plots", "greenhouse", "magical_fertilizer"]
+      },
+      "workshop": {
+        "level": 1,
+        "description": "A basic crafting area with essential tools.",
+        "upgrades": ["advanced_tools", "enchanting_table", "alchemy_station"]
+      },
+      "storage": {
+        "level": 1,
+        "description": "Simple storage for your belongings.",
+        "upgrades": ["expanded_storage", "magical_vault", "item_sorter"]
+      }
+    }
+  }
+} 

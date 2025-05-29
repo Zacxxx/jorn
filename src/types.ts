@@ -57,7 +57,8 @@ export type GameState =
   | 'THEORIZE_COMPONENT' | 'SPELL_EDITING' | 'TRAIT_CRAFTING' | 'ABILITY_CRAFTING' | 'MANAGE_SPELLS'
   | 'IN_COMBAT' | 'GAME_OVER_VICTORY' | 'GAME_OVER_DEFEAT' | 'SPELL_CRAFT_CONFIRMATION'
   | 'SPELL_EDIT_CONFIRMATION' | 'ITEM_CRAFTING' | 'ITEM_CRAFT_CONFIRMATION' | 'SELECTING_POTION'
-  | 'CHARACTER_SHEET' | 'SELECTING_ABILITY' | 'CRAFTING_HUB' | 'EXPLORING_MAP';
+  | 'CHARACTER_SHEET' | 'SELECTING_ABILITY' | 'CRAFTING_HUB' | 'EXPLORING_MAP' | 'CAMP'
+  | 'SETTLEMENT_VIEW' | 'SHOP_VIEW' | 'TAVERN_VIEW' | 'NPC_DIALOGUE' | 'HOMESTEAD_VIEW';
 export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia';
 export type InventoryFilterType = 'All' | ItemType;
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';
@@ -323,6 +324,8 @@ export interface Player {
     specialAbilityName?: string;
   }>;
   discoveredComponents: SpellComponent[];
+  discoveredRecipes: string[];
+  currentLocationId: string;
 }
 
 export interface PlayerEffectiveStats {
@@ -500,4 +503,168 @@ export interface LootDrop {
     spellData?: GeneratedSpellData;
     equipmentData?: GeneratedEquipmentData;
     consumableData?: GeneratedConsumableData;
+}
+
+// Location System Types
+export interface Settlement {
+  id: string;
+  name: string;
+  description: string;
+  type: 'city' | 'town' | 'village' | 'outpost';
+  population: number;
+  shops: Shop[];
+  taverns: Tavern[];
+  npcs: NPC[];
+  pointsOfInterest: PointOfInterest[];
+  quests: string[]; // Quest IDs available in this settlement
+  travelTimeFromOtherSettlements: Record<string, number>; // Settlement ID -> hours
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  description: string;
+  type: 'wilderness' | 'settlement' | 'dungeon' | 'landmark';
+  settlement?: Settlement; // Only if type is 'settlement'
+  pointsOfInterest: PointOfInterest[];
+  connectedLocations: Record<string, number>; // Location ID -> travel time in hours
+  discovered: boolean;
+  dangerLevel: number; // 1-10
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  description: string;
+  type: 'general' | 'weapons' | 'armor' | 'magic' | 'alchemy' | 'crafting';
+  keeper: string; // NPC ID
+  items: ShopItem[];
+  services: ShopService[];
+}
+
+export interface ShopItem {
+  itemId: string; // References master item definitions or unique items
+  price: number;
+  stock: number; // -1 for unlimited
+  restockTime?: number; // Hours until restock
+}
+
+export interface ShopService {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  type: 'repair' | 'enchant' | 'identify' | 'craft' | 'train';
+}
+
+export interface Tavern {
+  id: string;
+  name: string;
+  description: string;
+  keeper: string; // NPC ID
+  rooms: TavernRoom[];
+  services: TavernService[];
+  rumors: Rumor[];
+}
+
+export interface TavernRoom {
+  type: 'common' | 'private' | 'luxury';
+  pricePerNight: number;
+  available: boolean;
+}
+
+export interface TavernService {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  type: 'meal' | 'drink' | 'information' | 'entertainment';
+}
+
+export interface Rumor {
+  id: string;
+  text: string;
+  source: string; // NPC name
+  truthfulness: number; // 0-1, how accurate the rumor is
+  relatedQuestId?: string;
+}
+
+export interface NPC {
+  id: string;
+  name: string;
+  description: string;
+  occupation: string;
+  personality: string;
+  iconName: SpellIconName;
+  dialogue: NPCDialogue[];
+  quests: string[]; // Quest IDs this NPC can give
+  services: string[]; // Service IDs this NPC provides
+  relationship: number; // -100 to 100, player's standing with this NPC
+}
+
+export interface NPCDialogue {
+  id: string;
+  trigger: 'greeting' | 'quest' | 'trade' | 'information' | 'farewell';
+  text: string;
+  responses?: NPCDialogueResponse[];
+  conditions?: DialogueCondition[];
+}
+
+export interface NPCDialogueResponse {
+  text: string;
+  action: 'continue' | 'quest' | 'trade' | 'end';
+  nextDialogueId?: string;
+  questId?: string;
+  requirements?: DialogueCondition[];
+}
+
+export interface DialogueCondition {
+  type: 'level' | 'item' | 'quest' | 'relationship' | 'gold';
+  value: string | number;
+  operator: 'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'has';
+}
+
+export interface PointOfInterest {
+  id: string;
+  name: string;
+  description: string;
+  type: 'landmark' | 'resource' | 'danger' | 'mystery' | 'crafting';
+  interactionType: 'explore' | 'gather' | 'fight' | 'puzzle' | 'craft';
+  requirements?: DialogueCondition[];
+  rewards?: POIReward[];
+  cooldown?: number; // Hours before can interact again
+  lastInteraction?: number; // Timestamp of last interaction
+}
+
+export interface POIReward {
+  type: 'xp' | 'gold' | 'item' | 'resource' | 'quest';
+  amount?: number;
+  itemId?: string;
+  questId?: string;
+}
+
+// Crafting Recipe System
+export interface CraftingRecipe {
+  id: string;
+  name: string;
+  description: string;
+  category: 'consumable' | 'equipment' | 'component' | 'misc';
+  resultItemId: string;
+  resultQuantity: number;
+  ingredients: RecipeIngredient[];
+  requirements: CraftingRequirement[];
+  craftingTime: number; // In hours
+  discoveryPrompt?: string; // Prompt used to discover this recipe
+  discovered: boolean;
+}
+
+export interface RecipeIngredient {
+  itemId: string;
+  quantity: number;
+  type: ResourceType;
+}
+
+export interface CraftingRequirement {
+  type: 'level' | 'skill' | 'location' | 'tool';
+  value: string | number;
 }

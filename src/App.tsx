@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, SpellComponent, ElementName, LootChestItem, GeneratedSpellComponentData, LootDrop, MasterItemDefinition, UniqueConsumable, MasterResourceItem, MasterConsumableItem } from './types';
-import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCE_TYPES_FOR_AI, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, EXAMPLE_SPELL_COMPONENTS, RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
+import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCE_TYPES_FOR_AI, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, INITIAL_PLAYER_LOCATION, EXAMPLE_SPELL_COMPONENTS, RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest } from './services/geminiService';
 import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
 import { getScalingFactorFromRarity } from './utils';
@@ -30,6 +30,8 @@ import ConfirmationView from './components/ConfirmationView';
 import GameOverView from './components/GameOverView';
 import MobileMenuModal from './components/MobileMenuModal';
 import CampView from './components/CampView';
+import SettlementView from './components/SettlementView';
+import ShopView from './components/ShopView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
@@ -105,6 +107,8 @@ export const App: React.FC<{}> = (): React.ReactElement => {
             speed: parsed.speed || 0,
             bestiary: parsed.bestiary || {},
             discoveredComponents: Array.isArray(parsed.discoveredComponents) ? parsed.discoveredComponents.filter(comp => typeof comp === 'object' && comp.id) : [],
+            discoveredRecipes: Array.isArray(parsed.discoveredRecipes) ? parsed.discoveredRecipes : [],
+            currentLocationId: parsed.currentLocationId || INITIAL_PLAYER_LOCATION,
             };
             validatedPlayer.preparedSpellIds = validatedPlayer.preparedSpellIds.filter(id => validatedPlayer.spells.some(s => s.id === id));
             if (validatedPlayer.preparedSpellIds.length === 0 && validatedPlayer.spells.length > 0) {
@@ -146,6 +150,8 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       iconName: 'UserIcon',
       bestiary: {},
       discoveredComponents: [],
+      discoveredRecipes: [],
+      currentLocationId: INITIAL_PLAYER_LOCATION,
     };
   });
 
@@ -173,6 +179,9 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [isHelpWikiOpen, setIsHelpWikiOpen] = useState(false);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentShopId, setCurrentShopId] = useState<string | null>(null);
+  const [currentTavernId, setCurrentTavernId] = useState<string | null>(null);
+  const [currentNPCId, setCurrentNPCId] = useState<string | null>(null);
 
   useEffect(() => {
     async function initApp() {
@@ -397,6 +406,82 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setModalContent({
       title: 'Rest Complete',
       message: `You rested for ${restDuration} hour${restDuration !== 1 ? 's' : ''} and recovered ${finalHpGain} HP, ${finalMpGain} MP, and ${finalEpGain} EP.${bonusMessage}`,
+      type: 'success'
+    });
+  };
+
+  const handleAccessSettlement = () => {
+    setGameState('SETTLEMENT_VIEW');
+  };
+
+  const handleOpenShop = (shopId: string) => {
+    setCurrentShopId(shopId);
+    setGameState('SHOP_VIEW');
+  };
+
+  const handleOpenTavern = (tavernId: string) => {
+    setCurrentTavernId(tavernId);
+    setGameState('TAVERN_VIEW');
+  };
+
+  const handleTalkToNPC = (npcId: string) => {
+    setCurrentNPCId(npcId);
+    setGameState('NPC_DIALOGUE');
+  };
+
+  const handleExplorePointOfInterest = (poiId: string) => {
+    setModalContent({
+      title: 'Point of Interest',
+      message: 'Point of interest exploration will be implemented in future updates!',
+      type: 'info'
+    });
+  };
+
+  const handlePurchaseItem = (itemId: string, price: number, quantity: number) => {
+    if (player.gold < price) {
+      setModalContent({
+        title: 'Purchase Failed',
+        message: 'Insufficient gold for this purchase.',
+        type: 'error'
+      });
+      return;
+    }
+
+    // Add item to inventory
+    const newInventory = { ...player.inventory };
+    newInventory[itemId] = (newInventory[itemId] || 0) + quantity;
+
+    setPlayer(prev => ({
+      ...prev,
+      gold: prev.gold - price,
+      inventory: newInventory
+    }));
+
+    setModalContent({
+      title: 'Purchase Successful',
+      message: `You purchased ${quantity}x ${itemId} for ${price} gold.`,
+      type: 'success'
+    });
+  };
+
+  const handlePurchaseService = (serviceId: string, price: number) => {
+    if (player.gold < price) {
+      setModalContent({
+        title: 'Purchase Failed',
+        message: 'Insufficient gold for this service.',
+        type: 'error'
+      });
+      return;
+    }
+
+    setPlayer(prev => ({
+      ...prev,
+      gold: prev.gold - price
+    }));
+
+    setModalContent({
+      title: 'Service Purchased',
+      message: `You purchased the service for ${price} gold. (Service effects will be implemented in future updates)`,
       type: 'success'
     });
   };
@@ -1650,7 +1735,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading..." size="lg"/></div>;
     }
     switch (gameState) {
-      case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp}/>;
+      case 'HOME': return <HomeScreenView player={player} onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onAccessSettlement={handleAccessSettlement}/>;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
@@ -1663,5 +1748,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         return <ConfirmationView gameState={gameState} pendingSpellCraftData={pendingSpellCraftData} pendingSpellEditData={pendingSpellEditData} originalSpellForEdit={originalSpellForEdit} pendingItemCraftData={pendingItemCraftData} onConfirm={gameState === 'SPELL_CRAFT_CONFIRMATION' ? handleConfirmSpellCraft : gameState === 'SPELL_EDIT_CONFIRMATION' ? handleConfirmSpellEdit : handleConfirmItemCraft} onCancel={() => { setPendingSpellCraftData(null); setPendingSpellEditData(null); setPendingItemCraftData(null); setGameState(gameState.includes('SPELL') ? 'SPELL_DESIGN_STUDIO' : 'CRAFTING_HUB'); }} checkResources={checkResources} renderResourceList={renderResourceList} isLoading={isLoading}/>;
       case 'GAME_OVER_VICTORY': case 'GAME_OVER_DEFEAT': return <GameOverView gameState={gameState} modalMessage={modalContent?.message} currentEnemy={currentEnemies.length > 0 ? currentEnemies[0] : null} combatLog={combatLog} onReturnHome={handleNavigateHome} onFindEnemy={handleFindEnemy} isLoading={isLoading}/>;
       case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'SETTLEMENT_VIEW': return <SettlementView player={player} onReturnHome={handleNavigateHome} onOpenShop={handleOpenShop} onOpenTavern={handleOpenTavern} onTalkToNPC={handleTalkToNPC} onExplorePointOfInterest={handleExplorePointOfInterest} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'SHOP_VIEW': return currentShopId ? <ShopView player={player} shopId={currentShopId} onReturnToSettlement={() => setGameState('SETTLEMENT_VIEW')} onPurchaseItem={handlePurchaseItem} onPurchaseService={handlePurchaseService} onShowMessage={(t,m) => showMessageModal(t,m,'info')} /> : <p>Error: No shop selected.</p>;
       
       // Deprecated states,
