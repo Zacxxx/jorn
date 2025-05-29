@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player } from '../types';
-import ActionButton from '../ui/ActionButton';
+import ActionButton from '../../ui/ActionButton';
 import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon } from './IconComponents';
 import { getLocation } from '../services/locationService';
 
@@ -201,6 +201,16 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           className="h-full !py-4"
         >
           Camp
+        </ActionButton>
+        <ActionButton 
+          onClick={() => {/* Placeholder functionality */}} 
+          variant="secondary"
+          size="lg" 
+          disabled={true}
+          icon={<BookIcon />} 
+          className="h-full !py-4 opacity-50"
+        >
+          Placeholder
         </ActionButton>
         <ActionButton 
           onClick={onOpenResearchArchives} 
