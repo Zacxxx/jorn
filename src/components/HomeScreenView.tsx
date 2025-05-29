@@ -12,6 +12,7 @@ interface HomeScreenViewProps {
   onOpenResearchArchives: () => void; 
   onOpenCamp: () => void;
   onAccessSettlement: () => void;
+  onOpenCraftingHub: () => void;
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
@@ -22,6 +23,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenResearchArchives,
   onOpenCamp,
   onAccessSettlement,
+  onOpenCraftingHub,
 }) => {
   const currentLocation = getLocation(player.currentLocationId);
   const locationName = currentLocation?.name || 'Unknown Location';
@@ -211,15 +213,14 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           Research Archives
         </ActionButton>
         <ActionButton 
-          onClick={() => {/* TODO: Implement crafting */}} 
+          onClick={onOpenCraftingHub} 
           variant="warning" 
           size="lg" 
           isLoading={isLoading} 
           icon={<FlaskIcon />} 
           className="h-full !py-4"
-          disabled={true}
         >
-          Crafting (Soon)
+          Crafting Hub
         </ActionButton>
       </div>
     </div>

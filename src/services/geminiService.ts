@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { 
     GEMINI_MODEL_TEXT, AVAILABLE_SPELL_ICONS, DEFAULT_TRAIT_ICON, DEFAULT_QUEST_ICON, 
@@ -708,72 +707,120 @@ Prioritize thematic consistency. Balance power, costs, requirements based on rar
 }
 
 export async function generateLootFromChest(chestLevel: number, chestRarity: number, playerLevel: number): Promise<LootDrop[]> {
-    const numberOfDrops = 1 + Math.floor(chestRarity / 3) + (Math.random() < (chestLevel / 1000) ? 1 : 0); 
+  const systemInstruction = `You are a loot generation assistant for a fantasy RPG. Generate loot drops from a treasure chest.
+
+Chest Details:
+- Level: ${chestLevel}
+- Rarity: ${chestRarity} (0-10 scale)
+- Player Level: ${playerLevel}
+
+Generate 1-4 loot drops. Each drop should be a JSON object with:
+- type: One of: 'gold', 'essence', 'resource', 'consumable', 'equipment', 'spell', 'component'
+- amount: (for gold/essence) Integer amount
+- quantity: (for resource/consumable) Integer quantity (1-3)
+- itemId: (for resource/consumable) String ID from master list
+- resourceTypeName: (for resource) ResourceType from: ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}
+- rarityHint: (for generated items) Integer 0-10
+- promptHint: (for generated items) String description hint
+
+For generated items (equipment, spell, component, consumable), include detailed data:
+- consumableData: { name, description, iconName (from ${AVAILABLE_ITEM_ICONS.join(', ')}), effectType (from ${CONSUMABLE_EFFECT_TYPES.join(', ')}), magnitude, duration, statusToCure, buffToApply, rarity }
+- equipmentData: { name, description, iconName, slot (from ${AVAILABLE_EQUIPMENT_SLOTS.join(', ')}), statsBoost: {body?, mind?, reflex?, speed?, maxHp?, maxMp?, maxEp?}, rarity, scalingFactor }
+- spellData: { name, description, iconName, manaCost, damage, damageType, scalesWith, effect, statusEffectInflict, rarity }
+- componentData: { name, description, iconName, category, tier (1-5), rarity, element, tags, manaCost, energyCost, usageGoldCost, usageEssenceCost }
+
+Higher chest level/rarity = better loot. Return JSON array of loot drops.`;
+
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: GEMINI_MODEL_TEXT,
+      contents: [{ role: "user", parts: [{ text: `Generate loot for a level ${chestLevel} chest with rarity ${chestRarity} for a level ${playerLevel} player.` }] }],
+      config: {
+        systemInstruction: { role: "system", parts: [{ text: systemInstruction }]},
+        responseMimeType: "application/json",
+        temperature: 0.7,
+      },
+    });
     
-    const systemInstruction = `You are an RPG Loot Master. Generate loot for a chest.
-Chest Level: ${chestLevel}, Chest Rarity: ${chestRarity}, Player Level: ${playerLevel}.
-Return an array of ${numberOfDrops} JSON objects, each representing a single loot drop.
-Each object must have a 'type' field chosen from: 'gold', 'essence', 'resource', 'consumable', 'equipment', 'spell', 'component'.
-- For 'gold': { "type": "gold", "amount": integer (e.g., 10-500 based on chest level/rarity) }
-- For 'essence': { "type": "essence", "amount": integer (e.g., 1-50 based on chest level/rarity) }
-- For 'resource': { "type": "resource", "itemId": "string_id_from_master_resource_list", "quantity": integer (1-5), "resourceTypeName": "ResourceType from ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}"}.
-- For 'consumable': { "type": "consumable", "promptHint": "brief idea for AI generation e.g., 'Strong healing potion'", "rarityHint": integer (0-10 based on chest rarity) } OR { "type": "consumable", "itemId": "string_id_from_master_consumable_list", "quantity": 1 } (for predefined ones).
-- For 'equipment': { "type": "equipment", "promptHint": "brief idea for AI generation e.g., 'Fire sword'", "rarityHint": integer (0-10 based on chest rarity) }
-- For 'spell': { "type": "spell", "promptHint": "brief idea for AI generation e.g., 'Defensive earth shield spell'", "rarityHint": integer (0-10 based on chest rarity) }
-- For 'component': { "type": "component", "componentData": { /* Full GeneratedSpellComponentData structure here, but keep it concise. Ensure 'researchRequirements.items' if present, contains objects with 'itemId', 'type' (from ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}), and 'quantity'. */ } }
-If generating componentData, it should be a fully formed JSON object for a spell component (name, description, iconName, category, tier, baseEffects, rarity, etc.).
-Focus on thematic loot. Higher level/rarity chests yield better/rarer items.
-Return ONLY the array of JSON objects.`;
+    const rawData = parseJsonFromGeminiResponse(response.text);
+    return Array.isArray(rawData) ? rawData : [rawData];
 
-    try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: GEMINI_MODEL_TEXT,
-            contents: [{ role: "user", parts: [{ text: `Generate ${numberOfDrops} loot items.` }] }],
-            config: {
-                systemInstruction: { role: "system", parts: [{ text: systemInstruction }] },
-                responseMimeType: "application/json",
-                temperature: 0.9,
-            },
-        });
-        const lootDrops = parseJsonFromGeminiResponse(response.text) as LootDrop[];
-        
-        return lootDrops.map(drop => {
-            if (drop.type === 'component' && drop.componentData?.researchRequirements?.items) {
-                drop.componentData.researchRequirements.items = (drop.componentData.researchRequirements.items as any[])
-                    .map((item: any) => {
-                        const mappedItem: Partial<ResourceCost> = {};
-                        if (typeof item.itemId === 'string') mappedItem.itemId = item.itemId;
-                        if (typeof item.quantity === 'number' && item.quantity > 0) mappedItem.quantity = item.quantity;
-                        if (item.type && typeof item.type === 'string') { 
-                             const typeStr = item.type as string;
-                             if (AVAILABLE_RESOURCE_TYPES_FOR_AI.includes(typeStr as ResourceType)) {
-                                mappedItem.type = typeStr as ResourceType;
-                             } else {
-                                 console.warn(`Invalid resource type '${typeStr}' in loot drop component researchRequirements.items. Omitting type.`);
-                             }
-                        }
-                        return mappedItem;
-                    })
-                    .filter((item: Partial<ResourceCost>) => item.itemId && item.quantity && item.type) as Partial<ResourceCost>[]; 
-                if (drop.componentData.researchRequirements.items.length === 0) {
-                    delete drop.componentData.researchRequirements.items;
-                }
-            }
-            return drop;
-        }).filter(drop => {
-            if (!drop.type) return false;
-            if (drop.type === 'gold' || drop.type === 'essence') return typeof drop.amount === 'number';
-            if (drop.type === 'resource') return typeof drop.itemId === 'string' && typeof drop.quantity === 'number' && typeof drop.resourceTypeName === 'string' && AVAILABLE_RESOURCE_TYPES_FOR_AI.includes(drop.resourceTypeName);
-            if (drop.type === 'consumable' || drop.type === 'equipment' || drop.type === 'spell') {
-                return typeof drop.promptHint === 'string' && typeof drop.rarityHint === 'number' || typeof drop.itemId === 'string';
-            }
-            if (drop.type === 'component') return typeof drop.componentData === 'object';
-            return false;
-        }).slice(0, numberOfDrops);
+  } catch (error) {
+    console.error("Error generating loot from chest:", error);
+    throw new Error(`Failed to generate loot: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
-    } catch (error) {
-        console.error("Error generating loot from chest:", error);
-        const fallbackAmount = Math.floor(chestLevel / 10) + chestRarity * 5;
-        return [{ type: 'gold', amount: fallbackAmount > 0 ? fallbackAmount : 10 }];
+export async function discoverRecipeFromPrompt(
+  prompt: string, 
+  playerLevel: number, 
+  availableRecipes: string[], 
+  discoveredRecipes: string[]
+): Promise<{ recipeId: string | null; message: string }> {
+  const undiscoveredRecipes = availableRecipes.filter(id => !discoveredRecipes.includes(id));
+  
+  if (undiscoveredRecipes.length === 0) {
+    return { recipeId: null, message: "You have already discovered all available recipes!" };
+  }
+
+  const systemInstruction = `You are a crafting research assistant for a fantasy RPG. A player is trying to discover new crafting recipes.
+
+Player Details:
+- Level: ${playerLevel}
+- Research Prompt: "${prompt}"
+- Undiscovered Recipe IDs: ${undiscoveredRecipes.join(', ')}
+
+Available Recipe Categories:
+- basic_health_potion: Basic healing consumable using herbs and crystals
+- iron_sword_basic: Basic iron weapon for beginners
+- mana_crystal: Refined magical component for spell enhancement
+- leather_armor_reinforced: Protective gear with metal reinforcement
+- essence_elixir: Magical consumable for essence regeneration
+- enchanted_focus: Advanced magical equipment for spellcasters
+
+Your task is to determine if the player's research prompt matches any undiscovered recipe. Consider:
+- Keywords related to healing, potions, herbs → basic_health_potion
+- Keywords related to weapons, swords, iron, forging → iron_sword_basic
+- Keywords related to crystals, mana, magical enhancement → mana_crystal
+- Keywords related to armor, protection, leather → leather_armor_reinforced
+- Keywords related to essence, elixirs, magical drinks → essence_elixir
+- Keywords related to focus, enchanting, spellcasting tools → enchanted_focus
+
+Return JSON object:
+- recipeId: (string | null) The ID of the discovered recipe, or null if no match
+- message: (string) Explanation of the discovery or why no recipe was found
+- discoverySuccess: (boolean) Whether a recipe was discovered
+
+Be generous with matches but require some logical connection. If multiple recipes could match, pick the most relevant one.`;
+
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: GEMINI_MODEL_TEXT,
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: { role: "system", parts: [{ text: systemInstruction }]},
+        responseMimeType: "application/json",
+        temperature: 0.6,
+      },
+    });
+    
+    const result = parseJsonFromGeminiResponse(response.text);
+    
+    // Validate the result
+    if (result.recipeId && !undiscoveredRecipes.includes(result.recipeId)) {
+      return { recipeId: null, message: "Your research didn't lead to any new discoveries. Try a different approach!" };
     }
+    
+    return {
+      recipeId: result.recipeId || null,
+      message: result.message || (result.recipeId ? "Recipe discovered!" : "No matching recipe found.")
+    };
+
+  } catch (error) {
+    console.error("Error discovering recipe:", error);
+    return { 
+      recipeId: null, 
+      message: "Your research was inconclusive. Try rephrasing your question or being more specific about what you want to create." 
+    };
+  }
 }

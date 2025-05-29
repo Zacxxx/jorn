@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { ItemType } from '../types';
 import Modal from '../ui/Modal';
 import ItemCraftingForm from './ItemCraftingForm';
 import ActionButton from '../ui/ActionButton';
-import { PotionGenericIcon, GearIcon, ScrollIcon, WandIcon, FlaskIcon } from './IconComponents';
+import { PotionGenericIcon, GearIcon, ScrollIcon, WandIcon, FlaskIcon, BookIcon, SearchIcon } from './IconComponents';
 
 interface CraftingHubModalProps {
   isOpen: boolean;
@@ -12,10 +11,12 @@ interface CraftingHubModalProps {
   onInitiateAppItemCraft: (prompt: string, itemType: ItemType) => Promise<void>;
   isLoading: boolean;
   onOpenSpellDesignStudio: () => void; 
-  onOpenTheorizeLab: () => void;     
+  onOpenTheorizeLab: () => void;
+  onOpenRecipeDiscovery: () => void;
+  onOpenCraftingWorkshop: () => void;
 }
 
-type CraftingHubMainView = 'Items' | 'Spells'; 
+type CraftingHubMainView = 'Items' | 'Spells' | 'Recipes'; 
 
 export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({ 
     isOpen, 
@@ -23,7 +24,9 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
     onInitiateAppItemCraft, 
     isLoading,
     onOpenSpellDesignStudio,
-    onOpenTheorizeLab 
+    onOpenTheorizeLab,
+    onOpenRecipeDiscovery,
+    onOpenCraftingWorkshop
 }) => {
   const [activeMainView, setActiveMainView] = useState<CraftingHubMainView>('Spells');
   const [activeItemCraftType, setActiveItemCraftType] = useState<ItemType>('Consumable');
@@ -65,6 +68,13 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
           isActive={activeMainView === 'Items'}
           onClick={() => setActiveMainView('Items')}
         />
+        <MainViewButton
+          icon={<BookIcon />} 
+          label="Recipe Crafting"
+          view="Recipes"
+          isActive={activeMainView === 'Recipes'}
+          onClick={() => setActiveMainView('Recipes')}
+        />
       </div>
       <div className="p-4 md:p-6">
         {activeMainView === 'Spells' && (
@@ -103,6 +113,26 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
               onInitiateCraft={handleItemCraftSubmit}
               isLoading={isLoading}
             />
+          </div>
+        )}
+        {activeMainView === 'Recipes' && (
+          <div className="space-y-4 text-center">
+            <p className="text-slate-300">Discover new crafting recipes and create items using traditional methods.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <ActionButton onClick={onOpenRecipeDiscovery} variant="success" size="lg" icon={<SearchIcon className="w-5 h-5"/>}>
+                    Recipe Discovery Workshop
+                </ActionButton>
+                <ActionButton onClick={onOpenCraftingWorkshop} variant="warning" size="lg" icon={<GearIcon className="w-5 h-5"/>}>
+                    Crafting Workshop
+                </ActionButton>
+            </div>
+            <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
+              <h4 className="text-lg font-medium text-slate-200 mb-2">Recipe-Based Crafting</h4>
+              <p className="text-sm text-slate-300">
+                Use the Recipe Discovery Workshop to research and learn new crafting recipes through experimentation and knowledge. 
+                Then use the Crafting Workshop to create items using your discovered recipes and gathered materials.
+              </p>
+            </div>
           </div>
         )}
       </div>

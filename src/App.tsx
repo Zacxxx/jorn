@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, SpellComponent, ElementName, LootChestItem, GeneratedSpellComponentData, LootDrop, MasterItemDefinition, UniqueConsumable, MasterResourceItem, MasterConsumableItem } from './types';
 import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCE_TYPES_FOR_AI, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, INITIAL_PLAYER_LOCATION, EXAMPLE_SPELL_COMPONENTS, RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
-import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest } from './services/geminiService';
+import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest, discoverRecipeFromPrompt } from './services/geminiService';
 import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
 import { getScalingFactorFromRarity } from './utils';
+import { getAllRecipes, getRecipeById, discoverRecipe } from './services/craftingService';
 
 
 import ActionButton from './ui/ActionButton';
@@ -13,7 +14,7 @@ import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, Essence
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { CharacterSheetModal } from './components/CharacterSheetModal';
-import CraftingHubModal from './components/CraftingHubModal';
+import { CraftingHubModal } from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal';
 import GameMenuModal from './components/GameMenuModal';
 import SpellDesignStudioView from './components/SpellDesignStudioView';
@@ -32,6 +33,8 @@ import MobileMenuModal from './components/MobileMenuModal';
 import CampView from './components/CampView';
 import SettlementView from './components/SettlementView';
 import ShopView from './components/ShopView';
+import RecipeDiscoveryView from './components/RecipeDiscoveryView';
+import CraftingWorkshopView from './components/CraftingWorkshopView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
@@ -302,6 +305,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const maxRegisteredSpells = player.level + MAX_SPELLS_PER_LEVEL_BASE;
   const maxPreparedSpells = player.level + PREPARED_SPELLS_PER_LEVEL_BASE;
   const maxPreparedAbilities = player.level + PREPARED_ABILITIES_PER_LEVEL_BASE;
+  const maxTraits = player.level >= FIRST_TRAIT_LEVEL ? Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) + 1 : 0;
 
   const getPreparedSpells = useCallback((): Spell[] => player.spells.filter(spell => player.preparedSpellIds.includes(spell.id)), [player.spells, player.preparedSpellIds]);
   const getPreparedAbilities = useCallback((): Ability[] => player.abilities.filter(ability => player.preparedAbilityIds.includes(ability.id)), [player.abilities, player.preparedAbilityIds]);
@@ -322,6 +326,8 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const handleOpenInventory = () => { setDefaultCharacterSheetTab('Inventory'); setGameState('CHARACTER_SHEET'); };
   const handleOpenSpellbook = () => { setDefaultCharacterSheetTab('Spells'); setGameState('CHARACTER_SHEET'); };
   const handleOpenCraftingHub = () => setGameState('CRAFTING_HUB');
+  const handleOpenRecipeDiscovery = () => setGameState('RECIPE_DISCOVERY');
+  const handleOpenCraftingWorkshop = () => setGameState('CRAFTING_WORKSHOP');
   
   const handleOpenSpellDesignStudio = (initialPrompt?: string) => {
     setInitialSpellPromptForStudio(initialPrompt || '');
@@ -1730,12 +1736,109 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   }
 
 
+  const handleDiscoverRecipe = async (prompt: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const allRecipes = getAllRecipes();
+      const availableRecipeIds = allRecipes.map(r => r.id);
+      
+      const result = await discoverRecipeFromPrompt(
+        prompt,
+        player.level,
+        availableRecipeIds,
+        player.discoveredRecipes
+      );
+      
+      if (result.recipeId) {
+        // Mark recipe as discovered
+        discoverRecipe(result.recipeId);
+        
+        // Add to player's discovered recipes
+        setPlayer(prev => ({
+          ...prev,
+          discoveredRecipes: [...prev.discoveredRecipes, result.recipeId!]
+        }));
+        
+        const recipe = getRecipeById(result.recipeId);
+        setModalContent({
+          title: 'Recipe Discovered!',
+          message: `You discovered: ${recipe?.name || result.recipeId}! ${result.message}`,
+          type: 'success'
+        });
+      } else {
+        setModalContent({
+          title: 'Research Inconclusive',
+          message: result.message,
+          type: 'info'
+        });
+      }
+    } catch (error) {
+      console.error('Recipe discovery error:', error);
+      setModalContent({
+        title: 'Research Failed',
+        message: error instanceof Error ? error.message : 'Could not complete research.',
+        type: 'error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCraftItem = async (recipeId: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const recipe = getRecipeById(recipeId);
+      if (!recipe) {
+        throw new Error('Recipe not found');
+      }
+      
+      // Check if player has required ingredients
+      const hasIngredients = recipe.ingredients.every(ingredient => 
+        (player.inventory[ingredient.itemId] || 0) >= ingredient.quantity
+      );
+      
+      if (!hasIngredients) {
+        throw new Error('Insufficient ingredients');
+      }
+      
+      // Deduct ingredients
+      const newInventory = { ...player.inventory };
+      recipe.ingredients.forEach(ingredient => {
+        newInventory[ingredient.itemId] = (newInventory[ingredient.itemId] || 0) - ingredient.quantity;
+      });
+      
+      // Add result item to inventory
+      newInventory[recipe.resultItemId] = (newInventory[recipe.resultItemId] || 0) + recipe.resultQuantity;
+      
+      setPlayer(prev => ({
+        ...prev,
+        inventory: newInventory
+      }));
+      
+      setModalContent({
+        title: 'Crafting Complete!',
+        message: `Successfully crafted ${recipe.resultQuantity}x ${recipe.name}!`,
+        type: 'success'
+      });
+      
+    } catch (error) {
+      console.error('Crafting error:', error);
+      setModalContent({
+        title: 'Crafting Failed',
+        message: error instanceof Error ? error.message : 'Could not complete crafting.',
+        type: 'error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderCurrentView = () => {
-    if (isLoading && gameState !== 'IN_COMBAT' && gameState !== 'HOME' && gameState !== 'SPELL_DESIGN_STUDIO' && gameState !== 'THEORIZE_COMPONENT' && gameState !== 'RESEARCH_ARCHIVES') { 
+    if (isLoading && gameState !== 'IN_COMBAT' && gameState !== 'HOME' && gameState !== 'SPELL_DESIGN_STUDIO' && gameState !== 'THEORIZE_COMPONENT' && gameState !== 'RESEARCH_ARCHIVES' && gameState !== 'RECIPE_DISCOVERY' && gameState !== 'CRAFTING_WORKSHOP') { 
       return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading..." size="lg"/></div>;
     }
     switch (gameState) {
-      case 'HOME': return <HomeScreenView player={player} onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onAccessSettlement={handleAccessSettlement}/>;
+      case 'HOME': return <HomeScreenView player={player} onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onAccessSettlement={handleAccessSettlement} onOpenCraftingHub={handleOpenCraftingHub}/>;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
@@ -1750,5 +1853,46 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SETTLEMENT_VIEW': return <SettlementView player={player} onReturnHome={handleNavigateHome} onOpenShop={handleOpenShop} onOpenTavern={handleOpenTavern} onTalkToNPC={handleTalkToNPC} onExplorePointOfInterest={handleExplorePointOfInterest} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SHOP_VIEW': return currentShopId ? <ShopView player={player} shopId={currentShopId} onReturnToSettlement={() => setGameState('SETTLEMENT_VIEW')} onPurchaseItem={handlePurchaseItem} onPurchaseService={handlePurchaseService} onShowMessage={(t,m) => showMessageModal(t,m,'info')} /> : <p>Error: No shop selected.</p>;
-      
+      case 'RECIPE_DISCOVERY': return <RecipeDiscoveryView player={player} onReturnHome={handleNavigateHome} onDiscoverRecipe={handleDiscoverRecipe} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'CRAFTING_WORKSHOP': return <CraftingWorkshopView player={player} onReturnHome={handleNavigateHome} onCraftItem={handleCraftItem} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       // Deprecated states,
+      default: return <div>Unknown game state: {gameState}</div>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col" style={{fontFamily: "'Inter', sans-serif"}}>
+      <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onNavigateHome={handleNavigateHome} onOpenMobileMenu={handleOpenMobileMenu}/>
+      <main className="flex-grow container mx-auto p-3 sm:p-4 md:p-6 max-w-6xl">
+        {renderCurrentView()}
+      </main>
+       <Footer 
+            onOpenSpellbook={() => handleOpenCharacterSheet('Spells')} 
+            onOpenCraftingHub={handleOpenCraftingHub}
+            onOpenInventory={() => handleOpenCharacterSheet('Inventory')}
+            onOpenTraitsPage={() => handleOpenCharacterSheet('Traits')}
+            onOpenQuestsPage={() => handleOpenCharacterSheet('Quests')}
+            onOpenEncyclopedia={() => handleOpenCharacterSheet('Encyclopedia')}
+            onOpenGameMenu={handleOpenGameMenu}
+        />
+      {modalContent && <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md"><p>{modalContent.message}</p></Modal>}
+      {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} isLoading={isLoading} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={() => setGameState('SPELL_CRAFTING')} onOpenTraitCraftingScreen={() => setGameState('TRAIT_CRAFTING')} canCraftNewTrait={player.traits.length < maxTraits} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
+      {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => setGameState('SPELL_DESIGN_STUDIO')} onOpenTheorizeLab={() => setGameState('THEORIZE_COMPONENT')} onOpenRecipeDiscovery={handleOpenRecipeDiscovery} onOpenCraftingWorkshop={handleOpenCraftingWorkshop}/>}
+      <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
+      <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onExportSave={handleExportSave} onImportSave={handleImportSave} />
+      <MobileMenuModal 
+        isOpen={isMobileMenuOpen} 
+        onClose={handleCloseMobileMenu}
+        onOpenSpellbook={() => {handleOpenCharacterSheet('Spells'); handleCloseMobileMenu();}}
+        onOpenCraftingHub={() => {handleOpenCraftingHub(); handleCloseMobileMenu();}}
+        onOpenInventory={() => {handleOpenCharacterSheet('Inventory'); handleCloseMobileMenu();}}
+        onOpenTraitsPage={() => {handleOpenCharacterSheet('Traits'); handleCloseMobileMenu();}}
+        onOpenQuestsPage={() => {handleOpenCharacterSheet('Quests'); handleCloseMobileMenu();}}
+        onOpenEncyclopedia={() => {handleOpenCharacterSheet('Encyclopedia'); handleCloseMobileMenu();}}
+        onOpenGameOptions={() => {handleOpenGameMenu(); handleCloseMobileMenu();}}
+      />
+    </div>
+  );
+};
+
+export default App;

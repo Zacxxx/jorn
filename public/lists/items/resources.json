@@ -1,4 +1,3 @@
-
 [
   { 
     "id": "res_iron_ore_001", 
@@ -77,6 +76,106 @@
     "iconName": "SkullIcon", 
     "itemType": "Resource", 
     "rarity": 2, 
+    "goldValue": 12,
+    "tags": ["Bone", "Necrotic", "CraftingMaterial"]
+  },
+  {
+    "id": "healing_herb",
+    "name": "Healing Herb",
+    "description": "A common medicinal herb with natural healing properties.",
+    "iconName": "Plant",
+    "itemType": "Resource",
+    "rarity": 0,
+    "goldValue": 3,
+    "tags": ["Plant", "Healing", "CraftingMaterial", "Common"]
+  },
+  {
+    "id": "crystal_shard_minor",
+    "name": "Minor Crystal Shard",
+    "description": "A small crystal fragment with weak magical resonance.",
+    "iconName": "Gem",
+    "itemType": "Resource",
+    "rarity": 0,
+    "goldValue": 4,
+    "tags": ["Gemstone", "Energy", "CraftingMaterial", "Common"]
+  },
+  {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "description": "Raw iron ore ready for smelting and forging.",
+    "iconName": "GearIcon",
+    "itemType": "Resource",
+    "rarity": 0,
+    "goldValue": 2,
+    "tags": ["Ore", "Metal", "CraftingMaterial", "Common"]
+  },
+  {
+    "id": "emberbloom_petal",
+    "name": "Emberbloom Petal",
+    "description": "A fiery petal that radiates warmth and magical energy.",
+    "iconName": "Plant",
+    "itemType": "Resource",
+    "rarity": 1,
+    "goldValue": 8,
+    "tags": ["Plant", "Fire", "CraftingMaterial", "Reagent"]
+  },
+  {
+    "id": "crystal_shard",
+    "name": "Crystal Shard",
+    "description": "A refined crystal fragment with stable magical properties.",
+    "iconName": "Gem",
+    "itemType": "Resource",
+    "rarity": 1,
+    "goldValue": 7,
+    "tags": ["Gemstone", "Energy", "CraftingMaterial"]
+  },
+  {
+    "id": "arcane_dust",
+    "name": "Arcane Dust",
+    "description": "Finely ground magical dust with potent enchanting properties.",
+    "iconName": "Dust",
+    "itemType": "Resource",
+    "rarity": 1,
+    "goldValue": 5,
+    "tags": ["Magical", "CraftingMaterial", "Uncommon"]
+  },
+  {
+    "id": "mystic_orb_fragment",
+    "name": "Mystic Orb Fragment",
+    "description": "A piece of a shattered mystic orb, still containing concentrated magical energy.",
+    "iconName": "ArcaneBlast",
+    "itemType": "Resource",
+    "rarity": 2,
+    "goldValue": 15,
+    "tags": ["Magical", "Arcane", "CraftingMaterial"]
+  },
+  {
+    "id": "leather_hide",
+    "name": "Leather Hide",
+    "description": "Tough animal hide suitable for crafting armor and protective gear.",
+    "iconName": "Breastplate",
+    "itemType": "Resource",
+    "rarity": 0,
+    "goldValue": 6,
+    "tags": ["Leather", "CraftingMaterial", "Common"]
+  },
+  {
+    "id": "shadowsilk_thread",
+    "name": "Shadowsilk Thread",
+    "description": "Rare thread spun by shadow creatures, incredibly strong and magically conductive.",
+    "iconName": "Thread",
+    "itemType": "Resource",
+    "rarity": 2,
+    "goldValue": 10,
+    "tags": ["Textile", "Dark", "CraftingMaterial"]
+  },
+  {
+    "id": "ancient_bone",
+    "name": "Ancient Bone",
+    "description": "Bone from an ancient creature, imbued with residual magical energy.",
+    "iconName": "SkullIcon",
+    "itemType": "Resource",
+    "rarity": 2,
     "goldValue": 12,
     "tags": ["Bone", "Necrotic", "CraftingMaterial"]
   }
