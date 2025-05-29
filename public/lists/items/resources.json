@@ -1,0 +1,83 @@
+
+[
+  { 
+    "id": "res_iron_ore_001", 
+    "name": "Iron Ore", 
+    "description": "A common piece of unrefined iron ore, useful for basic smithing.", 
+    "iconName": "GearIcon", 
+    "itemType": "Resource", 
+    "rarity": 0, 
+    "goldValue": 2,
+    "tags": ["Ore", "Metal", "CraftingMaterial", "Common"]
+  },
+  { 
+    "id": "res_arcane_dust_001", 
+    "name": "Arcane Dust", 
+    "description": "Fine, shimmering dust with latent magical properties.", 
+    "iconName": "Dust", 
+    "itemType": "Resource", 
+    "rarity": 1, 
+    "goldValue": 5,
+    "tags": ["Magical", "CraftingMaterial", "Uncommon"]
+  },
+  { 
+    "id": "res_emberbloom_petal_001", 
+    "name": "Emberbloom Petal", 
+    "description": "A fiery red petal that hums with warmth, often used in fire-related concoctions.", 
+    "iconName": "Plant", 
+    "itemType": "Resource", 
+    "rarity": 2, 
+    "goldValue": 8,
+    "tags": ["Plant", "Fire", "CraftingMaterial", "Reagent"]
+  },
+  { 
+    "id": "res_shadowsilk_thread_001", 
+    "name": "Shadowsilk Thread", 
+    "description": "A strand of silk spun by shadow spiders, surprisingly durable and infused with faint dark energies.", 
+    "iconName": "Thread", 
+    "itemType": "Resource", 
+    "rarity": 2, 
+    "goldValue": 10,
+    "tags": ["Textile", "Dark", "CraftingMaterial"]
+  },
+  { 
+    "id": "res_crystal_shard_001", 
+    "name": "Crystal Shard", 
+    "description": "A sharp fragment of a larger crystal, resonating with a faint energy.", 
+    "iconName": "Gem", 
+    "itemType": "Resource", 
+    "rarity": 1, 
+    "goldValue": 7,
+    "tags": ["Gemstone", "Energy", "CraftingMaterial"]
+  },
+  { 
+    "id": "res_verdant_leaf_001", 
+    "name": "Verdant Leaf", 
+    "description": "A vibrant green leaf, pulsing with natural life energy. Commonly used in healing balms.", 
+    "iconName": "Plant", 
+    "itemType": "Resource", 
+    "rarity": 1, 
+    "goldValue": 6,
+    "tags": ["Plant", "Nature", "Healing", "CraftingMaterial"]
+  },
+  { 
+    "id": "res_mystic_orb_001", 
+    "name": "Mystic Orb", 
+    "description": "A small, swirling orb of condensed magical energy. A potent but unstable crafting component.", 
+    "iconName": "ArcaneBlast", 
+    "itemType": "Resource", 
+    "rarity": 3, 
+    "goldValue": 20,
+    "tags": ["Magical", "Arcane", "Rare", "CraftingMaterial"]
+  },
+  { 
+    "id": "res_ancient_bone_001", 
+    "name": "Ancient Bone", 
+    "description": "A fragment of bone from a long-dead creature, brittle but imbued with echoes of the past.", 
+    "iconName": "SkullIcon", 
+    "itemType": "Resource", 
+    "rarity": 2, 
+    "goldValue": 12,
+    "tags": ["Bone", "Necrotic", "CraftingMaterial"]
+  }
+]

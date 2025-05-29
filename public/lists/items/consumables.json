@@ -1,0 +1,79 @@
+
+[
+  { 
+    "id": "con_minor_healing_potion_001", 
+    "name": "Minor Healing Potion", 
+    "description": "A common potion that restores a small amount of health.", 
+    "iconName": "PotionHP", 
+    "itemType": "Consumable", 
+    "rarity": 0, 
+    "goldValue": 10,
+    "effectType": "HP_RESTORE",
+    "magnitude": 20,
+    "tags": ["Healing", "Potion", "Common"]
+  },
+  { 
+    "id": "con_minor_mana_potion_001", 
+    "name": "Minor Mana Potion", 
+    "description": "A weak elixir that recovers a bit of mana.", 
+    "iconName": "PotionMP", 
+    "itemType": "Consumable", 
+    "rarity": 0, 
+    "goldValue": 12,
+    "effectType": "MP_RESTORE",
+    "magnitude": 15,
+    "tags": ["Mana", "Potion", "Common"]
+  },
+  {
+    "id": "con_antidote_001",
+    "name": "Simple Antidote",
+    "description": "A basic concoction to neutralize common poisons.",
+    "iconName": "PotionGeneric",
+    "itemType": "Consumable",
+    "rarity": 1,
+    "goldValue": 25,
+    "effectType": "CURE_STATUS",
+    "statusToCure": "PoisonDoTActive",
+    "tags": ["Cure", "Antitoxin", "Uncommon"]
+  },
+  {
+    "id": "con_strength_draught_001",
+    "name": "Draught of Minor Strength",
+    "description": "Temporarily boosts physical power.",
+    "iconName": "FlaskIcon",
+    "itemType": "Consumable",
+    "rarity": 1,
+    "goldValue": 30,
+    "effectType": "APPLY_BUFF",
+    "buffToApply": "TEMP_BODY_UP",
+    "magnitude": 2,
+    "duration": 3,
+    "tags": ["Buff", "StatBoost", "Physical", "Uncommon"]
+  },
+  {
+    "id": "con_energy_bar_001",
+    "name": "Stamina Bar",
+    "description": "A chewy bar that restores a small amount of energy points.",
+    "iconName": "EssenceIcon",
+    "itemType": "Consumable",
+    "rarity": 0,
+    "goldValue": 8,
+    "effectType": "EP_RESTORE",
+    "magnitude": 10,
+    "tags": ["Energy", "Food", "Common"]
+  },
+  {
+    "id": "con_scroll_warding_001",
+    "name": "Scroll of Minor Warding",
+    "description": "A brittle scroll that grants a temporary boost to defense when read.",
+    "iconName": "Scroll",
+    "itemType": "Consumable",
+    "rarity": 2,
+    "goldValue": 50,
+    "effectType": "APPLY_BUFF",
+    "buffToApply": "TEMP_MAX_HP_UP", 
+    "magnitude": 10, 
+    "duration": 3,
+    "tags": ["Buff", "Defensive", "Scroll", "Rare"]
+  }
+]
