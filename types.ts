@@ -1,4 +1,3 @@
-
 export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource'; // Expanded placeholder
 export type TagName = 
   // Status Effects (can be positive or negative)
@@ -245,6 +244,7 @@ export type SpellIconName =
   | 'GoldCoinIcon' 
   | 'EssenceIcon' 
   | 'MapIcon' 
+  | 'TentIcon'
   | 'UploadIcon' 
   | 'DownloadIcon' 
   | 'ChestIcon' 
@@ -430,7 +430,8 @@ export type GameState =
   | 'CHARACTER_SHEET'
   | 'SELECTING_ABILITY'
   | 'CRAFTING_HUB'
-  | 'EXPLORING_MAP'; 
+  | 'EXPLORING_MAP'
+  | 'CAMP'; 
 
 
 export interface GeneratedSpellData { 

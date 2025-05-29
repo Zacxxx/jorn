@@ -1,6 +1,3 @@
-
-
-
 import { Player, Spell, SpellIconName, StatusEffectName, ResourceType, ConsumableEffectType, EquipmentSlot, Ability, DetailedEquipmentSlot, SpellComponent, MasterResourceItem } from './types';
 import { ALL_GAME_SPELL_COMPONENTS } from './src/research-content'; 
 
@@ -113,7 +110,7 @@ export const AVAILABLE_SPELL_ICONS: SpellIconName[] = [
   'SkullIcon',
   'HelmetIcon', 'NecklaceIcon', 'RingIcon', 'BeltIcon', 'BootsIcon', 'GlovesIcon', 'ShoulderArmorIcon', 'CloakIcon', 'BackpackIcon',
   'Bars3Icon', 'SearchIcon', 'CollectionIcon', 'FleeIcon',
-  'AtomIcon', 'FlaskIcon', 'GoldCoinIcon', 'EssenceIcon', 'MapIcon', 
+  'AtomIcon', 'FlaskIcon', 'GoldCoinIcon', 'EssenceIcon', 'MapIcon', 'TentIcon',
   'UploadIcon', 'DownloadIcon', 'ChestIcon',
   'ElementFire', 'ElementIce', 'ElementLightning', 'ElementEarth', 'ElementAir', 'ElementLight', 'ElementDark', 'ElementArcane', 'ElementNature', 'ElementPoison', 'ElementHealing',
   'TagGeneric',

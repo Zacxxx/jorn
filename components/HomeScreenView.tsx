@@ -1,13 +1,13 @@
-
 import React from 'react';
 import ActionButton from './ActionButton';
-import { SkullIcon, MapIcon, FlaskIcon, BookIcon } from './IconComponents'; 
+import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon } from './IconComponents'; 
 
 interface HomeScreenViewProps {
   onFindEnemy: () => void;
   isLoading: boolean;
   onExploreMap: () => void;
   onOpenResearchArchives: () => void; 
+  onOpenCamp: () => void;
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
@@ -15,6 +15,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   isLoading,
   onExploreMap,
   onOpenResearchArchives,
+  onOpenCamp,
 }) => {
   return (
     <div className="space-y-6">
@@ -31,6 +32,16 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             className="h-full !py-4"
           >
             Seek Battle
+          </ActionButton>
+          <ActionButton 
+            onClick={onOpenCamp} 
+            variant="secondary"
+            size="lg" 
+            isLoading={isLoading} 
+            icon={<TentIcon />} 
+            className="h-full !py-4"
+          >
+            Camp
           </ActionButton>
           <ActionButton 
             onClick={onExploreMap} 

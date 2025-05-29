@@ -29,6 +29,7 @@ import CombatView from './components/CombatView';
 import ConfirmationView from './components/ConfirmationView';
 import GameOverView from './components/GameOverView';
 import MobileMenuModal from './components/MobileMenuModal';
+import CampView from './components/CampView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
@@ -297,7 +298,87 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   };
   const handleExploreMap = () => setGameState('EXPLORING_MAP');
   
-  // New navigation handlers for research
+  const handleOpenCamp = () => setGameState('CAMP');
+
+  const handleRestComplete = (restType: 'short' | 'long', duration?: number, activity?: string) => {
+    const hpGain = restType === 'short' 
+      ? Math.floor(effectivePlayerStats.maxHp * 0.25)
+      : effectivePlayerStats.maxHp - player.hp;
+    
+    const mpGain = restType === 'short' 
+      ? Math.floor(effectivePlayerStats.maxMp * 0.5)
+      : effectivePlayerStats.maxMp - player.mp;
+    
+    const epGain = restType === 'short' 
+      ? Math.floor(effectivePlayerStats.maxEp * 0.75)
+      : effectivePlayerStats.maxEp - player.ep;
+
+    // Apply custom duration scaling if specified
+    const finalHpGain = duration ? Math.min(Math.floor(effectivePlayerStats.maxHp * (duration / 8)), effectivePlayerStats.maxHp - player.hp) : hpGain;
+    const finalMpGain = duration ? Math.min(Math.floor(effectivePlayerStats.maxMp * (duration / 8)), effectivePlayerStats.maxMp - player.mp) : mpGain;
+    const finalEpGain = duration ? Math.min(Math.floor(effectivePlayerStats.maxEp * (duration / 8)), effectivePlayerStats.maxEp - player.ep) : epGain;
+
+    // Apply rest benefits
+    setPlayer(prev => ({
+      ...prev,
+      hp: Math.min(prev.hp + finalHpGain, effectivePlayerStats.maxHp),
+      mp: Math.min(prev.mp + finalMpGain, effectivePlayerStats.maxMp),
+      ep: Math.min(prev.ep + finalEpGain, effectivePlayerStats.maxEp)
+    }));
+
+    // Apply activity bonuses
+    let bonusMessage = '';
+    if (activity) {
+      switch (activity) {
+        case 'meditation':
+          const bonusMp = Math.floor(effectivePlayerStats.maxMp * 0.1);
+          setPlayer(prev => ({
+            ...prev,
+            mp: Math.min(prev.mp + bonusMp, effectivePlayerStats.maxMp)
+          }));
+          bonusMessage = ` Meditation granted ${bonusMp} bonus MP!`;
+          break;
+        case 'training':
+          bonusMessage = ' Training provided inspiration for future battles!';
+          break;
+        case 'crafting':
+          if (Math.random() < 0.3) {
+            const bonusGold = Math.floor(Math.random() * 5) + 1;
+            setPlayer(prev => ({
+              ...prev,
+              gold: prev.gold + bonusGold
+            }));
+            bonusMessage = ` Crafting yielded ${bonusGold} bonus gold!`;
+          } else {
+            bonusMessage = ' Crafting was peaceful and restorative.';
+          }
+          break;
+        case 'socializing':
+          bonusMessage = ' Socializing improved your reputation in the area.';
+          break;
+        case 'exploring':
+          if (Math.random() < 0.25) {
+            const bonusEssence = 1;
+            setPlayer(prev => ({
+              ...prev,
+              essence: prev.essence + bonusEssence
+            }));
+            bonusMessage = ` Exploring discovered ${bonusEssence} essence!`;
+          } else {
+            bonusMessage = ' Exploring revealed interesting sights nearby.';
+          }
+          break;
+      }
+    }
+
+    const restDuration = duration || (restType === 'short' ? 1 : 8);
+    setModalContent({
+      title: 'Rest Complete',
+      message: `You rested for ${restDuration} hour${restDuration !== 1 ? 's' : ''} and recovered ${finalHpGain} HP, ${finalMpGain} MP, and ${finalEpGain} EP.${bonusMessage}`,
+      type: 'success'
+    });
+  };
+
   const handleOpenResearchArchives = () => setGameState('RESEARCH_ARCHIVES');
   const handleOpenTheorizeComponentLab = () => setGameState('THEORIZE_COMPONENT');
 
@@ -443,15 +524,45 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setGameState('SPELL_EDITING');
   };
 
-  const handleInitiateSpellRefinement = async (originalSpell: Spell, refinementPrompt: string) => {
+  const handleInitiateSpellRefinement = async (originalSpell: Spell, refinementPrompt: string, augmentLevel?: number, selectedComponentId?: string) => {
     setIsLoading(true);
     try {
-      const editedSpellData = await editSpell(originalSpell, refinementPrompt);
+      // Build enhanced prompt based on new features
+      let enhancedPrompt = refinementPrompt;
+      
+      if (augmentLevel && augmentLevel > 0) {
+        enhancedPrompt += ` AUGMENT LEVEL: Increase spell power level by ${augmentLevel} (using ${augmentLevel * 10} essence). Make the spell significantly more powerful.`;
+        // Deduct essence for augment
+        const essenceCost = augmentLevel * 10;
+        const playerEssence = player.inventory['essence'] || 0;
+        if (playerEssence < essenceCost) {
+          throw new Error('Not enough essence for augment level');
+        }
+        setPlayer(prev => ({
+          ...prev,
+          inventory: {
+            ...prev.inventory,
+            essence: Math.max(0, (prev.inventory['essence'] || 0) - essenceCost)
+          }
+        }));
+      }
+      
+      if (selectedComponentId) {
+        const component = availableComponents.find(c => c.id === selectedComponentId);
+        if (component) {
+          enhancedPrompt += ` COMPONENT INTEGRATION: Integrate the component "${component.name}" (${component.category}, Tier ${component.tier}) into this spell. Component description: ${component.description}. Component tags: ${component.tags?.join(', ') || 'none'}.`;
+        }
+      }
+      
+      const editedSpellData = await editSpell(originalSpell, enhancedPrompt);
       setPendingSpellEditData(editedSpellData);
       setOriginalSpellForEdit(originalSpell);
       setGameState('SPELL_EDIT_CONFIRMATION');
     }
-    catch (error) { console.error("Spell refinement error:", error); setModalContent({ title: "Refinement Failed", message: error instanceof Error ? error.message : "Could not generate refinement.", type: 'error' }); }
+    catch (error) { 
+      console.error("Spell refinement error:", error); 
+      setModalContent({ title: "Refinement Failed", message: error instanceof Error ? error.message : "Could not generate refinement.", type: 'error' }); 
+    }
     finally { setIsLoading(false); }
   };
 
@@ -1511,13 +1622,14 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading..." size="lg"/></div>;
     }
     switch (gameState) {
-      case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives}/>;
+      case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp}/>;
+      case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
       case 'RESEARCH_ARCHIVES': return <ResearchView player={player} onReturnHome={handleNavigateHome} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'EXPLORING_MAP': return <MapView player={player} onReturnHome={handleNavigateHome} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
-      case 'SPELL_EDITING': return originalSpellForEdit ? <SpellEditingView originalSpell={originalSpellForEdit} onInitiateSpellRefinement={handleInitiateSpellRefinement} isLoading={isLoading} onCancel={() => { setGameState('CHARACTER_SHEET'); setDefaultCharacterSheetTab('Spells');}}/> : <p>Error: No spell selected for editing.</p>;
+      case 'SPELL_EDITING': return originalSpellForEdit ? <SpellEditingView originalSpell={originalSpellForEdit} onInitiateSpellRefinement={handleInitiateSpellRefinement} isLoading={isLoading} onCancel={() => { setGameState('CHARACTER_SHEET'); setDefaultCharacterSheetTab('Spells');}} player={player} availableComponents={player.discoveredComponents}/> : <p>Error: No spell selected for editing.</p>;
       case 'TRAIT_CRAFTING': return <TraitCraftingView onCraftTrait={handleCraftTrait} isLoading={isLoading} currentTraits={player.traits.length} playerLevel={player.level} onReturnHome={handleNavigateHome} />;
       case 'IN_COMBAT': return <CombatView player={player} effectivePlayerStats={effectivePlayerStats} currentEnemies={currentEnemies} targetEnemyId={targetEnemyId} onSetTargetEnemy={setTargetEnemyId} preparedSpells={getPreparedSpells()} onPlayerAttack={playerAttack} onPlayerBasicAttack={handlePlayerBasicAttack} onPlayerDefend={handlePlayerDefend} onPlayerFlee={handlePlayerFlee} onPlayerFreestyleAction={handlePlayerFreestyleAction} combatLog={combatLog} isPlayerTurn={isPlayerTurn} playerActionSkippedByStun={playerActionSkippedByStun} onSetGameState={setGameState} onUseConsumable={handleUseConsumable} onUseAbility={handleUseAbility} consumables={player.items.filter(i => i.itemType === 'Consumable') as Consumable[] } abilities={getPreparedAbilities()} />;
       case 'SPELL_CRAFT_CONFIRMATION': case 'SPELL_EDIT_CONFIRMATION': case 'ITEM_CRAFT_CONFIRMATION':

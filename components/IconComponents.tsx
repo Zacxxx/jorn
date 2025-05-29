@@ -1,6 +1,3 @@
-
-
-
 import React from 'react';
 import { SpellIconName } from '../types';
 
@@ -34,7 +31,7 @@ export const HealIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
 
 export const ShieldIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 2.24L19 6.3V12c0 3.96-2.98 7.65-7 8.73V4.24zM5 6.3L12 4.24v16.49C7.98 19.65 5 15.96 5 12V6.3zM12 6c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
   </svg>
 );
 
@@ -372,8 +369,15 @@ export const EssenceIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
 
 export const MapIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m0 0L12.75 12M9 15l3.75-3M15 12l-3.75 3m3.75-3L12 9.75m3 2.25L12 9.75m0 0L9 12m3-2.25L6.75 12m3-2.25L6 9.75M12 9.75L9 12M12 3v2.25m6.75 1.5H21m0 0v2.25m0 0h-2.25m0 0V12m2.25 0h-2.25m2.25 0V15m0 0h-2.25m0 0v2.25m-2.25-2.25H15m0 0V15m0 0h-2.25m0 0l-2.25 2.25M12 21v-2.25m-6.75-1.5H3m0 0V15m0 0h2.25m0 0V12H3m0 0h2.25m-2.25 0V9m0 0h2.25m0 0L7.5 6.75M12 3l2.25 2.25M12 3L9.75 5.25m2.25-2.25L12 5.25m0 0L9.75 3M12 21l2.25-2.25m-2.25 2.25L9.75 18.75m2.25 2.25L12 18.75m0 0L9.75 21" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75h.008v.008H9V6.75zm.75 0h.008v.008H9.75V6.75zm1.5 0h.008v.008H11.25V6.75zm1.5 0h.008v.008H12.75V6.75zm1.5 0h.008v.008H14.25V6.75zm-7.5 3h.008v.008H6.75V9.75zm.75 0h.008v.008H7.5V9.75zm1.5 0h.008v.008H9V9.75zm6 0h.008v.008H15V9.75zm.75 0h.008v.008H15.75V9.75zm1.5 0h.008v.008H17.25V9.75zM9 12.75h.008v.008H9v-.008zm.75 0h.008v.008H9.75v-.008zm1.5 0h.008v.008H11.25v-.008zm1.5 0h.008v.008H12.75v-.008zm1.5 0h.008v.008H14.25v-.008zM9 15.75h.008v.008H9v-.008zm.75 0h.008v.008H9.75v-.008zm1.5 0h.008v.008H11.25v-.008zm1.5 0h.008v.008H12.75v-.008zm1.5 0h.008v.008H14.25v-.008z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+  </svg>
+);
+
+export const TentIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l9 18H3l9-18z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v6m0 0l-3 6m3-6l3 6" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18" />
   </svg>
 );
 
@@ -396,6 +400,12 @@ export const ChestIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
+
+export const TagIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.633 1.076 2.634 1.076s1.934-.377 2.634-1.076l4.318-4.318c.699-.699 1.076-1.633 1.076-2.634s-.377-1.934-1.076-2.634L13.245 3.659A2.25 2.25 0 0011.654 3H9.568zM7.5 7.5h.008v.008H7.5V7.5z" />
+  </svg>
+);
 
 export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: string }> = ({ iconName, className }) => {
   switch (iconName) {
@@ -457,6 +467,7 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
     case 'GoldCoinIcon': return <GoldCoinIcon className={className} />;
     case 'EssenceIcon': return <EssenceIcon className={className} />;
     case 'MapIcon': return <MapIcon className={className} />;
+    case 'TentIcon': return <TentIcon className={className} />;
     case 'UploadIcon': return <UploadIcon className={className} />;
     case 'DownloadIcon': return <DownloadIcon className={className} />;
     case 'ChestIcon': return <ChestIcon className={className} />;

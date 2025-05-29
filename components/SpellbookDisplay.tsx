@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Spell, ResourceCost, SpellIconName } from '../types';
 import { GetSpellIcon, WandIcon, SwordSlashIcon, HealIcon, CheckmarkCircleIcon, FilterListIcon, SortAlphaIcon } from './IconComponents'; // Added CheckmarkCircleIcon, FilterListIcon, SortAlphaIcon
@@ -96,6 +94,18 @@ export const SpellCard: React.FC<SpellCardProps> = ({ // Exported SpellCard
              <GetSpellIcon iconName={STATUS_EFFECT_ICONS[statusEffect.name] || 'Default'} className="w-3.5 h-3.5 mr-1.5 opacity-90 flex-shrink-0" />
             {statusEffect.chance}% {statusEffect.name} ({statusEffect.duration}t
             {statusEffect.magnitude ? `, ${statusEffect.magnitude} mag` : ''})
+          </div>
+        )}
+        {spell.tags && spell.tags.length > 0 && (
+          <div className="mt-2">
+            <p className="text-xs text-purple-300/80 mb-1">Tags:</p>
+            <div className="flex flex-wrap gap-1">
+              {spell.tags.map(tag => (
+                <span key={tag} className="text-xs bg-purple-900/60 text-purple-200 px-1.5 py-0.5 rounded-full border border-purple-600/50">
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>
