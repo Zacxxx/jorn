@@ -11,10 +11,12 @@ interface HelpWikiModalProps {
 }
 
 const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'guide' | 'tags'>('guide');
+  const [activeTab, setActiveTab] = useState<'guide' | 'tags' | 'tagStats'>('guide');
   const [tagSearchTerm, setTagSearchTerm] = useState('');
   const [selectedTagCategory, setSelectedTagCategory] = useState<string>('All');
   const [selectedTag, setSelectedTag] = useState<TagName | null>(null);
+  const [tagSortBy, setTagSortBy] = useState<'name' | 'rarity' | 'powerLevel' | 'unlockLevel'>('name');
+  const [showUnlockedOnly, setShowUnlockedOnly] = useState(false);
 
   const Section: React.FC<{title: string, children: React.ReactNode}> = ({title, children}) => (
     <div className="mb-5">
@@ -32,14 +34,63 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
     return ['All', ...Array.from(categories).sort()];
   }, []);
 
+  // Tag statistics
+  const tagStatistics = useMemo(() => {
+    const stats = {
+      total: Object.keys(TAG_DEFINITIONS).length,
+      byCategory: {} as Record<string, number>,
+      byRarity: {} as Record<number, number>,
+      byPowerLevel: {} as Record<number, number>,
+      avgRarity: 0,
+      avgPowerLevel: 0,
+      synergies: 0,
+      conflicts: 0
+    };
+
+    let totalRarity = 0;
+    let totalPowerLevel = 0;
+
+    Object.values(TAG_DEFINITIONS).forEach(tag => {
+      // Category stats
+      stats.byCategory[tag.category] = (stats.byCategory[tag.category] || 0) + 1;
+      
+      // Rarity stats
+      stats.byRarity[tag.rarity] = (stats.byRarity[tag.rarity] || 0) + 1;
+      totalRarity += tag.rarity;
+      
+      // Power level stats
+      stats.byPowerLevel[tag.powerLevel] = (stats.byPowerLevel[tag.powerLevel] || 0) + 1;
+      totalPowerLevel += tag.powerLevel;
+      
+      // Relationship stats
+      if (tag.synergizesWith?.length) stats.synergies += tag.synergizesWith.length;
+      if (tag.conflictsWith?.length) stats.conflicts += tag.conflictsWith.length;
+    });
+
+    stats.avgRarity = Math.round((totalRarity / stats.total) * 10) / 10;
+    stats.avgPowerLevel = Math.round((totalPowerLevel / stats.total) * 10) / 10;
+
+    return stats;
+  }, []);
+
   const filteredTags = useMemo(() => {
     return Object.entries(TAG_DEFINITIONS).filter(([tagName, tagDef]) => {
       const nameMatch = tagName.toLowerCase().includes(tagSearchTerm.toLowerCase()) || 
                        tagDef.description.toLowerCase().includes(tagSearchTerm.toLowerCase());
       const categoryMatch = selectedTagCategory === 'All' || tagDef.category === selectedTagCategory;
-      return nameMatch && categoryMatch;
-    }).sort(([a], [b]) => a.localeCompare(b));
-  }, [tagSearchTerm, selectedTagCategory]);
+      const unlockMatch = !showUnlockedOnly || !tagDef.unlockLevel || tagDef.unlockLevel <= 10; // Assume player level 10 for demo
+      
+      return nameMatch && categoryMatch && unlockMatch;
+    }).sort(([aName, aDef], [bName, bDef]) => {
+      switch (tagSortBy) {
+        case 'rarity': return bDef.rarity - aDef.rarity;
+        case 'powerLevel': return bDef.powerLevel - aDef.powerLevel;
+        case 'unlockLevel': return (aDef.unlockLevel || 0) - (bDef.unlockLevel || 0);
+        case 'name':
+        default: return aName.localeCompare(bName);
+      }
+    });
+  }, [tagSearchTerm, selectedTagCategory, tagSortBy, showUnlockedOnly]);
 
   const renderTagDetail = (tagName: TagName) => {
     const tagDef = TAG_DEFINITIONS[tagName];
@@ -162,6 +213,136 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
     );
   };
 
+  const renderTagStatsContent = () => (
+    <div className="space-y-6">
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+          <div className="text-2xl font-bold text-blue-400 mb-1">{tagStatistics.total}</div>
+          <div className="text-sm text-slate-400">Total Tags</div>
+        </div>
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+          <div className="text-2xl font-bold text-green-400 mb-1">{Object.keys(tagStatistics.byCategory).length}</div>
+          <div className="text-sm text-slate-400">Categories</div>
+        </div>
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+          <div className="text-2xl font-bold text-yellow-400 mb-1">{tagStatistics.avgRarity}</div>
+          <div className="text-sm text-slate-400">Avg Rarity</div>
+        </div>
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+          <div className="text-2xl font-bold text-purple-400 mb-1">{tagStatistics.avgPowerLevel}</div>
+          <div className="text-sm text-slate-400">Avg Power</div>
+        </div>
+      </div>
+
+      {/* Category Breakdown */}
+      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+        <h3 className="text-lg font-semibold text-slate-200 mb-4">Tags by Category</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {Object.entries(tagStatistics.byCategory)
+            .sort(([,a], [,b]) => b - a)
+            .map(([category, count]) => (
+              <div key={category} className="bg-slate-700/50 rounded-lg p-3">
+                <div className="text-sm font-medium text-slate-200 capitalize mb-1">
+                  {category.replace('_', ' ')}
+                </div>
+                <div className="text-lg font-bold text-blue-400">{count}</div>
+                <div className="text-xs text-slate-400">
+                  {Math.round((count / tagStatistics.total) * 100)}%
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Rarity Distribution */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+          <h3 className="text-lg font-semibold text-slate-200 mb-4">Rarity Distribution</h3>
+          <div className="space-y-2">
+            {Array.from({length: 10}, (_, i) => i + 1).map(rarity => {
+              const count = tagStatistics.byRarity[rarity] || 0;
+              const percentage = count > 0 ? (count / tagStatistics.total) * 100 : 0;
+              return (
+                <div key={rarity} className="flex items-center space-x-3">
+                  <div className="text-sm text-slate-400 w-8">Lv{rarity}</div>
+                  <div className="flex-1 bg-slate-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-gray-400 to-amber-400 h-2 rounded-full transition-all"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-slate-400 w-12">{count} tags</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+          <h3 className="text-lg font-semibold text-slate-200 mb-4">Power Level Distribution</h3>
+          <div className="space-y-2">
+            {Array.from({length: 10}, (_, i) => i + 1).map(power => {
+              const count = tagStatistics.byPowerLevel[power] || 0;
+              const percentage = count > 0 ? (count / tagStatistics.total) * 100 : 0;
+              return (
+                <div key={power} className="flex items-center space-x-3">
+                  <div className="text-sm text-slate-400 w-8">Pw{power}</div>
+                  <div className="flex-1 bg-slate-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-slate-400 w-12">{count} tags</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Synergy Network */}
+      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+        <h3 className="text-lg font-semibold text-slate-200 mb-4">Tag Relationships</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-400 mb-2">{tagStatistics.synergies}</div>
+            <div className="text-sm text-slate-400">Total Synergies</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-red-400 mb-2">{tagStatistics.conflicts}</div>
+            <div className="text-sm text-slate-400">Total Conflicts</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Reference Categories */}
+      <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4">
+        <h3 className="text-lg font-semibold text-slate-200 mb-4">Quick Category Reference</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          {tagCategories.slice(1).map(category => ( // Skip 'All'
+            <button
+              key={category}
+              onClick={() => {
+                setActiveTab('tags');
+                setSelectedTagCategory(category);
+              }}
+              className="text-left p-2 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg border border-slate-600 transition-colors"
+            >
+              <div className="text-sm font-medium text-slate-200 capitalize">
+                {category.replace('_', ' ')}
+              </div>
+              <div className="text-xs text-slate-400">
+                {tagStatistics.byCategory[category] || 0} tags
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderTagsContent = () => (
     <div className="h-full">
       <div className="mb-4">
@@ -188,6 +369,29 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 mb-3">
+          <select
+            value={tagSortBy}
+            onChange={(e) => setTagSortBy(e.target.value as any)}
+            className="p-2 bg-slate-600 border border-slate-500 rounded-md text-slate-100 text-sm"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="rarity">Sort by Rarity</option>
+            <option value="powerLevel">Sort by Power Level</option>
+            <option value="unlockLevel">Sort by Unlock Level</option>
+          </select>
+          
+          <label className="flex items-center space-x-2 text-sm text-slate-300">
+            <input
+              type="checkbox"
+              checked={showUnlockedOnly}
+              onChange={(e) => setShowUnlockedOnly(e.target.checked)}
+              className="text-blue-600"
+            />
+            <span>Show unlocked only</span>
+          </label>
         </div>
         
         <div className="text-xs text-slate-400 mb-2">
@@ -218,6 +422,8 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
                   {tagDef.unlockLevel && (
                     <span className="text-xs text-cyan-400">L{tagDef.unlockLevel}</span>
                   )}
+                  <span className="text-xs text-yellow-400">R{tagDef.rarity}</span>
+                  <span className="text-xs text-purple-400">P{tagDef.powerLevel}</span>
                 </div>
               </button>
             ))}
@@ -233,6 +439,7 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
               <div>
                 <GetSpellIcon iconName="TagGeneric" className="w-16 h-16 mx-auto mb-2 opacity-50" />
                 <p>Select a tag to view detailed information</p>
+                <p className="text-xs mt-2">Or switch to Tag Stats tab for overview</p>
               </div>
             </div>
           )}
@@ -269,6 +476,16 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
         <p><strong>Components:</strong> Research and discover new spell components that provide different tags and effects.</p>
         <p><strong>Synergies:</strong> Some tags work better together, while others conflict. Experiment to find powerful combinations!</p>
         <p><strong>Tag Categories:</strong> Damage types, targeting methods, spell properties, and special effects - explore the Tags tab for details.</p>
+        <p><strong>Tag Statistics:</strong> View comprehensive tag statistics and category breakdowns in the Tag Stats tab.</p>
+      </Section>
+
+      <Section title="Advanced Tag System">
+        <p><strong>100+ Tags Available:</strong> Our comprehensive system includes 19 categories with over 100 unique tags.</p>
+        <p><strong>Synergy Networks:</strong> Tags can enhance each other - Fire + Explosive, Lightning + Chain, Lifesteal + Vampiric.</p>
+        <p><strong>Conflict Resolution:</strong> Some tags cannot coexist - Fire conflicts with Ice, Instant conflicts with Channeling.</p>
+        <p><strong>Power Scaling:</strong> Higher rarity and power level tags require more resources but provide greater effects.</p>
+        <p><strong>Progressive Unlocks:</strong> Advanced tags unlock as you level up, expanding your magical repertoire.</p>
+        <p><strong>Effect Types:</strong> Passive, Active, Trigger, Modifier, and Conditional effects create diverse gameplay.</p>
       </Section>
 
       <Section title="Crafting Systems">
@@ -304,6 +521,7 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
         <p>Check the Tags section of this wiki to understand all available magical properties.</p>
         <p>Balance offensive and defensive capabilities - survivability is just as important as damage.</p>
         <p>Resource management is key - don't waste valuable materials on low-impact crafts.</p>
+        <p>Study tag statistics to understand the distribution and relationships between different magical effects.</p>
       </Section>
     </div>
   );
@@ -328,11 +546,21 @@ const HelpWikiModal: React.FC<HelpWikiModalProps> = ({ isOpen, onClose }) => {
         >
           Tags Reference
         </ActionButton>
+        <ActionButton 
+          onClick={() => setActiveTab('tagStats')} 
+          variant={activeTab === 'tagStats' ? 'primary' : 'secondary'} 
+          size="sm" 
+          className="flex-1"
+        >
+          Tag Statistics
+        </ActionButton>
       </div>
 
       {/* Content */}
       <div className="max-h-[70vh] overflow-y-auto styled-scrollbar pr-2">
-        {activeTab === 'guide' ? renderGuideContent() : renderTagsContent()}
+        {activeTab === 'guide' && renderGuideContent()}
+        {activeTab === 'tags' && renderTagsContent()}
+        {activeTab === 'tagStats' && renderTagStatsContent()}
       </div>
 
       {/* Footer */}
