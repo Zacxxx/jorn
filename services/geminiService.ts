@@ -355,11 +355,13 @@ export async function generateTrait(prompt: string, playerLevel: number): Promis
   const systemInstruction = `You are an RPG trait designer. Player level ${playerLevel}. Create a JSON object for a passive trait.
 Fields:
 - name: Concise name (string, max 3 words).
-- description: Brief flavorful description (string, 1-2 sentences, max 120 chars). This describes a PASSIVE benefit.
+- description: Brief flavorful description (string, 1-2 sentences, max 150 chars). This describes a PASSIVE benefit. The description should hint if the trait's effectiveness is influenced by core player stats (Body, Mind, Reflex, Speed) or if it provides a direct numeric boost that might scale (e.g., 'Improves fire resistance based on Mind' or 'Grants +X to HP that increases with trait level/rarity').
 - iconName: Choose from: ${AVAILABLE_SPELL_ICONS.filter(icon => !icon.startsWith('Status') && !['Gem', 'Plant', 'Dust', 'Thread', 'PotionHP', 'PotionMP', 'PotionGeneric', 'SwordHilt', 'Breastplate', 'Amulet', 'HeroBackIcon', 'FlaskIcon', 'AtomIcon', 'GoldCoinIcon', 'EssenceIcon', 'ChestIcon'].includes(icon)).join(', ')}. Default '${DEFAULT_TRAIT_ICON}'.
 - rarity: (integer, 0-10) Rarity of the trait.
-- tags: (optional array of strings, max 3) Relevant functional tags, Choose from: ${ALL_TAG_NAMES.join(', ')}.
-Keep traits passive, not overly game-breaking. Return ONLY the valid JSON object.`;
+- level: Integer (should generally match playerLevel at creation).
+- scalingFactor: Float (0.05 to 0.5, higher for rarer traits, representing how the trait's main benefit might scale if applicable).
+- tags: (array of 1-3 strings) Assign tags from ${ALL_TAG_NAMES.join(', ')} that directly reflect the trait's primary function and any elemental or mechanical affinity (e.g., a trait improving fire resistance should have ['Fire', 'Resist'] tags; a trait boosting healing effectiveness might have ['Healing', 'Enhancement'] tags). If the trait's benefit scales, include the 'Scaling' tag.
+Keep traits passive, not overly game-breaking. Ensure the trait's name, description, tags, and any scaling implications are coherent and clearly related. Return ONLY the valid JSON object.`;
 
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({
@@ -374,15 +376,49 @@ Keep traits passive, not overly game-breaking. Return ONLY the valid JSON object
 
     const generatedData = parseJsonFromGeminiResponse(response.text) as GeneratedTraitData;
 
+    // Existing icon validation
     if (!AVAILABLE_SPELL_ICONS.includes(generatedData.iconName) || ['HeroBackIcon', 'FlaskIcon', 'AtomIcon', 'GoldCoinIcon', 'EssenceIcon', 'ChestIcon'].includes(generatedData.iconName)) {
       generatedData.iconName = DEFAULT_TRAIT_ICON;
     }
+
+    // Existing rarity validation
     generatedData.rarity = typeof generatedData.rarity === 'number' ? Math.max(0, Math.min(10, generatedData.rarity)) : 1;
+
+    // New: Validate and set 'level'
+    generatedData.level = typeof generatedData.level === 'number' && generatedData.level > 0 ? Math.min(generatedData.level, playerLevel + 5) : playerLevel; // Cap level slightly above player level if AI provides it, else default to playerLevel
+
+    // New: Validate and set 'scalingFactor'
+    // Formula: 0.05 for rarity 0, up to 0.5 for rarity 10
+    const baseScaling = 0.05;
+    const maxAdditionalScaling = 0.45;
+    const calculatedScalingFactor = baseScaling + (generatedData.rarity / 10) * maxAdditionalScaling;
+
+    if (typeof generatedData.scalingFactor !== 'number' || generatedData.scalingFactor < 0.01 || generatedData.scalingFactor > 1.0) {
+      generatedData.scalingFactor = parseFloat(calculatedScalingFactor.toFixed(3));
+    } else {
+      generatedData.scalingFactor = parseFloat(generatedData.scalingFactor.toFixed(3)); // Ensure consistent precision
+    }
+
+    // Existing tags validation
     if (generatedData.tags && Array.isArray(generatedData.tags)) {
         generatedData.tags = generatedData.tags.filter((tag: any) => typeof tag === 'string' && ALL_TAG_NAMES.includes(tag as TagName)).slice(0, 3);
+        // New: If scalingFactor is meaningful and 'Scaling' tag is not present, add it.
+        if (generatedData.scalingFactor > baseScaling + 0.01 && !generatedData.tags.includes('Scaling')) {
+            if (generatedData.tags.length < 3) {
+                generatedData.tags.push('Scaling');
+            }
+        }
     } else {
         generatedData.tags = [];
+        if (generatedData.scalingFactor > baseScaling + 0.01) {
+             generatedData.tags.push('Scaling');
+        }
     }
+    // If there are no tags and it's not a scaling trait, add a default tag like 'Passive' or 'Utility' if possible
+    if (generatedData.tags.length === 0 && ALL_TAG_NAMES.includes('Passive')) {
+        generatedData.tags.push('Passive');
+    }
+
     return generatedData;
   } catch (error) {
     console.error("Error generating trait:", error);
