@@ -43,7 +43,7 @@ export type TagName =
   
   // Defensive Mechanics
   | 'Block' | 'Parry' | 'Dodge' | 'Deflect' | 'Counter' | 'Retaliate' | 'Reflect'
-  | 'Immune' | 'Resist' | 'Absorb' | 'Nullify' | 'Redirect'
+  | 'Immune' | 'Resist' | 'Absorb' | 'Nullify' | 'Redirect' | 'DamageReflection'
   
   // Resource Mechanics
   | 'Free_Cast' | 'Reduced_Cost' | 'Cost_Refund' | 'Resource_Generation' | 'Overcharge'
@@ -99,7 +99,9 @@ export type StatusEffectName =
   | 'TEMP_MAX_HP_UP' | 'TEMP_MAX_MP_UP' | 'TEMP_HP_REGEN'
   | 'Defending' | 'DamageReflection'
   | 'BurningDoTActive' | 'BleedingDoTActive' | 'CorruptedDoTActive' | 'FrostbittenDoTActive' | 'RottingDoTActive' | 'ShockedDoTActive' | 'PoisonDoTActive'
-  | 'Silenced' | 'Rooted' | 'Shield';
+  | 'Silenced' | 'Rooted' | 'Shield'
+  // Additional status effects used in tag system
+  | 'Burning' | 'Bleeding' | 'Freezing' | 'Shocking' | 'Slow' | 'Haste' | 'Invisibility' | 'Strength' | 'Intelligence';
 
 export type ResourceType = 'Arcane Dust' | 'Emberbloom Petal' | 'Shadowsilk Thread' | 'Crystal Shard' | 'Verdant Leaf' | 'Mystic Orb' | 'Iron Ore' | 'Ancient Bone';
 export type ItemType = 'Consumable' | 'Equipment' | 'Resource' | 'QuestItem' | 'LootChest';
