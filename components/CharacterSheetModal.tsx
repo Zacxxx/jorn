@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, Ability, EquipmentSlot as GenericEquipmentSlot, InventoryFilterType, MasterItemDefinition, MasterResourceItem, MasterConsumableItem, LootChestItem, UniqueConsumable, Quest, CharacterSheetTab, SpellIconName } from '../types';
 import Modal from '../ui/Modal';
+import '../src/styles/ability-list.css';
 import ActionButton from '../ui/ActionButton';
 import {
     GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon,
@@ -16,6 +17,7 @@ import SpellbookDisplay from './SpellbookDisplay';
 import AbilityBookDisplay from './AbilityBookDisplay';
 import { MASTER_ITEM_DEFINITIONS } from '../services/itemService';
 import { getRarityColorClass } from '../utils';
+
 
 
 interface CharacterSheetModalProps {
@@ -541,6 +543,161 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   const [selectedEncyclopediaEntry, setSelectedEncyclopediaEntry] = useState<any | null>(null);
   const [encyclopediaSearchTerm, setEncyclopediaSearchTerm] = useState('');
 
+  // State for new 'Main' tab UI
+  const [currentTreeCategory, setCurrentTreeCategory] = useState<string>('core');
+  const [selectedTalentDetails, setSelectedTalentDetails] = useState<any | null>(null); // Replace 'any' with a proper Talent type
+  const [createTalentModalOpen, setCreateTalentModalOpen] = useState<boolean>(false);
+  const [researchUnlocksModalOpen, setResearchUnlocksModalOpen] = useState<boolean>(false);
+
+  // Placeholder for talent data (to be replaced with actual data structure)
+  const treeData: any = {
+    core: [
+      { id: 'core_1', name: 'Core Talent 1', tier: 1, connections: ['core_2'], type: 'passive', description: 'Description for Core Talent 1', effects: ['Effect A'], requirements: {} },
+      { id: 'core_2', name: 'Core Talent 2', tier: 2, connections: [], type: 'active', description: 'Description for Core Talent 2', effects: ['Effect B'], requirements: { level: 5 } },
+    ],
+    combat: [
+      { id: 'combat_1', name: 'Combat Talent 1', tier: 1, connections: [], type: 'active', description: 'Description for Combat Talent 1', effects: ['Effect C'], requirements: { body: 5 } },
+    ]
+    // Add other categories like 'utility' etc.
+  };
+
+  // === Talent System Functions (Adapted from ability-list.ts) ===
+
+  const updateTalentDetailsPanel = (talentData: any) => {
+    setSelectedTalentDetails(talentData);
+  };
+
+  const getTalentById = (talentId: string) => {
+    for (const category in treeData) {
+      const found = treeData[category].find((t:any) => t.id === talentId);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  const getTalentType = (talentId: string): string => {
+    const talent = getTalentById(talentId);
+    return talent ? talent.type : "Unknown";
+  };
+
+  const getTalentDescription = (talentId: string): string => {
+    const talent = getTalentById(talentId);
+    return talent ? talent.description : "No description found.";
+  };
+
+  const getTalentEffects = (talentId: string): string[] => {
+    const talent = getTalentById(talentId);
+    return talent ? talent.effects : [];
+  };
+
+  const getTalentRequirements = (talentId: string, tier: number): object => {
+    // Tier might be used if requirements change by rank, not just base talent
+    const talent = getTalentById(talentId);
+    return talent ? talent.requirements : {};
+  };
+
+  const generateConnections = (talents: any[]): React.ReactNode => {
+    // Basic placeholder for connections - in reality, this would involve SVG lines
+    return <div className="absolute top-0 left-0 w-full h-full pointer-events-none"> {/* Container for SVG lines */}</div>;
+  };
+
+  const generateHorizontalTalentTree = (category: string): React.ReactNode => {
+    const talentsInCategory = treeData[category] || [];
+    if (talentsInCategory.length === 0) {
+      return <p className="text-slate-400 italic">No talents available in this category yet.</p>;
+    }
+
+    // Group talents by tier for horizontal layout
+    const tiers: { [key: number]: any[] } = {};
+    talentsInCategory.forEach((talent:any) => {
+      if (!tiers[talent.tier]) {
+        tiers[talent.tier] = [];
+      }
+      tiers[talent.tier].push(talent);
+    });
+
+    return (
+      <div className="relative"> {/* Added relative for absolute positioning of connections */}
+        {generateConnections(talentsInCategory)} {/* Render connections */}
+        <div className="flex space-x-4 overflow-x-auto pb-2"> {/* Horizontal scroll for tiers */}
+          {Object.keys(tiers).sort((a,b) => parseInt(a) - parseInt(b)).map(tier => (
+            <div key={tier} className="flex-shrink-0 w-40"> {/* Tier column */}
+              <h5 className="text-sm font-semibold text-sky-200 mb-2 border-b border-slate-600 pb-1">Tier {tier}</h5>
+              <div className="space-y-2">
+                {tiers[parseInt(tier)].map((talent: any) => (
+                  <button
+                    key={talent.id}
+                    onClick={() => updateTalentDetailsPanel(talent)}
+                    className="w-full p-2 bg-slate-600 hover:bg-slate-500 rounded-md shadow text-left transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400"
+                  >
+                    <p className="text-xs font-semibold text-green-300">{talent.name}</p>
+                    <p className="text-[0.6rem] text-slate-300">{talent.type}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const generateCreateTalentContent = (): React.ReactNode => {
+    return (
+      <>
+        <p className="text-sm text-slate-300 mb-2">Define a new talent for the player.</p>
+        <div className="space-y-3">
+          <div>
+            <label htmlFor="talentName" className="block text-xs font-medium text-slate-200 mb-0.5">Talent Name</label>
+            <input type="text" id="talentName" placeholder="Enter talent name" className="p-2 w-full bg-slate-600 border border-slate-500 rounded text-slate-100 placeholder-slate-400 text-sm"/>
+          </div>
+          <div>
+            <label htmlFor="talentCategory" className="block text-xs font-medium text-slate-200 mb-0.5">Category</label>
+            <select id="talentCategory" defaultValue={currentTreeCategory} className="p-2 w-full bg-slate-600 border border-slate-500 rounded text-slate-100 text-sm">
+              {Object.keys(treeData).map(cat => <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>)}
+              {/* Allow creating new category? */}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="talentTier" className="block text-xs font-medium text-slate-200 mb-0.5">Tier</label>
+            <input type="number" id="talentTier" placeholder="1" min="1" defaultValue="1" className="p-2 w-full bg-slate-600 border border-slate-500 rounded text-slate-100 placeholder-slate-400 text-sm"/>
+          </div>
+          <div>
+            <label htmlFor="talentDescription" className="block text-xs font-medium text-slate-200 mb-0.5">Description</label>
+            <textarea id="talentDescription" placeholder="Describe the talent's effects" className="p-2 w-full h-20 bg-slate-600 border border-slate-500 rounded text-slate-100 placeholder-slate-400 text-sm"></textarea>
+          </div>
+           {/* Add more fields: type (passive/active), effects, requirements, icon, etc. */}
+        </div>
+      </>
+    );
+  };
+
+  const generateResearchUnlocksContent = (): React.ReactNode => {
+    return (
+      <>
+        <p className="text-sm text-slate-300 mb-2">Unlock new abilities, talent trees, or bonuses through research.</p>
+        {/* Example Research Item */}
+        <div className="mt-2 p-2 bg-slate-600/70 rounded-md border border-slate-500/50">
+          <h5 className="text-sm font-semibold text-teal-300">Unlock: Advanced Combat Maneuvers</h5>
+          <p className="text-xs text-slate-400 mb-1">Unlocks a new tier of combat talents.</p>
+          <p className="text-xs text-amber-400">Cost: 10 Research Points, 500 Gold</p>
+          <ActionButton
+            onClick={() => console.log("Start research: Advanced Combat Maneuvers")}
+            variant="primary"
+            size="sm"
+            className="mt-1.5 text-xs"
+            disabled={true} // Example: player lacks resources
+          >
+            Start Research (Insufficient Points)
+          </ActionButton>
+        </div>
+         {/* Add more research options dynamically */}
+      </>
+    );
+  };
+
+  // === END Talent System Functions ===
+
 
   useEffect(() => {
     if (isOpen && initialTab) {
@@ -797,32 +954,111 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
 
         <div className="flex-grow overflow-y-auto styled-scrollbar p-1">
           {activeTab === 'Main' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-1 xs:gap-1.5 sm:gap-2">
-                <div className="lg:col-span-1 space-y-1 xs:space-y-1.5 sm:space-y-2">
-                    <VitalStatisticsDisplay player={player} stats={effectiveStats} />
-                    <AttributesDisplay player={player} stats={effectiveStats} />
-                </div>
-                <div className="lg:col-span-2 p-1 xs:p-1.5 sm:p-2 bg-slate-700/50 rounded-lg shadow-lg border border-slate-600/70">
-                    <h4 className="text-[0.7rem] xs:text-xs sm:text-sm font-semibold text-sky-200 mb-1 xs:mb-1.5" style={{fontFamily: "'Inter Tight', sans-serif"}}>Equipment</h4>
-                    <div className="grid grid-cols-2 gap-0.5 xs:gap-1 sm:gap-1.5">
-                        <div className="space-y-0.5 xs:space-y-1 sm:space-y-1.5">
-                        {DETAILED_EQUIPMENT_SLOTS_LEFT_COL.map(slot => (
-                            <EquipmentSlotDisplay key={slot} slot={slot} itemId={player.equippedItems[slot]} allItems={player.items} onClick={() => handleEquipmentSlotClick(slot)} />
-                        ))}
-                        </div>
-                        <div className="space-y-0.5 xs:space-y-1 sm:space-y-1.5">
-                        {DETAILED_EQUIPMENT_SLOTS_RIGHT_COL.map(slot => (
-                            <EquipmentSlotDisplay key={slot} slot={slot} itemId={player.equippedItems[slot]} allItems={player.items} onClick={() => handleEquipmentSlotClick(slot)} />
-                        ))}
-                        <EquipmentSlotDisplay slot="WeaponLeft" itemId={player.equippedItems.WeaponLeft} allItems={player.items} onClick={() => handleEquipmentSlotClick('WeaponLeft')} className="mt-1 xs:mt-1.5 sm:mt-2 col-span-1"/>
-                        <EquipmentSlotDisplay slot="WeaponRight" itemId={player.equippedItems.WeaponRight} allItems={player.items} onClick={() => handleEquipmentSlotClick('WeaponRight')} className="mt-1 xs:mt-1.5 sm:mt-2 col-span-1"/>
-                        </div>
+            <div className="h-full flex flex-col text-slate-100">
+              {/* Main two-panel layout */}
+              <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-2">
+                {/* Left Panel: Talent Trees & Abilities */}
+                <div className="md:col-span-2 bg-slate-800/50 p-2 rounded-lg shadow-lg border border-slate-700/60 overflow-y-auto styled-scrollbar">
+                  <h3 className="text-lg font-semibold text-sky-300 mb-3 border-b border-slate-700 pb-2">Talents & Abilities</h3>
+
+                  {/* Category Tabs - Example */}
+                  <div className="mb-3 flex space-x-1 border-b border-slate-700">
+                    {Object.keys(treeData).map(category => (
+                      <button
+                        key={category}
+                        onClick={() => setCurrentTreeCategory(category)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-t-md transition-colors focus:outline-none
+                                    ${currentTreeCategory === category ? 'bg-slate-700 text-sky-300 border-slate-700' : 'bg-slate-800 text-slate-400 hover:bg-slate-750 hover:text-sky-400'}`}
+                      >
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Talents Section based on currentTreeCategory */}
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="text-md font-semibold text-amber-300">{currentTreeCategory.charAt(0).toUpperCase() + currentTreeCategory.slice(1)} Talents</h4>
+                      <button
+                        className="text-xs bg-green-600 hover:bg-green-500 text-white font-semibold py-1 px-2 rounded-md shadow-sm transition-colors duration-150"
+                        onClick={() => setCreateTalentModalOpen(true)}
+                      >
+                        Create Talent
+                      </button>
                     </div>
-                     <div className="mt-2 xs:mt-3 grid grid-cols-1 sm:grid-cols-2 gap-1 xs:gap-1.5">
-                        <MainTabSection title="Prepared Spells" items={player.spells.filter(s => player.preparedSpellIds.includes(s.id)).map(s => ({icon: s.iconName, name: s.name, colorClass: 'text-sky-300'}))} onManageClick={() => setActiveTab('Spells')} manageLabel="Manage Spells" />
-                        <MainTabSection title="Prepared Abilities" items={player.abilities.filter(a => player.preparedAbilityIds.includes(a.id)).map(a => ({icon: a.iconName, name: a.name, colorClass: 'text-yellow-300'}))} onManageClick={() => setActiveTab('Abilities')} manageLabel="Manage Abilities" />
-                     </div>
+                    <div className="p-2 bg-slate-700/60 rounded-md min-h-[100px]">
+                      {generateHorizontalTalentTree(currentTreeCategory)}
+                    </div>
+                  </div>
+
+                  {/* Research Unlocks Button - simplified for now */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="text-md font-semibold text-teal-300">Research Unlocks</h4>
+                      <button
+                        className="text-xs bg-sky-600 hover:bg-sky-500 text-white font-semibold py-1 px-2 rounded-md shadow-sm transition-colors duration-150"
+                        onClick={() => setResearchUnlocksModalOpen(true)}
+                      >
+                        Research Unlocks
+                      </button>
+                    </div>
+                    <div className="p-2 bg-slate-700/60 rounded-md min-h-[100px]">
+                      {/* Placeholder for research unlocks tree or list - content can be part of the modal */}
+                      <div>Research options will be shown in a modal.</div>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Right Panel: Details View */}
+                <div className="md:col-span-1 bg-slate-800/50 p-3 rounded-lg shadow-lg border border-slate-700/60 overflow-y-auto styled-scrollbar">
+                  <h3 className="text-lg font-semibold text-sky-300 mb-3 border-b border-slate-700 pb-2">Details</h3>
+                  {selectedTalentDetails ? (
+                    <div>
+                      <h4 className="text-md font-bold text-green-400">{selectedTalentDetails.name}</h4>
+                      <p className="text-xs text-slate-300 mb-1">Type: {selectedTalentDetails.type}</p>
+                      <p className="text-sm text-slate-200 mb-2">{selectedTalentDetails.description}</p>
+                      {/* Add more details as needed, e.g., effects, requirements */}
+                      <p className="text-xs text-slate-400">Effects: {selectedTalentDetails.effects?.join(', ')}</p>
+                      {selectedTalentDetails.requirements && Object.keys(selectedTalentDetails.requirements).length > 0 && (
+                        <p className="text-xs text-amber-400">Req: Level {selectedTalentDetails.requirements.level}</p>
+                      )}
+                       <button
+                        className="mt-2 w-full text-sm bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 px-3 rounded-md shadow-sm transition-colors duration-150"
+                        onClick={() => console.log("Upgrade talent:", selectedTalentDetails.id)}
+                       >
+                        Upgrade (Placeholder)
+                       </button>
+                    </div>
+                  ) : (
+                    <div className="text-slate-400 italic">Select a talent or ability to see details.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal for Creating a New Talent */}
+              {createTalentModalOpen && (
+              <Modal isOpen={createTalentModalOpen} onClose={() => setCreateTalentModalOpen(false)} title="Create New Talent">
+                <div className="p-4 bg-slate-700 rounded-b-lg text-slate-100">
+                  {generateCreateTalentContent()}
+                  <div className="mt-4 text-right space-x-2">
+                    <ActionButton onClick={() => setCreateTalentModalOpen(false)} variant="secondary">Cancel</ActionButton>
+                    <ActionButton onClick={() => { console.log('Create talent logic here'); setCreateTalentModalOpen(false); }} variant="success">Create</ActionButton>
+                  </div>
+                </div>
+              </Modal>
+              )}
+
+              {/* Modal for Research Unlocks */}
+              {researchUnlocksModalOpen && (
+              <Modal isOpen={researchUnlocksModalOpen} onClose={() => setResearchUnlocksModalOpen(false)} title="Research Unlocks">
+                <div className="p-4 bg-slate-700 rounded-b-lg text-slate-100">
+                  {generateResearchUnlocksContent()}
+                  <div className="mt-4 text-right">
+                    <ActionButton onClick={() => setResearchUnlocksModalOpen(false)} variant="secondary">Close</ActionButton>
+                  </div>
+                </div>
+              </Modal>
+              )}
             </div>
           )}
           {activeTab === 'Inventory' && (
