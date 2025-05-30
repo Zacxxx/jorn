@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, GeneratedEnemyData, Trait, GeneratedTraitData, Quest, GeneratedQuestData, ResourceType, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, EquipmentSlot as GenericEquipmentSlot, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, AbilityEffectType, CharacterSheetTab, SpellIconName, SpellComponent, ElementName, LootChestItem, GeneratedSpellComponentData, LootDrop, MasterItemDefinition, UniqueConsumable, MasterResourceItem, MasterConsumableItem } from './types';
-import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, AVAILABLE_RESOURCE_TYPES_FOR_AI, BATTLE_RESOURCE_REWARD_TYPES, BATTLE_RESOURCE_REWARD_QUANTITY_MIN, BATTLE_RESOURCE_REWARD_QUANTITY_MAX, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFAULT_ENCYCLOPEDIA_ICON, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, EXAMPLE_SPELL_COMPONENTS, RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, Trait, Quest, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, CharacterSheetTab, SpellIconName, SpellComponent, LootChestItem, UniqueConsumable, MasterConsumableItem } from './types';
+import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest } from './services/geminiService';
 import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
 import { getScalingFactorFromRarity } from './utils';
@@ -9,7 +9,7 @@ import { getScalingFactorFromRarity } from './utils';
 import ActionButton from './ui/ActionButton';
 import Modal from './ui/Modal';
 import LoadingSpinner from './ui/LoadingSpinner';
-import { GetSpellIcon, BagIcon, CollectionIcon, GoldCoinIcon, FlaskIcon, EssenceIcon } from './components/IconComponents';
+import { GetSpellIcon } from './components/IconComponents';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { CharacterSheetModal } from './components/CharacterSheetModal';
@@ -548,7 +548,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       }
       
       if (selectedComponentId) {
-        const component = availableComponents.find(c => c.id === selectedComponentId);
+        const component = player.discoveredComponents.find((c: SpellComponent) => c.id === selectedComponentId);
         if (component) {
           enhancedPrompt += ` COMPONENT INTEGRATION: Integrate the component "${component.name}" (${component.category}, Tier ${component.tier}) into this spell. Component description: ${component.description}. Component tags: ${component.tags?.join(', ') || 'none'}.`;
         }
@@ -646,12 +646,12 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setPlayer(prev => ({ ...prev, equippedItems: { ...prev.equippedItems, [slot]: null } }));
   };
 
-  const handlePrepareSpell = (spell: Spell) => { if (player.preparedSpellIds.length < maxPreparedSpells) setPlayer(prev => ({ ...prev, preparedSpellIds: [...new Set([...prev.preparedSpellIds, spell.id])] })); };
+  const handlePrepareSpell = (spell: Spell) => { if (player.preparedSpellIds.length < maxPreparedSpells) setPlayer(prev => ({ ...prev, preparedSpellIds: Array.from(new Set([...prev.preparedSpellIds, spell.id])) })); };
   const handleUnprepareSpell = (spell: Spell) => setPlayer(prev => ({ ...prev, preparedSpellIds: prev.preparedSpellIds.filter(id => id !== spell.id) }));
-  const handlePrepareAbility = (ability: Ability) => { if (player.preparedAbilityIds.length < maxPreparedAbilities) setPlayer(prev => ({ ...prev, preparedAbilityIds: [...new Set([...prev.preparedAbilityIds, ability.id])] })); };
+  const handlePrepareAbility = (ability: Ability) => { if (player.preparedAbilityIds.length < maxPreparedAbilities) setPlayer(prev => ({ ...prev, preparedAbilityIds: Array.from(new Set([...prev.preparedAbilityIds, ability.id])) })); };
   const handleUnprepareAbility = (ability: Ability) => setPlayer(prev => ({ ...prev, preparedAbilityIds: prev.preparedAbilityIds.filter(id => id !== ability.id) }));
 
-  const processPlayerTurnStartEffects = useCallback((currentTurn: number): { isDefeated: boolean, willBeStunnedThisTurn: boolean, willBeSilencedThisTurn: boolean, willBeRootedThisTurn: boolean } => {
+  const processPlayerTurnStartEffects = useCallback((_currentTurn: number): { isDefeated: boolean, willBeStunnedThisTurn: boolean, willBeSilencedThisTurn: boolean, willBeRootedThisTurn: boolean } => {
     let playerCurrentHp = player.hp;
     let playerIsStunned = false;
     let playerIsSilenced = false;
@@ -659,7 +659,6 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     let newActiveEffects: ActiveStatusEffect[] = [];
 
     player.activeStatusEffects.forEach(effect => {
-        let effectPersists = true;
         switch (effect.name) {
             case 'PoisonDoTActive': case 'BurningDoTActive': case 'BleedingDoTActive': case 'CorruptedDoTActive': case 'FrostbittenDoTActive': case 'RottingDoTActive': case 'ShockedDoTActive':
                 if (effect.magnitude) {
@@ -689,7 +688,6 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         }
         if (effect.duration - 1 <= 0) {
             addLog('Player', `${effect.name} on Player has worn off.`, 'status');
-            effectPersists = false;
         } else {
             newActiveEffects.push({ ...effect, duration: effect.duration - 1 });
         }
@@ -937,9 +935,12 @@ export const App: React.FC<{}> = (): React.ReactElement => {
             applyStatusEffect('player', { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
         }
     } else if (targetId) {
-        targetEntity = currentEnemies.find(e => e.id === targetId);
-         if (targetEntity && ability.effectType === 'ENEMY_DEBUFF' && ability.targetStatusEffect && ability.duration) {
-            applyStatusEffect(targetId, { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
+        const foundEnemy = currentEnemies.find((e: Enemy) => e.id === targetId);
+        if (foundEnemy) {
+            targetEntity = foundEnemy;
+            if (ability.effectType === 'ENEMY_DEBUFF' && ability.targetStatusEffect && ability.duration) {
+                applyStatusEffect(targetId, { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
+            }
         }
     }
 
@@ -962,7 +963,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setIsPlayerTurn(false);
   };
 
- const handleUseConsumable = (itemId: string, targetId: string | null) => {
+ const handleUseConsumable = (itemId: string, _targetId: string | null) => {
     let itemUsed: UniqueConsumable | MasterConsumableItem | undefined;
     let isStackable = false;
 
@@ -1451,7 +1452,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
                     foundMessages.push(`${drop.amount} Essence`);
                     break;
                 case 'resource':
-                    if (drop.itemId && drop.quantity && drop.type) { 
+                    if (drop.itemId && drop.quantity) { 
                         newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + drop.quantity;
                         const itemDef = MASTER_ITEM_DEFINITIONS[drop.itemId];
                         foundMessages.push(`${drop.quantity}x ${itemDef ? itemDef.name : drop.itemId}`);
@@ -1623,7 +1624,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     }
     switch (gameState) {
       case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp}/>;
-      case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} />;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
@@ -1661,7 +1662,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
             onOpenGameMenu={handleOpenGameMenu}
         />
       {modalContent && <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md"><p>{modalContent.message}</p></Modal>}
-      {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} isLoading={isLoading} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={ () => {setGameState('HOME'); setTimeout(() => handleOpenSpellDesignStudio(),0);}} onOpenTraitCraftingScreen={() => {setGameState('HOME'); setTimeout(() => handleOpenTraitsPage(),0);}} canCraftNewTrait={pendingTraitUnlock || (player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) +1) )} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
+      {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={ () => {setGameState('HOME'); setTimeout(() => handleOpenSpellDesignStudio(),0);}} onOpenTraitCraftingScreen={() => {setGameState('HOME'); setTimeout(() => handleOpenTraitsPage(),0);}} canCraftNewTrait={pendingTraitUnlock || (player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) +1) )} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
       {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => handleOpenSpellDesignStudio()} onOpenTheorizeLab={handleOpenTheorizeComponentLab} />}
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
       <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onOpenHelpWiki={handleOpenHelpWiki} onShowMessage={(t,m) => showMessageModal(t,m,'info')} onExportSave={handleExportSave} onImportSave={handleImportSave}/>
