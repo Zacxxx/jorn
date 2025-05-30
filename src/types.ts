@@ -327,6 +327,7 @@ export interface Player {
   discoveredComponents: SpellComponent[];
   discoveredRecipes: string[];
   currentLocationId: string;
+  homestead: Homestead;
 }
 
 export interface PlayerEffectiveStats {
@@ -671,3 +672,39 @@ export interface CraftingRequirement {
 }
 
 export type Recipe = CraftingRecipe;
+
+// Homestead related types
+export interface HomesteadProperty {
+  level: number;
+  description: string;
+  upgrades: string[];
+  currentUpgrade?: string;
+  nextUpgradeCost?: ResourceCost[];
+  activeProjects?: HomesteadProject[];
+}
+
+export interface HomesteadProject {
+  id: string;
+  name: string;
+  description: string;
+  type: 'upgrade' | 'production' | 'research';
+  targetProperty: string;
+  duration: number; // in hours
+  startTime: number; // timestamp
+  resourceCost: ResourceCost[];
+  rewards?: {
+    type: 'item' | 'resource' | 'upgrade';
+    itemId?: string;
+    quantity?: number;
+  }[];
+}
+
+export interface Homestead {
+  id: string;
+  name: string;
+  description: string;
+  properties: Record<string, HomesteadProperty>;
+  activeProjects: HomesteadProject[];
+  totalInvestment: number; // total gold invested
+  unlocked: boolean;
+}

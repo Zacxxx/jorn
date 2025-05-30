@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, Trait, Quest, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, CharacterSheetTab, SpellIconName, SpellComponent, LootChestItem, UniqueConsumable, MasterConsumableItem } from './types';
+import { Homestead, HomesteadProject } from './src/types';
 import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS } from './constants';
-import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest } from './services/geminiService';
+import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest, discoverRecipeFromPrompt } from './services/geminiService';
 import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
+import { createInitialHomestead, generateProjectId, canAffordResourceCost, consumeResources, addProjectRewards, getUpgradeCosts, applyPropertyUpgrade } from './src/services/homesteadService';
+import { getAllRecipes, getRecipeById, discoverRecipe } from './services/craftingService';
 import { getScalingFactorFromRarity } from './utils';
 
 
@@ -30,6 +33,7 @@ import ConfirmationView from './components/ConfirmationView';
 import GameOverView from './components/GameOverView';
 import MobileMenuModal from './components/MobileMenuModal';
 import CampView from './components/CampView';
+import HomesteadView from './src/components/HomesteadView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
@@ -84,6 +88,9 @@ export const App: React.FC<{}> = (): React.ReactElement => {
             speed: parsed.speed || 0,
             bestiary: parsed.bestiary || {},
             discoveredComponents: Array.isArray(parsed.discoveredComponents) ? parsed.discoveredComponents.filter(comp => typeof comp === 'object' && comp.id) : [],
+            discoveredRecipes: Array.isArray(parsed.discoveredRecipes) ? parsed.discoveredRecipes : [],
+            currentLocationId: parsed.currentLocationId || 'eldergrove',
+            homestead: parsed.homestead || createInitialHomestead(),
             };
             validatedPlayer.preparedSpellIds = validatedPlayer.preparedSpellIds.filter(id => validatedPlayer.spells.some(s => s.id === id));
             if (validatedPlayer.preparedSpellIds.length === 0 && validatedPlayer.spells.length > 0) {
@@ -125,6 +132,9 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       iconName: 'UserIcon',
       bestiary: {},
       discoveredComponents: [],
+      discoveredRecipes: [],
+      currentLocationId: 'eldergrove',
+      homestead: createInitialHomestead(),
     };
   });
 
@@ -152,6 +162,9 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [isHelpWikiOpen, setIsHelpWikiOpen] = useState(false);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentShopId, setCurrentShopId] = useState<string | null>(null);
+  const [currentTavernId, setCurrentTavernId] = useState<string | null>(null);
+  const [currentNPCId, setCurrentNPCId] = useState<string | null>(null);
 
   useEffect(() => {
     async function initApp() {
@@ -292,6 +305,9 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const handleOpenSpellbook = () => { setDefaultCharacterSheetTab('Spells'); setGameState('CHARACTER_SHEET'); };
   const handleOpenCraftingHub = () => setGameState('CRAFTING_HUB');
   
+  const handleOpenRecipeDiscovery = () => setGameState('RECIPE_DISCOVERY');
+  const handleOpenCraftingWorkshop = () => setGameState('CRAFTING_WORKSHOP');
+  
   const handleOpenSpellDesignStudio = (initialPrompt?: string) => {
     setInitialSpellPromptForStudio(initialPrompt || '');
     setGameState('SPELL_DESIGN_STUDIO');
@@ -412,6 +428,145 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setTargetEnemyId(null);
     setCombatLog([]);
     setModalContent(null);
+  };
+
+  // Homestead handlers
+  const handleOpenHomestead = () => setGameState('HOMESTEAD_VIEW');
+
+  const handleStartHomesteadProject = (project: Omit<HomesteadProject, 'id' | 'startTime'>) => {
+    if (!canAffordResourceCost(player.inventory, project.resourceCost)) {
+      setModalContent({ title: "Insufficient Resources", message: "You don't have the required resources for this project.", type: 'error' });
+      return;
+    }
+
+    const newProject: HomesteadProject = {
+      ...project,
+      id: generateProjectId(),
+      startTime: Date.now()
+    };
+
+    setPlayer(prev => ({
+      ...prev,
+      inventory: consumeResources(prev.inventory, project.resourceCost),
+      homestead: {
+        ...prev.homestead,
+        activeProjects: [...prev.homestead.activeProjects, newProject]
+      }
+    }));
+
+    setModalContent({ title: "Project Started", message: `${project.name} has begun! It will take ${project.duration} hours to complete.`, type: 'success' });
+  };
+
+  const handleCompleteHomesteadProject = (projectId: string) => {
+    const project = player.homestead.activeProjects.find(p => p.id === projectId);
+    if (!project) return;
+
+    setPlayer(prev => ({
+      ...prev,
+      inventory: addProjectRewards(prev.inventory, project.rewards),
+      homestead: {
+        ...prev.homestead,
+        activeProjects: prev.homestead.activeProjects.filter(p => p.id !== projectId)
+      }
+    }));
+
+    const rewardMessages = project.rewards?.map(reward => {
+      if (reward.type === 'resource' || reward.type === 'item') {
+        const item = MASTER_ITEM_DEFINITIONS[reward.itemId!];
+        return `${reward.quantity}x ${item?.name || reward.itemId}`;
+      }
+      return reward.type;
+    }) || [];
+
+    setModalContent({ 
+      title: "Project Complete!", 
+      message: `${project.name} finished! ${rewardMessages.length > 0 ? `Received: ${rewardMessages.join(', ')}` : ''}`, 
+      type: 'success' 
+    });
+  };
+
+  const handleUpgradeHomesteadProperty = (propertyName: string, upgradeName: string) => {
+    const property = player.homestead.properties[propertyName];
+    if (!property) return;
+
+    const costs = getUpgradeCosts(upgradeName);
+    if (!canAffordResourceCost(player.inventory, costs)) {
+      setModalContent({ title: "Upgrade Failed", message: "Insufficient resources for this upgrade.", type: 'error' });
+      return;
+    }
+
+    setPlayer(prev => ({
+      ...prev,
+      inventory: consumeResources(prev.inventory, costs),
+      homestead: {
+        ...prev.homestead,
+        properties: {
+          ...prev.homestead.properties,
+          [propertyName]: applyPropertyUpgrade(property, upgradeName)
+        }
+      }
+    }));
+
+    setModalContent({ title: "Upgrade Complete!", message: `${propertyName} has been upgraded with ${upgradeName.replace('_', ' ')}!`, type: 'success' });
+  };
+
+  // Settlement handlers
+  const handleAccessSettlement = () => {
+    setGameState('SETTLEMENT_VIEW');
+  };
+
+  const handleOpenShop = (shopId: string) => {
+    setCurrentShopId(shopId);
+    setGameState('SHOP_VIEW');
+  };
+
+  const handleOpenTavern = (tavernId: string) => {
+    setCurrentTavernId(tavernId);
+    setGameState('TAVERN_VIEW');
+  };
+
+  const handleTalkToNPC = (npcId: string) => {
+    setCurrentNPCId(npcId);
+    setGameState('NPC_DIALOGUE');
+  };
+
+  const handleExplorePointOfInterest = (poiId: string) => {
+    // TODO: Implement POI exploration logic
+    setModalContent({ title: "Point of Interest", message: "POI exploration coming soon!", type: 'info' });
+  };
+
+  const handlePurchaseItem = (itemId: string, price: number, quantity: number) => {
+    if (player.gold < price * quantity) {
+      setModalContent({ title: "Purchase Failed", message: "Not enough gold!", type: 'error' });
+      return;
+    }
+
+    // TODO: Add item to inventory
+    setPlayer(prev => ({
+      ...prev,
+      gold: prev.gold - (price * quantity),
+      inventory: {
+        ...prev.inventory,
+        [itemId]: (prev.inventory[itemId] || 0) + quantity
+      }
+    }));
+
+    setModalContent({ title: "Purchase Complete", message: `Purchased ${quantity}x item for ${price * quantity} gold!`, type: 'success' });
+  };
+
+  const handlePurchaseService = (serviceId: string, price: number) => {
+    if (player.gold < price) {
+      setModalContent({ title: "Service Failed", message: "Not enough gold!", type: 'error' });
+      return;
+    }
+
+    // TODO: Implement service logic
+    setPlayer(prev => ({
+      ...prev,
+      gold: prev.gold - price
+    }));
+
+    setModalContent({ title: "Service Complete", message: `Service purchased for ${price} gold!`, type: 'success' });
   };
 
   const handleFinalizeSpellDesign = async (
@@ -1617,14 +1772,114 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setModalContent({title, message, type});
   }
 
+  const handleDiscoverRecipe = async (prompt: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const availableRecipeIds = getAllRecipes().map(r => r.id);
+      
+      const result = await discoverRecipeFromPrompt(
+        prompt,
+        player.level,
+        availableRecipeIds,
+        player.discoveredRecipes
+      );
+      
+      if (result.recipeId) {
+        setPlayer(prev => ({
+          ...prev,
+          discoveredRecipes: [...prev.discoveredRecipes, result.recipeId]
+        }));
+        
+        setModalContent({ 
+          title: "Recipe Discovered!", 
+          message: `You discovered: ${result.recipeName}! Visit the Crafting Workshop to create it.`, 
+          type: 'success' 
+        });
+      } else {
+        setModalContent({ 
+          title: "Discovery Failed", 
+          message: result.error || "No suitable recipe could be discovered from that prompt.", 
+          type: 'error' 
+        });
+      }
+    } catch (error) {
+      console.error("Recipe discovery error:", error);
+      setModalContent({ 
+        title: "Discovery Error", 
+        message: error instanceof Error ? error.message : "Failed to discover recipe.", 
+        type: 'error' 
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCraftItem = async (recipeId: string): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const recipe = getRecipeById(recipeId);
+      if (!recipe) {
+        setModalContent({ title: "Craft Failed", message: "Recipe not found.", type: 'error' });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check if player has required ingredients
+      const hasIngredients = recipe.ingredients.every((ingredient: any) => 
+        (player.inventory[ingredient.itemId] || 0) >= ingredient.quantity
+      );
+      
+      if (!hasIngredients) {
+        setModalContent({ title: "Craft Failed", message: "You don't have all the required ingredients.", type: 'error' });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Deduct ingredients
+      const newInventory = { ...player.inventory };
+      recipe.ingredients.forEach((ingredient: any) => {
+        newInventory[ingredient.itemId] = (newInventory[ingredient.itemId] || 0) - ingredient.quantity;
+      });
+      
+      // Add result item
+      newInventory[recipe.resultItemId] = (newInventory[recipe.resultItemId] || 0) + recipe.resultQuantity;
+      
+      setPlayer(prev => ({
+        ...prev,
+        inventory: newInventory
+      }));
+      
+      setModalContent({ 
+        title: "Crafting Complete!", 
+        message: `Successfully crafted ${recipe.resultQuantity}x ${recipe.name}!`, 
+        type: 'success' 
+      });
+    } catch (error) {
+      console.error("Crafting error:", error);
+      setModalContent({ 
+        title: "Craft Error", 
+        message: error instanceof Error ? error.message : "Failed to craft item.", 
+        type: 'error' 
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderCurrentView = () => {
     if (isLoading && gameState !== 'IN_COMBAT' && gameState !== 'HOME' && gameState !== 'SPELL_DESIGN_STUDIO' && gameState !== 'THEORIZE_COMPONENT' && gameState !== 'RESEARCH_ARCHIVES') { 
       return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading..." size="lg"/></div>;
     }
     switch (gameState) {
-      case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp}/>;
+      case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onOpenHomestead={handleOpenHomestead} onAccessSettlement={handleAccessSettlement} onOpenCraftingHub={handleOpenCraftingHub} />;
       case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} />;
+      case 'HOMESTEAD_VIEW': return <HomesteadView player={player} onReturnHome={handleNavigateHome} onStartProject={handleStartHomesteadProject} onCompleteProject={handleCompleteHomesteadProject} onUpgradeProperty={handleUpgradeHomesteadProperty} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'SETTLEMENT_VIEW': return <div>Settlement View - Coming Soon</div>;
+      case 'SHOP_VIEW': return <div>Shop View - Coming Soon</div>;
+      case 'TAVERN_VIEW': return <div>Tavern View - Coming Soon</div>;
+      case 'NPC_DIALOGUE': return <div>NPC Dialogue - Coming Soon</div>;
+      case 'RECIPE_DISCOVERY': return <div>Recipe Discovery - Coming Soon</div>;
+      case 'CRAFTING_WORKSHOP': return <div>Crafting Workshop - Coming Soon</div>;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
@@ -1663,7 +1918,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         />
       {modalContent && <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md"><p>{modalContent.message}</p></Modal>}
       {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={ () => {setGameState('HOME'); setTimeout(() => handleOpenSpellDesignStudio(),0);}} onOpenTraitCraftingScreen={() => {setGameState('HOME'); setTimeout(() => handleOpenTraitsPage(),0);}} canCraftNewTrait={pendingTraitUnlock || (player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) +1) )} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
-      {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => handleOpenSpellDesignStudio()} onOpenTheorizeLab={handleOpenTheorizeComponentLab} />}
+      {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => handleOpenSpellDesignStudio()} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onOpenRecipeDiscovery={handleOpenRecipeDiscovery} onOpenCraftingWorkshop={handleOpenCraftingWorkshop} />}
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
       <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onOpenHelpWiki={handleOpenHelpWiki} onShowMessage={(t,m) => showMessageModal(t,m,'info')} onExportSave={handleExportSave} onImportSave={handleImportSave}/>
       <MobileMenuModal 

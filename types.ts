@@ -1,3 +1,5 @@
+import { Homestead } from './src/types';
+
 export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource'; // Expanded placeholder
 export type TagName = 
   // Status Effects (can be positive or negative)
@@ -61,6 +63,9 @@ export interface Player {
     specialAbilityName?: string;
   }>;
   discoveredComponents: SpellComponent[];
+  discoveredRecipes: string[];
+  currentLocationId: string;
+  homestead: Homestead;
 }
 
 export interface PlayerEffectiveStats {
@@ -248,6 +253,7 @@ export type SpellIconName =
   | 'UploadIcon' 
   | 'DownloadIcon' 
   | 'ChestIcon' 
+  | 'HomeIcon'
   | 'ElementFire' | 'ElementIce' | 'ElementLightning' | 'ElementEarth' | 'ElementAir' | 'ElementLight' | 'ElementDark' | 'ElementArcane' | 'ElementNature' | 'ElementPoison' | 'ElementHealing'
   | 'TagGeneric' 
   | 'Default';
@@ -431,6 +437,13 @@ export type GameState =
   | 'SELECTING_ABILITY'
   | 'CRAFTING_HUB'
   | 'EXPLORING_MAP'
+  | 'HOMESTEAD_VIEW'
+  | 'SETTLEMENT_VIEW'
+  | 'SHOP_VIEW'
+  | 'TAVERN_VIEW'
+  | 'NPC_DIALOGUE'
+  | 'RECIPE_DISCOVERY'
+  | 'CRAFTING_WORKSHOP'
   | 'CAMP'; 
 
 

@@ -13,6 +13,7 @@ interface HomeScreenViewProps {
   onOpenCamp: () => void;
   onAccessSettlement: () => void;
   onOpenCraftingHub: () => void;
+  onOpenHomestead: () => void;
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
@@ -24,6 +25,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenCamp,
   onAccessSettlement,
   onOpenCraftingHub,
+  onOpenHomestead,
 }) => {
   const currentLocation = getLocation(player.currentLocationId);
   const locationName = currentLocation?.name || 'Unknown Location';
@@ -94,7 +96,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               </div>
             </div>
             <ActionButton 
-              onClick={() => {/* TODO: Implement homestead navigation */}} 
+              onClick={onOpenHomestead} 
               variant="secondary" 
               size="sm"
               className="w-full"
