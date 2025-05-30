@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, Ability, EquipmentSlot as GenericEquipmentSlot, InventoryFilterType, MasterItemDefinition, MasterResourceItem, MasterConsumableItem, LootChestItem, UniqueConsumable, Quest, CharacterSheetTab, SpellIconName } from '../types';
 import Modal from '../ui/Modal';
-import '../src/styles/ability-list.css';
 import ActionButton from '../ui/ActionButton';
 import {
     GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon,
@@ -549,6 +548,81 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   const [createTalentModalOpen, setCreateTalentModalOpen] = useState<boolean>(false);
   const [researchUnlocksModalOpen, setResearchUnlocksModalOpen] = useState<boolean>(false);
 
+  // Helper functions for resource restoration
+  const handleRestoreHealth = () => {
+    // Filter consumables that restore HP
+    const healthConsumables = player.items.filter(item => 
+      item.itemType === 'Consumable' && 
+      (item as any).effectType === 'HP_RESTORE'
+    );
+    
+    // Also check stackable consumables in inventory
+    const stackableHealthPotions = Object.entries(player.inventory).filter(([itemId, quantity]) => {
+      if (quantity <= 0) return false;
+      const itemDef = MASTER_ITEM_DEFINITIONS[itemId];
+      return itemDef && itemDef.itemType === 'Consumable' && (itemDef as any).effectType === 'HP_RESTORE';
+    });
+    
+    if (healthConsumables.length === 0 && stackableHealthPotions.length === 0) {
+      alert('No health potions available in inventory!');
+      return;
+    }
+    
+    if (healthConsumables.length > 0) {
+      onUseConsumableFromInventory(healthConsumables[0].id, null);
+    } else if (stackableHealthPotions.length > 0) {
+      onUseConsumableFromInventory(stackableHealthPotions[0][0], null);
+    }
+  };
+
+  const handleRestoreMana = () => {
+    const manaConsumables = player.items.filter(item => 
+      item.itemType === 'Consumable' && 
+      (item as any).effectType === 'MP_RESTORE'
+    );
+    
+    const stackableManaPotions = Object.entries(player.inventory).filter(([itemId, quantity]) => {
+      if (quantity <= 0) return false;
+      const itemDef = MASTER_ITEM_DEFINITIONS[itemId];
+      return itemDef && itemDef.itemType === 'Consumable' && (itemDef as any).effectType === 'MP_RESTORE';
+    });
+    
+    if (manaConsumables.length === 0 && stackableManaPotions.length === 0) {
+      alert('No mana potions available in inventory!');
+      return;
+    }
+    
+    if (manaConsumables.length > 0) {
+      onUseConsumableFromInventory(manaConsumables[0].id, null);
+    } else if (stackableManaPotions.length > 0) {
+      onUseConsumableFromInventory(stackableManaPotions[0][0], null);
+    }
+  };
+
+  const handleRestoreEnergy = () => {
+    const energyConsumables = player.items.filter(item => 
+      item.itemType === 'Consumable' && 
+      (item as any).effectType === 'EP_RESTORE'
+    );
+    
+    const stackableEnergyPotions = Object.entries(player.inventory).filter(([itemId, quantity]) => {
+      if (quantity <= 0) return false;
+      const itemDef = MASTER_ITEM_DEFINITIONS[itemId];
+      return itemDef && itemDef.itemType === 'Consumable' && (itemDef as any).effectType === 'EP_RESTORE';
+    });
+    
+    if (energyConsumables.length === 0 && stackableEnergyPotions.length === 0) {
+      alert('No energy potions available in inventory!');
+      return;
+    }
+    
+    if (energyConsumables.length > 0) {
+      onUseConsumableFromInventory(energyConsumables[0].id, null);
+    } else if (stackableEnergyPotions.length > 0) {
+      onUseConsumableFromInventory(stackableEnergyPotions[0][0], null);
+    }
+  };
+
   // Placeholder for talent data (to be replaced with actual data structure)
   const treeData: any = {
     core: [
@@ -942,6 +1016,17 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     { id: 'Encyclopedia', label: 'Encyclopedia', icon: <CollectionIcon /> },
   ];
 
+  // Helper function to get equipment rarity color
+  const getEquipmentRarityBorder = (item: Equipment | null) => {
+    if (!item) return 'border-slate-600/50';
+    const rarity = (item as any).rarity || 0;
+    if (rarity <= 1) return 'border-gray-500/70 bg-gray-500/10';
+    if (rarity <= 2) return 'border-green-500/70 bg-green-500/10';
+    if (rarity <= 4) return 'border-blue-500/70 bg-blue-500/10';
+    if (rarity <= 6) return 'border-purple-500/70 bg-purple-500/10';
+    if (rarity <= 8) return 'border-orange-500/70 bg-orange-500/10';
+    return 'border-yellow-500/70 bg-yellow-500/10';
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} title="Character Sheet" size="5xl">
@@ -954,111 +1039,427 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
 
         <div className="flex-grow overflow-y-auto styled-scrollbar p-1">
           {activeTab === 'Main' && (
-            <div className="h-full flex flex-col text-slate-100">
-              {/* Main two-panel layout */}
-              <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-2">
-                {/* Left Panel: Talent Trees & Abilities */}
-                <div className="md:col-span-2 bg-slate-800/50 p-2 rounded-lg shadow-lg border border-slate-700/60 overflow-y-auto styled-scrollbar">
-                  <h3 className="text-lg font-semibold text-sky-300 mb-3 border-b border-slate-700 pb-2">Talents & Abilities</h3>
-
-                  {/* Category Tabs - Example */}
-                  <div className="mb-3 flex space-x-1 border-b border-slate-700">
-                    {Object.keys(treeData).map(category => (
-                      <button
-                        key={category}
-                        onClick={() => setCurrentTreeCategory(category)}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-t-md transition-colors focus:outline-none
-                                    ${currentTreeCategory === category ? 'bg-slate-700 text-sky-300 border-slate-700' : 'bg-slate-800 text-slate-400 hover:bg-slate-750 hover:text-sky-400'}`}
-                      >
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </button>
-                    ))}
+            <div className="h-full flex flex-col space-y-4 p-4">
+              {/* Character Sheet Header */}
+              <div className="bg-slate-800/60 border border-white/10 rounded-lg p-4 flex-shrink-0">
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 border-2 border-white/30 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <UserIcon className="w-12 h-12 text-white/60" />
                   </div>
-
-                  {/* Talents Section based on currentTreeCategory */}
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className="text-md font-semibold text-amber-300">{currentTreeCategory.charAt(0).toUpperCase() + currentTreeCategory.slice(1)} Talents</h4>
-                      <button
-                        className="text-xs bg-green-600 hover:bg-green-500 text-white font-semibold py-1 px-2 rounded-md shadow-sm transition-colors duration-150"
-                        onClick={() => setCreateTalentModalOpen(true)}
-                      >
-                        Create Talent
-                      </button>
-                    </div>
-                    <div className="p-2 bg-slate-700/60 rounded-md min-h-[100px]">
-                      {generateHorizontalTalentTree(currentTreeCategory)}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white text-xl font-bold mb-1">{player.name || 'Player'}</h3>
+                    <p className="text-blue-400 text-base font-semibold mb-1">Level {player.level} Human Adventurer</p>
+                    <p className="text-white/80 text-sm">The Brave</p>
+                    <div className="mt-2 flex gap-4 text-xs">
+                      <span className="text-white/70">Location: <span className="text-green-400">{player.currentLocationId || 'Unknown'}</span></span>
+                      <span className="text-white/70">Gold: <span className="text-yellow-400">{player.gold.toLocaleString()}</span></span>
                     </div>
                   </div>
-
-                  {/* Research Unlocks Button - simplified for now */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className="text-md font-semibold text-teal-300">Research Unlocks</h4>
-                      <button
-                        className="text-xs bg-sky-600 hover:bg-sky-500 text-white font-semibold py-1 px-2 rounded-md shadow-sm transition-colors duration-150"
-                        onClick={() => setResearchUnlocksModalOpen(true)}
-                      >
-                        Research Unlocks
-                      </button>
-                    </div>
-                    <div className="p-2 bg-slate-700/60 rounded-md min-h-[100px]">
-                      {/* Placeholder for research unlocks tree or list - content can be part of the modal */}
-                      <div>Research options will be shown in a modal.</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Panel: Details View */}
-                <div className="md:col-span-1 bg-slate-800/50 p-3 rounded-lg shadow-lg border border-slate-700/60 overflow-y-auto styled-scrollbar">
-                  <h3 className="text-lg font-semibold text-sky-300 mb-3 border-b border-slate-700 pb-2">Details</h3>
-                  {selectedTalentDetails ? (
-                    <div>
-                      <h4 className="text-md font-bold text-green-400">{selectedTalentDetails.name}</h4>
-                      <p className="text-xs text-slate-300 mb-1">Type: {selectedTalentDetails.type}</p>
-                      <p className="text-sm text-slate-200 mb-2">{selectedTalentDetails.description}</p>
-                      {/* Add more details as needed, e.g., effects, requirements */}
-                      <p className="text-xs text-slate-400">Effects: {selectedTalentDetails.effects?.join(', ')}</p>
-                      {selectedTalentDetails.requirements && Object.keys(selectedTalentDetails.requirements).length > 0 && (
-                        <p className="text-xs text-amber-400">Req: Level {selectedTalentDetails.requirements.level}</p>
-                      )}
-                       <button
-                        className="mt-2 w-full text-sm bg-blue-600 hover:bg-blue-500 text-white font-semibold py-1.5 px-3 rounded-md shadow-sm transition-colors duration-150"
-                        onClick={() => console.log("Upgrade talent:", selectedTalentDetails.id)}
-                       >
-                        Upgrade (Placeholder)
-                       </button>
-                    </div>
-                  ) : (
-                    <div className="text-slate-400 italic">Select a talent or ability to see details.</div>
-                  )}
                 </div>
               </div>
 
-              {/* Modal for Creating a New Talent */}
-              {createTalentModalOpen && (
-              <Modal isOpen={createTalentModalOpen} onClose={() => setCreateTalentModalOpen(false)} title="Create New Talent">
-                <div className="p-4 bg-slate-700 rounded-b-lg text-slate-100">
-                  {generateCreateTalentContent()}
-                  <div className="mt-4 text-right space-x-2">
-                    <ActionButton onClick={() => setCreateTalentModalOpen(false)} variant="secondary">Cancel</ActionButton>
-                    <ActionButton onClick={() => { console.log('Create talent logic here'); setCreateTalentModalOpen(false); }} variant="success">Create</ActionButton>
-                  </div>
-                </div>
-              </Modal>
-              )}
+              {/* Main Content Layout */}
+              <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-4 min-h-0 overflow-hidden">
+                {/* Left Column: Character Stats */}
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full xl:max-h-none">
+                  {/* Core Stats & Attributes */}
+                  <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-blue-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-blue-400/50">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-500/50 rounded-lg flex items-center justify-center shadow-lg">
+                          <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-300" />
+                        </div>
+                        <h4 className="text-blue-200 text-xs sm:text-sm font-bold uppercase tracking-wider">Character Stats</h4>
+                      </div>
+                    </div>
+                    
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                      {/* Core Vitals */}
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <h5 className="text-emerald-300 text-xs font-bold uppercase tracking-wide">Vitals</h5>
+                        </div>
+                        
+                        {/* Health */}
+                        <div className="group bg-gradient-to-r from-emerald-900/40 to-green-900/40 border border-emerald-500/30 rounded-lg p-1.5 sm:p-2 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-lg">
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-400 rounded-full shadow-sm"></div>
+                              <span className="text-white font-semibold text-xs">Health</span>
+                            </div>
+                            <span className="text-emerald-300 text-xs font-bold">{player.hp} / {effectiveStats.maxHp}</span>
+                          </div>
+                          <div className="relative w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-emerald-500/20">
+                            <div className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${Math.max(0, Math.min(100, (player.hp / effectiveStats.maxHp) * 100))}%` }}></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                          </div>
+                        </div>
+                        
+                        {/* Mana */}
+                        <div className="group bg-gradient-to-r from-blue-900/40 to-cyan-900/40 border border-blue-500/30 rounded-lg p-1.5 sm:p-2 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg">
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full shadow-sm"></div>
+                              <span className="text-white font-semibold text-xs">Mana</span>
+                            </div>
+                            <span className="text-blue-300 text-xs font-bold">{player.mp} / {effectiveStats.maxMp}</span>
+                          </div>
+                          <div className="relative w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-blue-500/20">
+                            <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${Math.max(0, Math.min(100, (player.mp / effectiveStats.maxMp) * 100))}%` }}></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                          </div>
+                        </div>
 
-              {/* Modal for Research Unlocks */}
-              {researchUnlocksModalOpen && (
-              <Modal isOpen={researchUnlocksModalOpen} onClose={() => setResearchUnlocksModalOpen(false)} title="Research Unlocks">
-                <div className="p-4 bg-slate-700 rounded-b-lg text-slate-100">
-                  {generateResearchUnlocksContent()}
-                  <div className="mt-4 text-right">
-                    <ActionButton onClick={() => setResearchUnlocksModalOpen(false)} variant="secondary">Close</ActionButton>
+                        {/* Energy */}
+                        <div className="group bg-gradient-to-r from-yellow-900/40 to-amber-900/40 border border-yellow-500/30 rounded-lg p-1.5 sm:p-2 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-lg">
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-400 rounded-full shadow-sm"></div>
+                              <span className="text-white font-semibold text-xs">Energy</span>
+                            </div>
+                            <span className="text-yellow-300 text-xs font-bold">{player.ep} / {effectiveStats.maxEp}</span>
+                          </div>
+                          <div className="relative w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-yellow-500/20">
+                            <div className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full transition-all duration-500 shadow-sm" style={{ width: `${Math.max(0, Math.min(100, (player.ep / effectiveStats.maxEp) * 100))}%` }}></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                          </div>
+                        </div>
+
+                        {/* Restore Buttons */}
+                        <div className="flex gap-1 mt-1.5 sm:mt-2">
+                          <ActionButton 
+                            onClick={handleRestoreHealth} 
+                            variant="success" 
+                            size="sm" 
+                            className="flex-1 !text-xs !py-1 !px-1"
+                          >
+                            <HealIcon className="w-3 h-3 sm:mr-1" />
+                            <span className="hidden sm:inline">HP</span>
+                          </ActionButton>
+                          <ActionButton 
+                            onClick={handleRestoreMana} 
+                            variant="primary" 
+                            size="sm" 
+                            className="flex-1 !text-xs !py-1 !px-1"
+                          >
+                            <WandIcon className="w-3 h-3 sm:mr-1" />
+                            <span className="hidden sm:inline">MP</span>
+                          </ActionButton>
+                          <ActionButton 
+                            onClick={handleRestoreEnergy} 
+                            variant="warning" 
+                            size="sm" 
+                            className="flex-1 !text-xs !py-1 !px-1"
+                          >
+                            <ReflexIcon className="w-3 h-3 sm:mr-1" />
+                            <span className="hidden sm:inline">EP</span>
+                          </ActionButton>
+                        </div>
+                      </div>
+
+                      {/* Core Attributes */}
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                          <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-orange-400 rounded-full animate-pulse"></div>
+                          <h5 className="text-orange-300 text-xs font-bold uppercase tracking-wide">Attributes</h5>
+                        </div>
+                        
+                        {/* Body */}
+                        <div className="group bg-gradient-to-r from-red-900/40 to-rose-900/40 border border-red-500/30 rounded-lg p-1.5 sm:p-2 hover:border-red-400/50 transition-all duration-300 hover:shadow-lg">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-red-500/30 to-red-600/30 border border-red-500/50 rounded-lg flex items-center justify-center">
+                                <BodyIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-300" />
+                              </div>
+                              <span className="text-white font-semibold text-xs">Body</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-red-300 text-sm font-bold">{effectiveStats.body}</div>
+                              <div className="text-red-400/70 text-xs">+{effectiveStats.body - player.body}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mind */}
+                        <div className="group bg-gradient-to-r from-blue-900/40 to-cyan-900/40 border border-blue-500/30 rounded-lg p-1.5 sm:p-2 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-blue-500/30 to-blue-600/30 border border-blue-500/50 rounded-lg flex items-center justify-center">
+                                <MindIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-300" />
+                              </div>
+                              <span className="text-white font-semibold text-xs">Mind</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-blue-300 text-sm font-bold">{effectiveStats.mind}</div>
+                              <div className="text-blue-400/70 text-xs">+{effectiveStats.mind - player.mind}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Reflex */}
+                        <div className="group bg-gradient-to-r from-yellow-900/40 to-amber-900/40 border border-yellow-500/30 rounded-lg p-1.5 sm:p-2 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-lg">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-yellow-500/30 to-yellow-600/30 border border-yellow-500/50 rounded-lg flex items-center justify-center">
+                                <ReflexIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-300" />
+                              </div>
+                              <span className="text-white font-semibold text-xs">Reflex</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-yellow-300 text-sm font-bold">{effectiveStats.reflex}</div>
+                              <div className="text-yellow-400/70 text-xs">+{effectiveStats.reflex - player.reflex}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Combat Stats */}
+                        <div className="mt-2 sm:mt-3 space-y-1">
+                          <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-purple-400 rounded-full animate-pulse"></div>
+                            <h5 className="text-purple-300 text-xs font-bold uppercase tracking-wide">Combat</h5>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-1">
+                            <div className="flex justify-between items-center p-1 bg-black/30 rounded border border-white/5">
+                              <span className="text-white/80 text-xs">Phys Pow</span>
+                              <span className="text-orange-300 text-xs font-bold">{effectiveStats.physicalPower}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-1 bg-black/30 rounded border border-white/5">
+                              <span className="text-white/80 text-xs">Mag Pow</span>
+                              <span className="text-purple-300 text-xs font-bold">{effectiveStats.magicPower}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-1 bg-black/30 rounded border border-white/5">
+                              <span className="text-white/80 text-xs">Defense</span>
+                              <span className="text-cyan-300 text-xs font-bold">{effectiveStats.defense}</span>
+                            </div>
+                            <div className="flex justify-between items-center p-1 bg-black/30 rounded border border-white/5">
+                              <span className="text-white/80 text-xs">Speed</span>
+                              <span className="text-green-300 text-xs font-bold">{effectiveStats.speed}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress and Experience */}
+                  <div className="bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-500/30 rounded-lg p-2 sm:p-3 flex-shrink-0 shadow-lg">
+                    <h4 className="text-yellow-300 text-xs font-semibold uppercase tracking-wide border-b border-yellow-500/20 pb-1 mb-2 flex items-center gap-2">
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-500/20 border border-yellow-500/40 rounded flex items-center justify-center">
+                        <StarIcon className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-yellow-400" />
+                      </div>
+                      Character Progress
+                    </h4>
+                    <div className="bg-gradient-to-br from-yellow-800/60 to-amber-800/60 border border-yellow-500/40 rounded-lg p-2">
+                      <div className="flex gap-2 items-start">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-yellow-600/60 to-amber-600/60 border border-yellow-500/70 rounded-lg flex items-center justify-center text-sm flex-shrink-0 shadow-md">
+                          <span className="text-yellow-200 font-bold text-xs sm:text-sm">{player.level}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-yellow-300 text-xs font-semibold mb-1">Level {player.level}</div>
+                          <div className="text-yellow-200/80 text-xs mb-1">Experience: {player.xp.toLocaleString()}</div>
+                          <div className="space-y-1 mb-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-yellow-200/90 text-xs">Spell Slots</span>
+                              <span className="text-blue-300 text-xs font-bold">{player.spells.length}/{maxRegisteredSpells}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-yellow-200/90 text-xs">Trait Slots</span>
+                              <span className="text-purple-300 text-xs font-bold">{player.traits.length}/10</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </Modal>
-              )}
+
+                {/* Middle Column: Equipment */}
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full xl:max-h-none">
+                  {/* Equipment Visual */}
+                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-gray-400/50">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-gray-500/30 to-gray-600/30 border border-gray-500/50 rounded-lg flex items-center justify-center shadow-lg">
+                          <GearIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300" />
+                        </div>
+                        <h4 className="text-gray-200 text-xs sm:text-sm font-bold uppercase tracking-wider">Equipment</h4>
+                      </div>
+                    </div>
+                    
+                    {/* Equipment Grid */}
+                    <div className="grid grid-cols-3 gap-1 sm:gap-2 max-w-xs mx-auto">
+                      {/* Helmet */}
+                      <div className="col-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
+                        {player.equipment.helmet ? (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-600/20 border border-yellow-500/50 rounded-md flex items-center justify-center">
+                            <span className="text-yellow-300 text-xs font-bold">H</span>
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">H</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                      </div>
+
+                      {/* Left Side - Gloves, Ring, etc */}
+                      <div className="row-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
+                        {player.equipment.gloves ? (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600/20 border border-blue-500/50 rounded-md flex items-center justify-center">
+                            <span className="text-blue-300 text-xs font-bold">G</span>
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">G</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                      </div>
+
+                      {/* Armor */}
+                      <div className="row-start-2 col-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
+                        {player.equipment.armor ? (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/20 border border-red-500/50 rounded-md flex items-center justify-center">
+                            <span className="text-red-300 text-xs font-bold">A</span>
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">A</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                      </div>
+
+                      {/* Right Side - Weapon, Shield */}
+                      <div className="row-start-2 col-start-3 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
+                        {player.equipment.weapon ? (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-600/20 border border-orange-500/50 rounded-md flex items-center justify-center">
+                            <span className="text-orange-300 text-xs font-bold">W</span>
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">W</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                      </div>
+
+                      {/* Boots */}
+                      <div className="row-start-3 col-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
+                        {player.equipment.boots ? (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600/20 border border-green-500/50 rounded-md flex items-center justify-center">
+                            <span className="text-green-300 text-xs font-bold">B</span>
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">B</span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                      </div>
+                    </div>
+
+                    {/* Equipment Summary */}
+                    <div className="mt-2 sm:mt-3 pt-2 border-t border-gray-500/20">
+                      <div className="text-center">
+                        <div className="text-gray-300 text-xs mb-1">Equipment Power</div>
+                        <div className="text-orange-400 text-sm font-bold">
+                          {Object.values(player.equipment).filter(item => item !== null).length} / 6 equipped
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Quick Actions & Info */}
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full xl:max-h-none">
+                  {/* Quick Actions */}
+                  <div className="bg-gradient-to-br from-purple-800/80 to-purple-900/80 border border-purple-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-purple-400/50">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-purple-500/30 to-purple-600/30 border border-purple-500/50 rounded-lg flex items-center justify-center shadow-lg">
+                          <WandIcon className="w-3 h-3 sm:w-4 sm:h-4 text-purple-300" />
+                        </div>
+                        <h4 className="text-purple-200 text-xs sm:text-sm font-bold uppercase tracking-wider">Actions</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1 sm:space-y-2">
+                      <ActionButton 
+                        onClick={onOpenSpellCraftingScreen} 
+                        variant="secondary"
+                        size="sm" 
+                        className="w-full !text-xs !py-1.5"
+                        icon={<WandIcon className="w-3 h-3" />}
+                      >
+                        <span className="hidden sm:inline">Spell Crafting</span>
+                        <span className="sm:hidden">Spells</span>
+                      </ActionButton>
+                      
+                      <ActionButton 
+                        onClick={onOpenTraitCraftingScreen} 
+                        variant="info"
+                        size="sm" 
+                        className="w-full !text-xs !py-1.5"
+                        icon={<StarIcon className="w-3 h-3" />}
+                        disabled={!canCraftNewTrait}
+                      >
+                        <span className="hidden sm:inline">Trait Crafting</span>
+                        <span className="sm:hidden">Traits</span>
+                      </ActionButton>
+                      
+                      <ActionButton 
+                        onClick={onOpenLootChest} 
+                        variant="warning"
+                        size="sm" 
+                        className="w-full !text-xs !py-1.5"
+                        icon={<ChestIcon className="w-3 h-3" />}
+                      >
+                        <span className="hidden sm:inline">Loot Chest</span>
+                        <span className="sm:hidden">Loot</span>
+                      </ActionButton>
+                    </div>
+                  </div>
+
+                  {/* Player Information */}
+                  <div className="bg-gradient-to-br from-teal-800/80 to-teal-900/80 border border-teal-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-teal-400/50">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-teal-500/30 to-teal-600/30 border border-teal-500/50 rounded-lg flex items-center justify-center shadow-lg">
+                          <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 text-teal-300" />
+                        </div>
+                        <h4 className="text-teal-200 text-xs sm:text-sm font-bold uppercase tracking-wider">Player Info</h4>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-1">
+                        <div className="bg-black/20 rounded p-1.5 border border-teal-500/20">
+                          <div className="text-teal-200/80 text-xs">Gold</div>
+                          <div className="text-yellow-400 text-sm font-bold">{player.gold.toLocaleString()}</div>
+                        </div>
+                        <div className="bg-black/20 rounded p-1.5 border border-teal-500/20">
+                          <div className="text-teal-200/80 text-xs">Location</div>
+                          <div className="text-green-400 text-xs font-semibold truncate">{player.currentLocationId || 'Unknown'}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-black/20 rounded p-1.5 border border-teal-500/20">
+                        <div className="text-teal-200/80 text-xs mb-1">Quick Stats</div>
+                        <div className="grid grid-cols-2 gap-1 text-xs">
+                          <div className="text-white/80">Spells: <span className="text-blue-300 font-semibold">{player.spells.length}</span></div>
+                          <div className="text-white/80">Traits: <span className="text-purple-300 font-semibold">{player.traits.length}</span></div>
+                          <div className="text-white/80">Items: <span className="text-orange-300 font-semibold">{player.items.length}</span></div>
+                          <div className="text-white/80">Abilities: <span className="text-green-300 font-semibold">{player.abilities.length}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
           {activeTab === 'Inventory' && (
