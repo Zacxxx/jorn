@@ -1,8 +1,10 @@
 import React from 'react';
+import { Player } from '../types';
 import ActionButton from './ActionButton';
 import { SkullIcon, MapIcon, BookIcon, TentIcon, HomeIcon, FlaskIcon } from './IconComponents'; 
 
 interface HomeScreenViewProps {
+  player: Player;
   onFindEnemy: () => void;
   isLoading: boolean;
   onExploreMap: () => void;
@@ -14,6 +16,7 @@ interface HomeScreenViewProps {
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
+  player,
   onFindEnemy,
   isLoading,
   onExploreMap,
@@ -26,7 +29,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center p-6 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60">
-        <h2 className="text-3xl font-bold text-sky-300 mb-2" style={{fontFamily: "'Inter Tight', sans-serif"}}>Welcome, Hero!</h2>
+        <h2 className="text-3xl font-bold text-sky-300 mb-2" style={{fontFamily: "'Inter Tight', sans-serif"}}>Welcome, {player.name}!</h2>
         <p className="text-slate-300 mb-8 max-w-xl mx-auto">Embark on your adventure: craft spells, forge items, define your traits, and challenge formidable foes or explore the world!</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
           <ActionButton 

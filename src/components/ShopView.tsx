@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Player, Shop, ShopItem, ShopService } from '../types';
+import { Player } from '../types';
 import ActionButton from '../../ui/ActionButton';
-import { GetSpellIcon, GoldCoinIcon, HeroBackIcon, FlaskIcon, GearIcon, BookIcon } from './IconComponents';
-import { getLocation, getShopById, getNPCById } from '../../services/locationService';
+import { GearIcon, HeroBackIcon, GoldCoinIcon, FlaskIcon, CheckmarkCircleIcon } from './IconComponents';
+import { GetSpellIcon } from './IconComponents';
 import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 
 interface ShopViewProps {
@@ -14,6 +14,26 @@ interface ShopViewProps {
   onShowMessage: (title: string, message: string) => void;
 }
 
+// Mock shop data - in a real implementation, this would come from a service based on shopId
+const mockShopData = {
+  id: 'general_store',
+  name: 'General Store',
+  description: 'A well-stocked shop with essential supplies for adventurers.',
+  type: 'general',
+  items: [
+    { itemId: 'health_potion_minor', price: 25, quantity: 10 },
+    { itemId: 'mana_potion_minor', price: 30, quantity: 8 },
+    { itemId: 'verdant_leaf', price: 5, quantity: 20 },
+    { itemId: 'crystal_shard', price: 15, quantity: 5 },
+    { itemId: 'iron_ore', price: 10, quantity: 15 },
+    { itemId: 'arcane_dust', price: 12, quantity: 12 }
+  ],
+  services: [
+    { id: 'repair', name: 'Equipment Repair', description: 'Restore your equipment to full durability.', price: 50 },
+    { id: 'identify', name: 'Item Identification', description: 'Reveal the properties of mysterious items.', price: 25 }
+  ]
+};
+
 const ShopView: React.FC<ShopViewProps> = ({
   player,
   shopId,
@@ -23,197 +43,215 @@ const ShopView: React.FC<ShopViewProps> = ({
   onShowMessage,
 }) => {
   const [selectedTab, setSelectedTab] = useState<'items' | 'services'>('items');
-  const shop = getShopById(shopId);
-  const shopkeeper = shop ? getNPCById(shop.keeper) : null;
+  const [purchaseQuantities, setPurchaseQuantities] = useState<Record<string, number>>({});
 
-  if (!shop) {
-    return (
-      <div className="text-center p-8">
-        <h2 className="text-2xl font-bold text-red-400 mb-4">Shop Not Found</h2>
-        <p className="text-slate-300 mb-6">The requested shop could not be found.</p>
-        <ActionButton onClick={onReturnToSettlement} variant="secondary" icon={<HeroBackIcon />}>
-          Return to Settlement
-        </ActionButton>
+  const shop = mockShopData; // In real implementation, fetch by shopId
+
+  const canAffordItem = (price: number, quantity: number = 1): boolean => {
+    return player.gold >= price * quantity;
+  };
+
+  const canAffordService = (price: number): boolean => {
+    return player.gold >= price;
+  };
+
+  const handlePurchaseItem = (itemId: string, price: number) => {
+    const quantity = purchaseQuantities[itemId] || 1;
+    if (!canAffordItem(price, quantity)) {
+      onShowMessage('Insufficient Gold', `You need ${price * quantity} gold to purchase this item.`);
+      return;
+    }
+    onPurchaseItem(itemId, price, quantity);
+    setPurchaseQuantities(prev => ({ ...prev, [itemId]: 1 }));
+  };
+
+  const handlePurchaseService = (serviceId: string, price: number) => {
+    if (!canAffordService(price)) {
+      onShowMessage('Insufficient Gold', `You need ${price} gold to purchase this service.`);
+      return;
+    }
+    onPurchaseService(serviceId, price);
+  };
+
+  const updateQuantity = (itemId: string, quantity: number) => {
+    setPurchaseQuantities(prev => ({
+      ...prev,
+      [itemId]: Math.max(1, Math.min(10, quantity))
+    }));
+  };
+
+  const getQuantity = (itemId: string): number => {
+    return purchaseQuantities[itemId] || 1;
+  };
+
+  const renderItems = () => (
+    <div>
+      <h4 className="text-lg font-semibold text-slate-200 mb-4">Items for Sale</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {shop.items.map((shopItem) => {
+          const item = MASTER_ITEM_DEFINITIONS[shopItem.itemId];
+          const quantity = getQuantity(shopItem.itemId);
+          const totalPrice = shopItem.price * quantity;
+          const canAfford = canAffordItem(shopItem.price, quantity);
+          
+          return (
+            <div key={shopItem.itemId} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+              <div className="flex items-center space-x-3 mb-3">
+                <GetSpellIcon iconName={item?.iconName || 'Default'} className="w-8 h-8 text-amber-400" />
+                <div className="flex-1">
+                  <h5 className="text-md font-medium text-slate-100">{item?.name || shopItem.itemId}</h5>
+                  <p className="text-sm text-slate-300">{item?.description || 'A useful item.'}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm text-slate-400">
+                  <span>Price: {shopItem.price}g each</span>
+                  <br />
+                  <span>Stock: {shopItem.quantity}</span>
+                </div>
+                <div className="text-sm text-slate-300">
+                  Total: <span className={canAfford ? 'text-green-400' : 'text-red-400'}>{totalPrice}g</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => updateQuantity(shopItem.itemId, quantity - 1)}
+                    className="w-6 h-6 bg-slate-600 hover:bg-slate-500 rounded text-slate-200 text-sm"
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <span className="w-8 text-center text-sm text-slate-200">{quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(shopItem.itemId, quantity + 1)}
+                    className="w-6 h-6 bg-slate-600 hover:bg-slate-500 rounded text-slate-200 text-sm"
+                    disabled={quantity >= 10 || quantity >= shopItem.quantity}
+                  >
+                    +
+                  </button>
+                </div>
+                <ActionButton
+                  onClick={() => handlePurchaseItem(shopItem.itemId, shopItem.price)}
+                  variant={canAfford ? "success" : "secondary"}
+                  size="sm"
+                  disabled={!canAfford || shopItem.quantity <= 0}
+                  icon={<GoldCoinIcon className="w-4 h-4" />}
+                  className="flex-1"
+                >
+                  {canAfford ? 'Buy' : 'Too Expensive'}
+                </ActionButton>
+              </div>
+            </div>
+          );
+        })}
       </div>
-    );
-  }
+    </div>
+  );
 
-  const canAfford = (price: number) => player.gold >= price;
-
-  const handlePurchase = (item: ShopItem) => {
-    if (!canAfford(item.price)) {
-      onShowMessage('Insufficient Funds', `You need ${item.price} gold but only have ${player.gold} gold.`);
-      return;
-    }
-    if (item.stock === 0) {
-      onShowMessage('Out of Stock', 'This item is currently out of stock.');
-      return;
-    }
-    onPurchaseItem(item.itemId, item.price, 1);
-  };
-
-  const handleServicePurchase = (service: ShopService) => {
-    if (!canAfford(service.price)) {
-      onShowMessage('Insufficient Funds', `You need ${service.price} gold but only have ${player.gold} gold.`);
-      return;
-    }
-    onPurchaseService(service.id, service.price);
-  };
+  const renderServices = () => (
+    <div>
+      <h4 className="text-lg font-semibold text-slate-200 mb-4">Services Available</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {shop.services.map((service) => {
+          const canAfford = canAffordService(service.price);
+          
+          return (
+            <div key={service.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+              <div className="flex items-center space-x-3 mb-3">
+                <GearIcon className="w-8 h-8 text-blue-400" />
+                <div className="flex-1">
+                  <h5 className="text-md font-medium text-slate-100">{service.name}</h5>
+                  <p className="text-sm text-slate-300">{service.description}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-slate-400">
+                  Price: <span className={canAfford ? 'text-green-400' : 'text-red-400'}>{service.price}g</span>
+                </div>
+                <ActionButton
+                  onClick={() => handlePurchaseService(service.id, service.price)}
+                  variant={canAfford ? "primary" : "secondary"}
+                  size="sm"
+                  disabled={!canAfford}
+                  icon={<CheckmarkCircleIcon className="w-4 h-4" />}
+                >
+                  {canAfford ? 'Purchase' : 'Too Expensive'}
+                </ActionButton>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      {/* Shop Header */}
+      {/* Header */}
       <div className="text-center p-6 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60">
-        <h2 className="text-3xl font-bold text-sky-300 mb-2" style={{fontFamily: "'Inter Tight', sans-serif"}}>
+        <h2 className="text-3xl font-bold text-amber-300 mb-2 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
+          <FlaskIcon className="w-8 h-8 mr-3 text-amber-400" />
           {shop.name}
         </h2>
-        <p className="text-slate-300 mb-4 max-w-2xl mx-auto">{shop.description}</p>
+        <p className="text-slate-300 mb-4">{shop.description}</p>
         <div className="flex items-center justify-center space-x-6 text-sm text-slate-400">
-          <span className="flex items-center">
-            <FlaskIcon className="w-4 h-4 mr-1" />
-            {shop.type.charAt(0).toUpperCase() + shop.type.slice(1)} Shop
-          </span>
-          {shopkeeper && (
-            <span className="flex items-center">
-              <BookIcon className="w-4 h-4 mr-1" />
-              {shopkeeper.name}
-            </span>
-          )}
           <span className="flex items-center">
             <GoldCoinIcon className="w-4 h-4 mr-1" />
             Your Gold: {player.gold}
           </span>
+          <span className="flex items-center">
+            <GearIcon className="w-4 h-4 mr-1" />
+            Shop Type: {shop.type}
+          </span>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Quick Actions */}
       <div className="flex space-x-4">
-        <ActionButton
-          onClick={() => setSelectedTab('items')}
-          variant={selectedTab === 'items' ? 'primary' : 'secondary'}
-          size="lg"
-          icon={<FlaskIcon />}
-        >
-          Items ({shop.items.length})
-        </ActionButton>
-        <ActionButton
-          onClick={() => setSelectedTab('services')}
-          variant={selectedTab === 'services' ? 'primary' : 'secondary'}
-          size="lg"
-          icon={<GearIcon />}
-        >
-          Services ({shop.services.length})
-        </ActionButton>
         <ActionButton
           onClick={onReturnToSettlement}
           variant="secondary"
           size="lg"
           icon={<HeroBackIcon />}
         >
-          Back to Settlement
+          Return to Settlement
         </ActionButton>
       </div>
 
-      {/* Items Tab */}
-      {selectedTab === 'items' && (
-        <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
-          <h3 className="text-xl font-semibold text-amber-300 mb-4">Available Items</h3>
-          {shop.items.length === 0 ? (
-            <p className="text-slate-400 italic text-center py-8">No items available at this time.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {shop.items.map((item) => {
-                const itemDef = MASTER_ITEM_DEFINITIONS[item.itemId];
-                const isAffordable = canAfford(item.price);
-                const isInStock = item.stock > 0;
-                
-                return (
-                  <div key={item.itemId} className={`bg-slate-700/50 rounded-lg p-4 border ${isAffordable && isInStock ? 'border-slate-600 hover:border-slate-500' : 'border-red-600/50'} transition-colors`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-medium text-slate-100">
-                        {itemDef?.name || item.itemId}
-                      </h4>
-                      <div className="flex items-center space-x-2">
-                        <GoldCoinIcon className="w-4 h-4 text-yellow-400" />
-                        <span className={`text-sm font-medium ${isAffordable ? 'text-yellow-400' : 'text-red-400'}`}>
-                          {item.price}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {itemDef && (
-                      <p className="text-sm text-slate-300 mb-3">{itemDef.description}</p>
-                    )}
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-slate-400">
-                        Stock: {item.stock === -1 ? '∞' : item.stock}
-                        {item.restockTime && item.stock === 0 && (
-                          <span className="block text-orange-400">Restocks in {item.restockTime}h</span>
-                        )}
-                      </div>
-                      <ActionButton
-                        onClick={() => handlePurchase(item)}
-                        variant={isAffordable && isInStock ? 'success' : 'danger'}
-                        size="sm"
-                        disabled={!isAffordable || !isInStock}
-                      >
-                        {!isInStock ? 'Out of Stock' : !isAffordable ? 'Too Expensive' : 'Buy'}
-                      </ActionButton>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Tab Navigation */}
+      <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60">
+        <div className="flex border-b border-slate-600">
+          <button
+            onClick={() => setSelectedTab('items')}
+            className={`flex-1 py-3 px-4 text-center transition-colors ${
+              selectedTab === 'items'
+                ? 'bg-slate-700 text-amber-300 border-b-2 border-amber-400'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Items ({shop.items.length})
+          </button>
+          <button
+            onClick={() => setSelectedTab('services')}
+            className={`flex-1 py-3 px-4 text-center transition-colors ${
+              selectedTab === 'services'
+                ? 'bg-slate-700 text-blue-300 border-b-2 border-blue-400'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Services ({shop.services.length})
+          </button>
         </div>
-      )}
-
-      {/* Services Tab */}
-      {selectedTab === 'services' && (
-        <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
-          <h3 className="text-xl font-semibold text-green-300 mb-4">Available Services</h3>
-          {shop.services.length === 0 ? (
-            <p className="text-slate-400 italic text-center py-8">No services available at this time.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {shop.services.map((service) => {
-                const isAffordable = canAfford(service.price);
-                
-                return (
-                  <div key={service.id} className={`bg-slate-700/50 rounded-lg p-4 border ${isAffordable ? 'border-slate-600 hover:border-slate-500' : 'border-red-600/50'} transition-colors`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-lg font-medium text-slate-100">{service.name}</h4>
-                      <div className="flex items-center space-x-2">
-                        <GoldCoinIcon className="w-4 h-4 text-yellow-400" />
-                        <span className={`text-sm font-medium ${isAffordable ? 'text-yellow-400' : 'text-red-400'}`}>
-                          {service.price}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-slate-300 mb-3">{service.description}</p>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400 bg-slate-600 px-2 py-1 rounded">
-                        {service.type}
-                      </span>
-                      <ActionButton
-                        onClick={() => handleServicePurchase(service)}
-                        variant={isAffordable ? 'success' : 'danger'}
-                        size="sm"
-                        disabled={!isAffordable}
-                      >
-                        {!isAffordable ? 'Too Expensive' : 'Purchase'}
-                      </ActionButton>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+        
+        <div className="p-6">
+          {selectedTab === 'items' && renderItems()}
+          {selectedTab === 'services' && renderServices()}
         </div>
-      )}
+      </div>
     </div>
   );
 };

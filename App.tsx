@@ -34,6 +34,10 @@ import GameOverView from './components/GameOverView';
 import MobileMenuModal from './components/MobileMenuModal';
 import CampView from './components/CampView';
 import HomesteadView from './src/components/HomesteadView';
+import SettlementView from './src/components/SettlementView';
+import ShopView from './src/components/ShopView';
+import RecipeDiscoveryView from './src/components/RecipeDiscoveryView';
+import CraftingWorkshopView from './src/components/CraftingWorkshopView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
@@ -1775,30 +1779,28 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const handleDiscoverRecipe = async (prompt: string): Promise<void> => {
     setIsLoading(true);
     try {
-      const availableRecipeIds = getAllRecipes().map(r => r.id);
-      
       const result = await discoverRecipeFromPrompt(
         prompt,
-        player.level,
-        availableRecipeIds,
-        player.discoveredRecipes
+        player.level
       );
       
-      if (result.recipeId) {
+      if (result.name) {
+        // Add the discovered recipe to player's known recipes
+        const recipeId = `recipe-${Date.now()}-${result.name.toLowerCase().replace(/\s+/g, '_')}`;
         setPlayer(prev => ({
           ...prev,
-          discoveredRecipes: [...prev.discoveredRecipes, result.recipeId]
+          discoveredRecipes: [...prev.discoveredRecipes, recipeId]
         }));
         
         setModalContent({ 
           title: "Recipe Discovered!", 
-          message: `You discovered: ${result.recipeName}! Visit the Crafting Workshop to create it.`, 
+          message: `You discovered: ${result.name}! Visit the Crafting Workshop to create it.`, 
           type: 'success' 
         });
       } else {
         setModalContent({ 
           title: "Discovery Failed", 
-          message: result.error || "No suitable recipe could be discovered from that prompt.", 
+          message: "No suitable recipe could be discovered from that prompt.", 
           type: 'error' 
         });
       }
@@ -1871,15 +1873,15 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading..." size="lg"/></div>;
     }
     switch (gameState) {
-      case 'HOME': return <HomeScreenView onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onOpenHomestead={handleOpenHomestead} onAccessSettlement={handleAccessSettlement} onOpenCraftingHub={handleOpenCraftingHub} />;
+      case 'HOME': return <HomeScreenView player={player} onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onOpenHomestead={handleOpenHomestead} onAccessSettlement={handleAccessSettlement} onOpenCraftingHub={handleOpenCraftingHub} />;
       case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} />;
       case 'HOMESTEAD_VIEW': return <HomesteadView player={player} onReturnHome={handleNavigateHome} onStartProject={handleStartHomesteadProject} onCompleteProject={handleCompleteHomesteadProject} onUpgradeProperty={handleUpgradeHomesteadProperty} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
-      case 'SETTLEMENT_VIEW': return <div>Settlement View - Coming Soon</div>;
-      case 'SHOP_VIEW': return <div>Shop View - Coming Soon</div>;
+      case 'SETTLEMENT_VIEW': return <SettlementView player={player} onReturnHome={handleNavigateHome} onOpenShop={handleOpenShop} onOpenTavern={handleOpenTavern} onTalkToNPC={handleTalkToNPC} onExplorePointOfInterest={handleExplorePointOfInterest} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'SHOP_VIEW': return <ShopView player={player} shopId={currentShopId || ''} onReturnToSettlement={() => setGameState('SETTLEMENT_VIEW')} onPurchaseItem={handlePurchaseItem} onPurchaseService={handlePurchaseService} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'TAVERN_VIEW': return <div>Tavern View - Coming Soon</div>;
       case 'NPC_DIALOGUE': return <div>NPC Dialogue - Coming Soon</div>;
-      case 'RECIPE_DISCOVERY': return <div>Recipe Discovery - Coming Soon</div>;
-      case 'CRAFTING_WORKSHOP': return <div>Crafting Workshop - Coming Soon</div>;
+      case 'RECIPE_DISCOVERY': return <RecipeDiscoveryView player={player} onReturnHome={handleNavigateHome} onDiscoverRecipe={handleDiscoverRecipe} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'CRAFTING_WORKSHOP': return <CraftingWorkshopView player={player} onReturnHome={handleNavigateHome} onCraftItem={handleCraftItem} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
