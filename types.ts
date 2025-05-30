@@ -1,23 +1,81 @@
 import { Homestead } from './src/types';
 
-export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource'; // Expanded placeholder
-export type TagName = 
-  // Status Effects (can be positive or negative)
-  | 'Stun' | 'PoisonDoT' | 'BurnDoT' | 'BleedDoT' | 'CorruptionDoT' | 'FrostbiteDoT' | 'RotDoT' | 'ShockDoT' // DoTs
-  | 'Silence' | 'Root' | 'Disarm' | 'Charm' | 'Taunt' | 'Fear' | 'Levitate' 
-  | 'ManaDrain' | 'Invisibility' | 'DodgeChange' | 'DamageResistance' | 'DamageReflection' 
-  | 'ActionSpeedIncrease' | 'ResourceGeneration' | 'StatBoost' | 'HealOverTime' | 'DamageNegation' 
-  | 'Retaliation' | 'Conversion' | 'EffectDurationMod' | 'ControlTarget' | 'Amplification' | 'Haste'
-  // Targeting & Delivery
-  | 'MultiTarget' | 'DelayedAttack' | 'SelfTarget' | 'AreaOfEffect' | 'Projectile'
-  // Utility & Meta
-  | 'Scaling' // Indicates the spell/item scales with stats/rarity
-  | 'Synergy' // Indicates synergy with other specific tags/elements
-  | 'Counter' // Indicates it counters specific tags/elements
-  | 'CostReduction'
-  | 'Utility' // Added for general utility components/spells
-  | 'LootChest' // Added for LootChest items
-  // Elements will also be treated as tags for filtering/logic if needed
+export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource';
+export type TagName =
+  // Damage Types
+  | 'Fire' | 'Ice' | 'Lightning' | 'Physical' | 'Arcane' | 'Nature' | 'Dark' | 'Light' | 'Poison' | 'Psychic'
+  
+  // Targeting & Range
+  | 'SelfTarget' | 'SingleTarget' | 'MultiTarget' | 'AreaOfEffect' | 'GlobalTarget' | 'RandomTarget'
+  | 'Melee' | 'Ranged' | 'Touch' | 'Projectile' | 'Beam' | 'Cone' | 'Line' | 'Circle'
+  
+  // Spell Properties
+  | 'Instant' | 'Channeling' | 'Ritual' | 'Persistent' | 'Toggle' | 'Concentration'
+  | 'Interruptible' | 'Uninterruptible' | 'Counterspell' | 'Dispellable' | 'Undispellable'
+  
+  // Damage Modifiers
+  | 'Piercing' | 'Armor_Ignoring' | 'True_Damage' | 'Percentage_Damage' | 'Explosive' | 'Cleave'
+  | 'Critical' | 'Brutal' | 'Overwhelming' | 'Penetrating' | 'Shattering' | 'Devastating'
+  
+  // Healing & Support
+  | 'Healing' | 'Regeneration' | 'Restoration' | 'Revival' | 'Shield' | 'Barrier' | 'Absorption'
+  | 'Cleanse' | 'Purify' | 'Blessing' | 'Enhancement' | 'Empowerment'
+  
+  // Crowd Control
+  | 'Stun' | 'Root' | 'Silence' | 'Disarm' | 'Blind' | 'Charm' | 'Fear' | 'Taunt' | 'Sleep'
+  | 'Slow' | 'Immobilize' | 'Banish' | 'Displacement' | 'Knockback' | 'Knockdown' | 'Grab'
+  
+  // Status Effects (Buffs)
+  | 'Haste' | 'Strength' | 'Intelligence' | 'Agility' | 'Fortitude' | 'Resilience'
+  | 'Accuracy' | 'Evasion' | 'Stealth' | 'Invisibility' | 'Camouflage' | 'Phase'
+  | 'Flying' | 'Floating' | 'Blink' | 'Teleport' | 'Dash' | 'Charge'
+  
+  // Status Effects (Debuffs)
+  | 'Weakness' | 'Vulnerability' | 'Curse' | 'Hex' | 'Mark' | 'Exposed' | 'Fragile'
+  | 'Confusion' | 'Madness' | 'Fatigue' | 'Exhaustion' | 'Drain' | 'Sap'
+  
+  // Damage Over Time
+  | 'Burning' | 'Bleeding' | 'Freezing' | 'Shocking' | 'Corroding' | 'Dissolving'
+  | 'Withering' | 'Decaying' | 'Rotting' | 'Consuming' | 'Draining'
+  
+  // Vampiric & Leeching
+  | 'Lifesteal' | 'Vampiric' | 'Soul_Drain' | 'Energy_Leech' | 'Mana_Burn' | 'Essence_Steal'
+  | 'Stat_Steal' | 'Ability_Steal' | 'Experience_Steal'
+  
+  // Defensive Mechanics
+  | 'Block' | 'Parry' | 'Dodge' | 'Deflect' | 'Counter' | 'Retaliate' | 'Reflect'
+  | 'Immune' | 'Resist' | 'Absorb' | 'Nullify' | 'Redirect' | 'DamageReflection'
+  
+  // Resource Mechanics
+  | 'Free_Cast' | 'Reduced_Cost' | 'Cost_Refund' | 'Resource_Generation' | 'Overcharge'
+  | 'Sacrifice' | 'Channel_Health' | 'Blood_Magic' | 'Soul_Power'
+  
+  // Scaling & Progression
+  | 'Scaling' | 'Stacking' | 'Ramping' | 'Escalating' | 'Crescendo' | 'Momentum'
+  | 'Combo' | 'Chain' | 'Sequence' | 'Synergy' | 'Resonance'
+  
+  // Timing & Duration
+  | 'Extended_Duration' | 'Shortened_Duration' | 'Delayed' | 'Triggered' | 'Conditional'
+  | 'Repeating' | 'Echoing' | 'Lingering' | 'Fading' | 'Burst'
+  
+  // Environmental
+  | 'Weather_Control' | 'Terrain_Altering' | 'Zone_Creation' | 'Field_Effect'
+  | 'Summoning' | 'Conjuration' | 'Manifestation' | 'Portal'
+  
+  // Special Mechanics
+  | 'Transformation' | 'Shapeshift' | 'Evolution' | 'Metamorphosis'
+  | 'Time_Manipulation' | 'Space_Distortion' | 'Reality_Warp' | 'Quantum'
+  | 'Dimensional' | 'Ethereal' | 'Spectral' | 'Astral'
+  
+  // Meta Mechanics
+  | 'Anti_Magic' | 'Magic_Immunity' | 'Spell_Steal' | 'Copy' | 'Mimic' | 'Learn'
+  | 'Adapt' | 'Evolve' | 'Mutate' | 'Transcend'
+  
+  // Rarity & Power
+  | 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic' | 'Divine'
+  | 'Forbidden' | 'Ancient' | 'Primordial' | 'Cosmic'
+  | 'Utility' | 'LootChest'
+  // Elements as Tags
   | ElementName;
 
 
@@ -268,8 +326,9 @@ export type StatusEffectName =
   | 'Defending'
   | 'DamageReflection' // Added for reflection status
   | 'BurningDoTActive' | 'BleedingDoTActive' | 'CorruptedDoTActive' | 'FrostbittenDoTActive' | 'RottingDoTActive' | 'ShockedDoTActive' | 'PoisonDoTActive'
-  | 'Silenced' 
-  | 'Rooted';  
+  | 'Silenced' | 'Rooted'
+  // Additional status effects used in tag system
+  | 'Burning' | 'Bleeding' | 'Freezing' | 'Shocking' | 'Slow' | 'Haste' | 'Shield' | 'Invisibility' | 'Strength' | 'Intelligence';
 
 
 export type ResourceType = 'Arcane Dust' | 'Emberbloom Petal' | 'Shadowsilk Thread' | 'Crystal Shard' | 'Verdant Leaf' | 'Mystic Orb' | 'Iron Ore' | 'Ancient Bone'; 
@@ -410,7 +469,7 @@ export interface CombatActionLog {
   turn: number;
   actor: 'Player' | 'Enemy' | 'System';
   message: string;
-  type?: 'damage' | 'heal' | 'status' | 'info' | 'resource' | 'speed' | 'action' | 'error'; 
+  type?: 'damage' | 'heal' | 'status' | 'info' | 'resource' | 'speed' | 'action' | 'error' | 'success' | 'warning' | 'magic'; 
 }
 
 export type GameState = 

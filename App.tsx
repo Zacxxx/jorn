@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, Trait, Quest, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, CharacterSheetTab, SpellIconName, SpellComponent, LootChestItem, UniqueConsumable, MasterConsumableItem } from './types';
+import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, Trait, Quest, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, CharacterSheetTab, SpellIconName, SpellComponent, LootChestItem, UniqueConsumable, MasterConsumableItem, TagName } from './types';
 import { Homestead, HomesteadProject } from './src/types';
-import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS, AVAILABLE_STATUS_EFFECTS } from './constants';
+import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS, AVAILABLE_STATUS_EFFECTS, INITIAL_PLAYER_LOCATION, TAG_DEFINITIONS } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest, discoverRecipeFromPrompt } from './services/geminiService';
 import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
 import { createInitialHomestead, generateProjectId, canAffordResourceCost, consumeResources, addProjectRewards, getUpgradeCosts, applyPropertyUpgrade } from './src/services/homesteadService';
@@ -1022,56 +1022,306 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     const targetEnemy = currentEnemies.find(e => e.id === targetId);
     if (!targetEnemy || player.mp < spell.manaCost) return;
 
-    if (player.activeStatusEffects.some(eff => eff.name === 'Silenced')) {
-      addLog('Player', `is Silenced and cannot cast spells!`, 'status');
+    // Enhanced silence and control checks
+    if (player.activeStatusEffects.some(eff => ['Silenced', 'Stun', 'Sleep'].includes(eff.name))) {
+      addLog('Player', `cannot cast spells due to ${player.activeStatusEffects.find(eff => ['Silenced', 'Stun', 'Sleep'].includes(eff.name))?.name}!`, 'status');
       setIsPlayerTurn(false);
       return;
     }
 
-    setPlayer(prev => ({ ...prev, mp: prev.mp - spell.manaCost }));
+    // Calculate actual mana cost with tag modifiers
+    let actualManaCost = spell.manaCost;
+    if (spell.tags?.includes('Reduced_Cost')) {
+      actualManaCost = Math.floor(actualManaCost * 0.7);
+    }
+    if (spell.tags?.includes('Free_Cast') && Math.random() < 0.3) {
+      actualManaCost = 0;
+      addLog('System', 'Free cast activated!', 'success');
+    }
+    if (spell.tags?.includes('Blood_Magic')) {
+      const healthCost = Math.floor(actualManaCost * 0.5);
+      setPlayer(prev => ({ ...prev, hp: Math.max(1, prev.hp - healthCost), mp: prev.mp - Math.floor(actualManaCost * 0.5) }));
+      addLog('System', `Blood magic: ${healthCost} health sacrificed`, 'warning');
+    } else {
+      setPlayer(prev => ({ ...prev, mp: prev.mp - actualManaCost }));
+    }
+
     addLog('Player', `casts ${spell.name} on ${targetEnemy.name}.`, 'action');
 
-    let actualDamageDealt = 0;
-    let updatedTargetHp = targetEnemy.hp;
+    // Determine all targets based on targeting tags
+    let targets: Enemy[] = [];
+    if (spell.tags?.includes('SingleTarget') || (!spell.tags?.some(tag => ['MultiTarget', 'AreaOfEffect', 'GlobalTarget', 'RandomTarget'].includes(tag)))) {
+      targets = [targetEnemy];
+    } else if (spell.tags?.includes('MultiTarget')) {
+      targets = currentEnemies.slice(0, 3); // Hit up to 3 enemies
+    } else if (spell.tags?.includes('AreaOfEffect')) {
+      targets = [...currentEnemies]; // Hit all enemies
+    } else if (spell.tags?.includes('GlobalTarget')) {
+      targets = [...currentEnemies]; // Hit all enemies globally
+    } else if (spell.tags?.includes('RandomTarget')) {
+      const count = spell.tags?.includes('Chain') ? 3 : 1;
+      targets = [...currentEnemies].sort(() => Math.random() - 0.5).slice(0, count);
+    }
+
+    // Apply spell to each target
+    targets.forEach((enemy, index) => {
+      const powerMultiplier = spell.tags?.includes('MultiTarget') ? Math.max(0.4, 1 - index * 0.2) : 1.0;
+      applySpellToEnemy(spell, enemy, powerMultiplier);
+    });
+
+    // Handle self-target effects
+    if (spell.tags?.includes('SelfTarget') || spell.damageType === 'HealingSource') {
+      applySpellToSelf(spell);
+    }
+
+    // Handle special mechanics
+    handleSpecialSpellMechanics(spell, targets);
+
+    // Check for enemy defeats
+    targets.forEach(enemy => {
+      const updatedEnemy = currentEnemies.find(e => e.id === enemy.id);
+      if (updatedEnemy && updatedEnemy.hp <= 0) {
+        handleEnemyDefeat(updatedEnemy);
+      }
+    });
+
+    setIsPlayerTurn(false);
+  };
+
+  const applySpellToEnemy = (spell: Spell, enemy: Enemy, powerMultiplier: number = 1.0) => {
+    if (spell.damage <= 0) return;
+
     const scalingStatValue = spell.scalesWith === 'Mind' ? effectivePlayerStats.mind : spell.scalesWith === 'Body' ? effectivePlayerStats.body : 0;
-
-    if (spell.tags?.includes('SelfTarget')) {
-        if (spell.damageType === 'HealingSource') {
-             const healAmount = calculateDamage(spell.damage, effectivePlayerStats.magicPower, 0, 'normal', spell.scalingFactor, scalingStatValue);
-             const actualHeal = Math.min(healAmount, effectivePlayerStats.maxHp - player.hp);
-             if (actualHeal > 0) {
-                setPlayer(prev => ({ ...prev, hp: prev.hp + actualHeal }));
-                addLog('Player', `heals self for ${actualHeal} HP.`, 'heal');
-             }
+    const attackerPower = spell.scalesWith === 'Body' ? effectivePlayerStats.physicalPower : effectivePlayerStats.magicPower;
+    
+    // Calculate base damage with power multiplier
+    let baseDamage = calculateDamage(spell.damage * powerMultiplier, attackerPower, enemy.mind, 'normal', spell.scalingFactor, scalingStatValue);
+    
+    // Apply tag-based damage modifiers
+    baseDamage = applyTagDamageModifiers(baseDamage, spell.tags || [], enemy);
+    
+    // Apply elemental effectiveness
+    const effectiveness = getElementalEffectiveness(spell.tags || [], enemy);
+    baseDamage = Math.floor(baseDamage * effectiveness);
+    
+    // Apply armor/resistance
+    if (spell.tags?.includes('Armor_Ignoring') || spell.tags?.includes('True_Damage')) {
+      // Ignore all defenses
+    } else if (spell.tags?.includes('Piercing')) {
+      baseDamage = Math.max(baseDamage - enemy.mind * 0.5, baseDamage * 0.3);
+    } else {
+      const effectivenessType = enemy.weakness === spell.damageType ? 'weak' : enemy.resistance === spell.damageType ? 'resistant' : 'normal';
+      if (effectivenessType === 'weak') baseDamage *= 1.5;
+      else if (effectivenessType === 'resistant') baseDamage *= 0.5;
+    }
+    
+    // Apply the damage
+    const damageResult = applyDamageAndReflection(enemy, baseDamage, player, 'Enemy', false);
+    const actualDamage = damageResult.actualDamageDealt;
+    
+    addLog('Player', `deals ${actualDamage} ${spell.damageType} damage to ${enemy.name}.`, 'damage');
+    setCurrentEnemies(prevEnemies => prevEnemies.map(e => e.id === enemy.id ? { ...e, hp: damageResult.updatedTargetHp } : e));
+    
+    // Handle vampiric effects
+    if (spell.tags?.includes('Lifesteal') || spell.tags?.includes('Vampiric')) {
+      const healPercent = spell.tags?.includes('Vampiric') ? 0.5 : 0.25;
+      const healAmount = Math.floor(actualDamage * healPercent);
+      setPlayer(prev => ({ ...prev, hp: Math.min(effectivePlayerStats.maxHp, prev.hp + healAmount) }));
+      addLog('Player', `heals ${healAmount} HP from lifesteal.`, 'heal');
+    }
+    
+    // Handle mana burn
+    if (spell.tags?.includes('Mana_Burn')) {
+      const manaBurned = Math.floor(actualDamage * 0.3);
+      addLog('System', `${manaBurned} mana burned from ${enemy.name}.`, 'magic');
+    }
+    
+    // Apply status effects
+    if (spell.statusEffectInflict) {
+      applyStatusEffect(enemy.id, spell.statusEffectInflict, spell.id);
+    }
+    applyTagStatusEffects(spell, enemy.id);
+    
+    // Handle explosive damage
+    if (spell.tags?.includes('Explosive')) {
+      const explosiveDamage = Math.floor(actualDamage * 0.3);
+      currentEnemies.forEach(otherEnemy => {
+        if (otherEnemy.id !== enemy.id) {
+          setCurrentEnemies(prev => prev.map(e => e.id === otherEnemy.id ? {...e, hp: Math.max(0, e.hp - explosiveDamage)} : e));
         }
-        if (spell.statusEffectInflict) applyStatusEffect('player', spell.statusEffectInflict, spell.id);
+      });
+      addLog('System', `Explosive damage affects nearby enemies for ${explosiveDamage} damage!`, 'damage');
+    }
+  };
 
-    } else if (spell.damageType === 'HealingSource') { 
-      const healAmount = calculateDamage(spell.damage, effectivePlayerStats.magicPower, 0, 'normal', spell.scalingFactor, scalingStatValue);
+  const applySpellToSelf = (spell: Spell) => {
+    if (spell.damageType === 'HealingSource' || spell.tags?.includes('Healing')) {
+      const scalingStatValue = spell.scalesWith === 'Mind' ? effectivePlayerStats.mind : spell.scalesWith === 'Body' ? effectivePlayerStats.body : 0;
+      let healAmount = calculateDamage(spell.damage, effectivePlayerStats.magicPower, 0, 'normal', spell.scalingFactor, scalingStatValue);
+      
+      // Apply healing modifiers
+      if (spell.tags?.includes('Restoration')) healAmount *= 2;
+      if (spell.tags?.includes('Scaling')) healAmount += player.level * 2;
+      
       const actualHeal = Math.min(healAmount, effectivePlayerStats.maxHp - player.hp);
       if (actualHeal > 0) {
         setPlayer(prev => ({ ...prev, hp: prev.hp + actualHeal }));
         addLog('Player', `heals self for ${actualHeal} HP.`, 'heal');
       }
-    } else if (spell.damage > 0) {
-      const attackerPower = spell.scalesWith === 'Body' ? effectivePlayerStats.physicalPower : effectivePlayerStats.magicPower;
-      const effectiveness = targetEnemy.weakness === spell.damageType ? 'weak' : targetEnemy.resistance === spell.damageType ? 'resistant' : 'normal';
-      const calculatedDamage = calculateDamage(spell.damage, attackerPower, targetEnemy.mind, effectiveness, spell.scalingFactor, scalingStatValue);
-      const damageResult = applyDamageAndReflection(targetEnemy, calculatedDamage, player, 'Enemy', false); 
-      actualDamageDealt = damageResult.actualDamageDealt;
-      updatedTargetHp = damageResult.updatedTargetHp;
-      addLog('Player', `deals ${actualDamageDealt} ${spell.damageType} damage to ${targetEnemy.name}. ${effectiveness !== 'normal' ? `(${effectiveness})` : ''}`, 'damage');
-      setCurrentEnemies(prevEnemies => prevEnemies.map(e => e.id === targetId ? { ...e, hp: updatedTargetHp } : e));
     }
+    
+    // Apply self-buffs and status effects
+    if (spell.statusEffectInflict) {
+      applyStatusEffect('player', spell.statusEffectInflict, spell.id);
+    }
+    applyTagStatusEffects(spell, 'player');
+  };
 
-    if (!spell.tags?.includes('SelfTarget') && spell.statusEffectInflict) {
-      applyStatusEffect(targetEnemy.id, spell.statusEffectInflict, spell.id);
+  const applyTagDamageModifiers = (damage: number, tags: TagName[], enemy: Enemy): number => {
+    let modifiedDamage = damage;
+    
+    // Critical hits
+    if (tags.includes('Critical') && Math.random() < 0.3) {
+      modifiedDamage *= 2;
+      addLog('System', 'Critical hit!', 'success');
     }
+    
+    // Damage type modifiers
+    if (tags.includes('True_Damage')) modifiedDamage *= 1.5;
+    if (tags.includes('Brutal')) modifiedDamage *= 1.3;
+    if (tags.includes('Devastating')) modifiedDamage *= 2.0;
+    if (tags.includes('Overwhelming')) modifiedDamage *= 1.2;
+    
+    // Percentage damage
+    if (tags.includes('Percentage_Damage')) {
+      modifiedDamage += Math.floor(enemy.maxHp * 0.1);
+    }
+    
+    // Scaling damage
+    if (tags.includes('Scaling')) {
+      modifiedDamage += Math.floor(player.level * 2);
+    }
+    
+    return Math.floor(modifiedDamage);
+  };
 
-    if (updatedTargetHp <= 0) {
-      handleEnemyDefeat({...targetEnemy, hp: updatedTargetHp });
+  const getElementalEffectiveness = (tags: TagName[], enemy: Enemy): number => {
+    let effectiveness = 1.0;
+    
+    // Basic elemental bonuses
+    if (tags.includes('Fire')) effectiveness *= 1.1;
+    if (tags.includes('Ice')) effectiveness *= 1.1;
+    if (tags.includes('Lightning')) effectiveness *= 1.2;
+    if (tags.includes('Arcane')) effectiveness *= 1.3;
+    if (tags.includes('Psychic')) effectiveness *= 1.4;
+    
+    // Enemy-specific weaknesses
+    const enemyName = enemy.name.toLowerCase();
+    if (tags.includes('Fire') && enemyName.includes('ice')) effectiveness *= 1.5;
+    if (tags.includes('Ice') && enemyName.includes('fire')) effectiveness *= 1.5;
+    if (tags.includes('Lightning') && enemyName.includes('water')) effectiveness *= 1.5;
+    if (tags.includes('Light') && enemyName.includes('undead')) effectiveness *= 2.0;
+    if (tags.includes('Nature') && enemyName.includes('construct')) effectiveness *= 0.5;
+    
+    return effectiveness;
+  };
+
+  const applyTagStatusEffects = (spell: Spell, targetId: string) => {
+    const tags = spell.tags || [];
+    const duration = tags.includes('Extended_Duration') ? 4 : tags.includes('Shortened_Duration') ? 1 : 2;
+    
+    // Damage over time effects
+    if (tags.includes('Burning')) {
+      applyStatusEffect(targetId, { name: 'Burning', duration, magnitude: Math.floor(spell.damage * 0.2), chance: 100 }, spell.id);
     }
-    setIsPlayerTurn(false);
+    if (tags.includes('Bleeding')) {
+      applyStatusEffect(targetId, { name: 'Bleeding', duration, magnitude: Math.floor(spell.damage * 0.15), chance: 100 }, spell.id);
+    }
+    if (tags.includes('Freezing')) {
+      applyStatusEffect(targetId, { name: 'Freezing', duration, magnitude: Math.floor(spell.damage * 0.1), chance: 100 }, spell.id);
+      applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 30, chance: 100 }, spell.id);
+    }
+    if (tags.includes('Shocking')) {
+      applyStatusEffect(targetId, { name: 'Shocking', duration, magnitude: Math.floor(spell.damage * 0.1), chance: 100 }, spell.id);
+    }
+    
+    // Control effects
+    if (tags.includes('Stun') && Math.random() < 0.4) {
+      applyStatusEffect(targetId, { name: 'Stun', duration: Math.min(3, duration), magnitude: 0, chance: 100 }, spell.id);
+    }
+    if (tags.includes('Silence') && Math.random() < 0.5) {
+      applyStatusEffect(targetId, { name: 'Silenced', duration: Math.min(3, duration), magnitude: 0, chance: 100 }, spell.id);
+    }
+    if (tags.includes('Root') && Math.random() < 0.6) {
+      applyStatusEffect(targetId, { name: 'Rooted', duration, magnitude: 0, chance: 100 }, spell.id);
+    }
+    if (tags.includes('Slow') && Math.random() < 0.7) {
+      applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 40, chance: 100 }, spell.id);
+    }
+    
+    // Self-buffs (when targeting player)
+    if (targetId === 'player') {
+      if (tags.includes('Haste')) {
+        applyStatusEffect('player', { name: 'Haste', duration: duration * 2, magnitude: 30, chance: 100 }, spell.id);
+      }
+      if (tags.includes('Shield')) {
+        applyStatusEffect('player', { name: 'Shield', duration: duration * 3, magnitude: Math.floor(spell.damage), chance: 100 }, spell.id);
+      }
+      if (tags.includes('Invisibility')) {
+        applyStatusEffect('player', { name: 'Invisibility', duration: duration * 2, magnitude: 0, chance: 100 }, spell.id);
+      }
+      if (tags.includes('Strength')) {
+        applyStatusEffect('player', { name: 'Strength', duration: duration * 2, magnitude: 20, chance: 100 }, spell.id);
+      }
+      if (tags.includes('Intelligence')) {
+        applyStatusEffect('player', { name: 'Intelligence', duration: duration * 2, magnitude: 20, chance: 100 }, spell.id);
+      }
+    }
+  };
+
+  const handleSpecialSpellMechanics = (spell: Spell, targets: Enemy[]) => {
+    const tags = spell.tags || [];
+    
+    // Delayed effects
+    if (tags.includes('Delayed')) {
+      setTimeout(() => {
+        addLog('System', `${spell.name} delayed effect triggers!`, 'magic');
+        targets.forEach(enemy => {
+          const currentEnemy = currentEnemies.find(e => e.id === enemy.id);
+          if (currentEnemy && currentEnemy.hp > 0) {
+            applySpellToEnemy(spell, currentEnemy, 0.5);
+          }
+        });
+      }, 3000);
+    }
+    
+    // Echoing effects
+    if (tags.includes('Echoing')) {
+      setTimeout(() => {
+        addLog('System', `${spell.name} echoes!`, 'magic');
+        targets.forEach(enemy => {
+          const currentEnemy = currentEnemies.find(e => e.id === enemy.id);
+          if (currentEnemy && currentEnemy.hp > 0) {
+            applySpellToEnemy(spell, currentEnemy, 0.3);
+          }
+        });
+      }, 2000);
+    }
+    
+    // Chain effects
+    if (tags.includes('Chain') && targets.length > 0) {
+      const additionalTargets = currentEnemies.filter(e => !targets.some(t => t.id === e.id)).slice(0, 2);
+      additionalTargets.forEach(enemy => {
+        applySpellToEnemy(spell, enemy, 0.6);
+        addLog('System', `${spell.name} chains to ${enemy.name}!`, 'magic');
+      });
+    }
+    
+    // Combo tracking
+    if (tags.includes('Combo')) {
+      // Track combo state for future spells
+      setPlayer(prev => ({ ...prev, lastActionType: 'combo-spell' }));
+    }
   };
 
   const handleUseAbility = (abilityId: string, targetId: string | null) => {
