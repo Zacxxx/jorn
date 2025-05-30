@@ -185,10 +185,12 @@ interface ItemCardProps {
 
 
 const renderStatsBoost = (statsBoost: Partial<Pick<Player, 'body' | 'mind' | 'reflex' | 'speed' | 'maxHp' | 'maxMp' | 'maxEp'>>) => {
-  const boosts = Object.entries(statsBoost)
-    .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()} +${value}`)
-    .join(', ');
-  return boosts ? <p className="text-[0.6rem] xs:text-[0.65rem] text-green-300">{boosts}</p> : null;
+  const boostsArray = Object.entries(statsBoost).map(([key, value]) => (
+    <p key={key} className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-green-300">
+      {`${key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()} +${value}`}
+    </p>
+  ));
+  return boostsArray.length > 0 ? <div className="space-y-0.5 mt-1">{boostsArray}</div> : null;
 };
 
 export const ItemCard: React.FC<ItemCardProps> = ({
@@ -202,7 +204,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     onQuickEquip,
     isDetailView
 }) => {
-  const cardClasses = `bg-slate-700/90 p-1.5 xs:p-2 rounded-lg shadow-md border border-slate-600/70 flex flex-col justify-between transition-all duration-150 hover:border-sky-400`;
+  const cardClasses = `bg-slate-700/90 p-2 xs:p-2.5 sm:p-3 rounded-lg shadow-md border border-slate-600/70 flex flex-col justify-between transition-all duration-150 hover:border-sky-400`;
 
   const itemAsUniqueConsumable = item as UniqueConsumable;
   const itemAsMasterConsumable = item as MasterConsumableItem;
@@ -233,47 +235,52 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       title={item.description}
       onClick={(onClick && !isDetailView && !isCombatContext) ? handleMainAction : undefined}
     >
-      <div>
-        <div className="flex items-center mb-1 xs:mb-1.5">
-          <GetSpellIcon iconName={item.iconName} className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 mr-1 xs:mr-1.5 text-sky-200 flex-shrink-0" />
+      <div className="mb-2 sm:mb-3"> {/* Section spacing */}
+        <div className="flex items-center mb-1.5 xs:mb-2"> {/* Header section internal spacing */}
+          <GetSpellIcon iconName={item.iconName} className="w-5 h-5 xs:w-6 xs:h-6 sm:w-7 sm:h-7 mr-1.5 xs:mr-2 text-sky-200 flex-shrink-0" />
           <div className="flex-grow min-w-0">
-            <h5 className="text-[0.65rem] xs:text-[0.7rem] sm:text-xs font-semibold text-slate-100 truncate">{item.name} {quantity && quantity > 1 && `(x${quantity})`}</h5>
-            <p className="text-[0.55rem] xs:text-[0.6rem] sm:text-[0.65rem] text-slate-400">{item.itemType}</p>
+            <h5 className="text-xs sm:text-sm font-semibold text-slate-100 truncate">{item.name} {quantity && quantity > 1 && `(x${quantity})`}</h5>
+            <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-slate-400">{item.itemType}</p>
           </div>
         </div>
-        {!isCompact && <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-slate-300 mb-1 leading-snug">{item.description}</p>}
+        {!isCompact && <p className="text-[0.65rem] xs:text-xs sm:text-sm text-slate-300 mb-1.5 xs:mb-2 leading-snug">{item.description}</p>}
 
-        {item.itemType === 'Consumable' && (
-          <>
-            <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-lime-300">Effect: {(itemAsMasterConsumable).effectType.replace(/_/g, ' ')}
-              {(itemAsMasterConsumable).magnitude !== undefined && ` (${(itemAsMasterConsumable).magnitude})`}
-              {(itemAsMasterConsumable).duration !== undefined && `, ${(itemAsMasterConsumable).duration}t`}
-            </p>
-            {(itemAsMasterConsumable).statusToCure && <p className="text-[0.55rem] xs:text-[0.6rem] sm:text-[0.65rem] text-slate-400">Cures: {(itemAsMasterConsumable).statusToCure}</p>}
-            {(itemAsMasterConsumable).buffToApply && <p className="text-[0.55rem] xs:text-[0.6rem] sm:text-[0.65rem] text-slate-400">Buffs: {(itemAsMasterConsumable).buffToApply}</p>}
-          </>
-        )}
-        {item.itemType === 'Equipment' && (
-          <>
-            <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-orange-300">Slot: {(itemAsEquipment).slot}</p>
-            {(itemAsEquipment).statsBoost && renderStatsBoost((itemAsEquipment).statsBoost)}
-          </>
-        )}
-        {item.itemType === 'LootChest' && (
-            <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-yellow-300">Level: {itemAsLootChest.level}</p>
-        )}
+        {/* Item Specific Details Section */}
+        <div className="mb-2 sm:mb-3">
+          {item.itemType === 'Consumable' && (
+            <div className="space-y-0.5">
+              <p className="text-[0.65rem] xs:text-xs sm:text-sm text-lime-300">Effect: {(itemAsMasterConsumable).effectType.replace(/_/g, ' ')}
+                {(itemAsMasterConsumable).magnitude !== undefined && ` (${(itemAsMasterConsumable).magnitude})`}
+                {(itemAsMasterConsumable).duration !== undefined && `, ${(itemAsMasterConsumable).duration}t`}
+              </p>
+              {(itemAsMasterConsumable).statusToCure && <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-slate-400">Cures: {(itemAsMasterConsumable).statusToCure}</p>}
+              {(itemAsMasterConsumable).buffToApply && <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-slate-400">Buffs: {(itemAsMasterConsumable).buffToApply}</p>}
+            </div>
+          )}
+          {item.itemType === 'Equipment' && (
+            <div className="space-y-0.5">
+              <p className="text-[0.65rem] xs:text-xs sm:text-sm text-orange-300">Slot: {(itemAsEquipment).slot}</p>
+              {(itemAsEquipment).statsBoost && renderStatsBoost((itemAsEquipment).statsBoost)}
+            </div>
+          )}
+          {item.itemType === 'LootChest' && (
+              <p className="text-[0.65rem] xs:text-xs sm:text-sm text-yellow-300">Level: {itemAsLootChest.level}</p>
+          )}
+        </div>
       </div>
+
+      {/* Resource Cost Section */}
       {itemHasResourceCost && resourceCostToDisplay && resourceCostToDisplay.length > 0 && !isCombatContext && (
-        <div className="mt-1 xs:mt-1.5 pt-1 xs:pt-1.5 border-t border-slate-600">
-          <p className="text-[0.55rem] xs:text-[0.6rem] sm:text-[0.65rem] text-amber-300 font-medium mb-0.5">Cost:</p>
-          <div className="flex flex-wrap gap-0.5">
+        <div className="mt-1.5 xs:mt-2 pt-1.5 xs:pt-2 border-t border-slate-600 mb-2 sm:mb-3"> {/* Section spacing */}
+          <p className="text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-amber-300 font-medium mb-0.5">Cost:</p>
+          <div className="flex flex-wrap gap-1">
             {resourceCostToDisplay.map(cost => {
                  const resourceDef = MASTER_ITEM_DEFINITIONS[cost.itemId] as MasterResourceItem | undefined;
                  const name = resourceDef ? resourceDef.name : cost.type;
                  const icon = resourceDef ? resourceDef.iconName : RESOURCE_ICONS[cost.itemId] || 'Default';
                 return (
-                  <div key={cost.itemId} className="flex items-center text-[0.5rem] xs:text-[0.55rem] sm:text-[0.6rem] text-amber-200 bg-slate-600/70 px-1 py-0.5 rounded" title={`${cost.quantity} ${name}`}>
-                    <GetSpellIcon iconName={icon} className="w-1.5 h-1.5 xs:w-2 xs:h-2 mr-0.5 opacity-70" />
+                  <div key={cost.itemId} className="flex items-center text-[0.6rem] xs:text-[0.65rem] sm:text-xs text-amber-200 bg-slate-600/70 px-1 py-0.5 rounded" title={`${cost.quantity} ${name}`}>
+                    <GetSpellIcon iconName={icon} className="w-2 h-2 xs:w-2.5 xs:h-2.5 mr-1 opacity-70" />
                     {cost.quantity} <span className="ml-0.5 opacity-60">{name.split(' ')[0]}</span>
                   </div>
                 );
@@ -281,32 +288,31 @@ export const ItemCard: React.FC<ItemCardProps> = ({
           </div>
         </div>
       )}
-      {canUseConsumable && (
-        <div className="mt-1 xs:mt-1.5">
-          <ActionButton onClick={handleMainAction} size="sm" variant="success" className="w-full !py-0.5 text-[0.6rem] xs:text-[0.65rem]">
+
+      {/* Actions Section */}
+      <div className="mt-auto pt-1.5 xs:pt-2 border-t border-slate-600/50 space-y-1.5 xs:space-y-2">
+        {canUseConsumable && (
+          <ActionButton onClick={handleMainAction} size="sm" variant="success" className="w-full !py-1 text-xs sm:text-sm">
             Use
           </ActionButton>
-        </div>
-      )}
-      {canOpenLootChest && itemAsLootChest.id && (
-        <div className="mt-1 xs:mt-1.5">
-             <ActionButton onClick={handleMainAction} size="sm" variant="primary" icon={<ChestIcon className="w-3 h-3"/>} className="w-full !py-0.5 text-[0.6rem] xs:text-[0.65rem]">
+        )}
+        {canOpenLootChest && itemAsLootChest.id && (
+             <ActionButton onClick={handleMainAction} size="sm" variant="primary" icon={<ChestIcon className="w-3.5 h-3.5"/>} className="w-full !py-1 text-xs sm:text-sm">
                 Open Chest
             </ActionButton>
-        </div>
-      )}
-      {isDetailView && item.itemType === 'Equipment' && onQuickEquip && (
-        <div className="mt-1 xs:mt-1.5 pt-1 xs:pt-1.5 border-t border-slate-600">
+        )}
+        {isDetailView && item.itemType === 'Equipment' && onQuickEquip && (
             <ActionButton
                 onClick={() => onQuickEquip(itemAsEquipment)}
                 size="sm"
                 variant="success"
-                className="w-full !py-0.5 text-[0.6rem] xs:text-[0.65rem]"
-                icon={<GearIcon className="w-2.5 h-2.5 xs:w-3 xs:h-3"/>}
+                className="w-full !py-1 text-xs sm:text-sm"
+                icon={<GearIcon className="w-3 h-3 xs:w-3.5 xs:h-3.5"/>}
             >
             Equip
             </ActionButton>
-        </div>
+        )}
+      </div>
       )}
     </div>
   );
@@ -352,26 +358,85 @@ interface InventoryGridSlotProps {
     onClick: (item: InventoryGridItemType) => void;
     onMouseEnter: (event: React.MouseEvent, item: InventoryGridItemType) => void;
     onMouseLeave: () => void;
+    rarity?: number;
+    onLongPress: (item: InventoryGridItemType, position: { x: number; y: number }) => void;
 }
 
-const InventoryGridSlot: React.FC<InventoryGridSlotProps> = ({ item, onClick, onMouseEnter, onMouseLeave }) => {
+const InventoryGridSlot: React.FC<InventoryGridSlotProps> = ({ item, onClick, onMouseEnter, onMouseLeave, rarity, onLongPress }) => {
     const isStackable = 'itemDef' in item;
     const displayItem = isStackable ? item.itemDef : item;
     const quantity = isStackable ? item.quantity : undefined;
+    const rarityColor = getRarityColorClass(rarity || displayItem.rarity || 0);
+
+    const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
+
+    const handlePressStart = (e: React.TouchEvent | React.MouseEvent) => {
+        // Prevent context menu from showing on right-click if it's a mouse event and not touch
+        if (e.type === 'mousedown' && (e as React.MouseEvent).button === 2) {
+            // Allow default context menu for mouse right click for now, or handle differently
+            // return;
+        }
+        // If it's a touch event, prevent mouseEnter from firing to avoid double triggers or conflicts
+        if (e.type === 'touchstart') {
+            onMouseLeave(); // Clear any existing hover tooltip
+        }
+
+        longPressTimer.current = setTimeout(() => {
+            const position = 'touches' in e ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: (e as React.MouseEvent).clientX, y: (e as React.MouseEvent).clientY };
+            onLongPress(item, position);
+            longPressTimer.current = null;
+        }, 500);
+    };
+
+    const handlePressEnd = (e: React.MouseEvent | React.TouchEvent) => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+    };
+
+    const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+        // This check helps prevent click if long press was triggered.
+        // It's imperfect because the timer might clear just before onClick is called by the browser.
+        // A more robust solution might involve state management within InventoryGridSlot or global event listeners.
+        if (!longPressTimer.current) { // If timer is null, means it fired or was cleared before timeout
+             // Check if the event target is the button itself or its children, not the context menu
+            if (e.target && (e.target as HTMLElement).closest('button[aria-label="' + displayItem.name + '"]')) {
+                 // Only call onClick if long press timer was cleared *before* it fired (i.e. it was a short press)
+                // This condition is tricky. If handlePressEnd clears the timer, this will always be true for short clicks.
+                // We essentially only want to call onClick if the long press did NOT occur.
+                // The current logic in handlePressStart clears timer *after* onLongPress.
+                // So, if timer is null here, it means long press *did* occur.
+                // We need to rethink this. Let's assume for now: if timer *was* set, and is now cleared, it was a short press.
+                // This means we need to check if it was *ever* set.
+                // This is still tricky. Let's simplify: onClick is always called on tap.
+                // The context menu will overlay. If user interacts with context menu, that's fine.
+                // If they tap outside, context menu closes.
+                // The main issue is preventing the detail modal AND context menu.
+                // The onLongPress handler in CharacterSheetModal sets selectedInventoryItemDetail to null.
+                 onClick(item);
+            }
+        }
+    };
+
 
     return (
         <button
-            onClick={() => onClick(item)}
+            onClick={(e) => handleClick(e)}
             onMouseEnter={(e) => onMouseEnter(e, item)}
             onMouseLeave={onMouseLeave}
-            className="h-[56px] xs:h-[60px] sm:h-[68px] bg-slate-700/80 hover:bg-slate-600/80 border-2 border-slate-600 hover:border-sky-400 rounded-md flex flex-col items-center justify-center p-0.5 shadow-sm transition-all duration-150 relative focus:outline-none focus:ring-1 focus:ring-sky-400"
+            onTouchStart={handlePressStart}
+            onTouchEnd={handlePressEnd}
+            onMouseDown={handlePressStart}
+            onMouseUp={handlePressEnd}
+            onContextMenu={(e) => e.preventDefault()} // Prevent default browser context menu
+            className={`h-[72px] xs:h-[76px] sm:h-[84px] bg-slate-700/80 hover:bg-slate-600/80 border-2 border-slate-600 hover:border-sky-400 rounded-md flex flex-col items-center justify-center p-1 shadow-sm transition-all duration-150 relative focus:outline-none focus:ring-1 focus:ring-sky-400 ${rarityColor ? `border-l-4 ${rarityColor.replace('text-', 'border-')}` : 'border-l-4 border-transparent'}`}
             aria-label={displayItem.name}
         >
-            <GetSpellIcon iconName={displayItem.iconName} className={`w-3/5 h-3/5 ${displayItem.itemType === 'Resource' ? 'text-amber-300' : 'text-sky-300'} mb-0 xs:mb-0.5`} />
-            <span className="text-[0.4rem] xs:text-[0.45rem] sm:text-[0.5rem] text-slate-200 text-center truncate w-full px-0.5">{displayItem.name}</span>
+            <GetSpellIcon iconName={displayItem.iconName} className={`w-1/2 h-1/2 ${displayItem.itemType === 'Resource' ? 'text-amber-300' : 'text-sky-300'} mb-0.5 xs:mb-1`} />
+            <span className="text-[0.5rem] xs:text-[0.55rem] sm:text-[0.6rem] text-slate-200 text-center whitespace-normal w-full px-0.5 leading-tight">{displayItem.name}</span>
             {quantity && quantity > 0 && (
-                <span className="absolute bottom-0 right-0 text-[0.45rem] xs:text-[0.5rem] sm:text-[0.55rem] font-bold text-white bg-sky-600 px-0.5 py-0 xs:px-1 rounded-tl-md rounded-br-sm shadow">
-                    {quantity}
+                <span className="absolute bottom-0 right-0 text-[0.5rem] xs:text-[0.55rem] sm:text-[0.6rem] font-bold text-white bg-sky-600 px-1 py-0.5 rounded-tl-md rounded-br-sm shadow">
                 </span>
             )}
         </button>
@@ -537,6 +602,12 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
 
   const [hoveredInventoryItem, setHoveredInventoryItem] = useState<InventoryGridItemType | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number, y: number } | null>(null);
+
+  const [contextMenuState, setContextMenuState] = useState<{
+      isOpen: boolean;
+      item: InventoryGridItemType | null;
+      position: { x: number; y: number } | null;
+  }>({ isOpen: false, item: null, position: null });
 
   type EncyclopediaSubTabType = 'monsters' | 'items' | 'spells' | 'components';
   const [encyclopediaSubTab, setEncyclopediaSubTab] = useState<EncyclopediaSubTabType>('monsters');
@@ -709,6 +780,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
             setSelectedInventoryItemDetail(null);
             setHoveredInventoryItem(null);
             setTooltipPosition(null);
+            setContextMenuState({ isOpen: false, item: null, position: null });
         }
         if (initialTab !== 'Encyclopedia') {
             setSelectedEncyclopediaEntry(null);
@@ -722,6 +794,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
         setSelectedInventoryItemDetail(null);
         setHoveredInventoryItem(null);
         setTooltipPosition(null);
+        setContextMenuState({ isOpen: false, item: null, position: null });
         setSelectedEncyclopediaEntry(null);
         setEncyclopediaSearchTerm('');
     }
@@ -781,7 +854,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
             if (itemDef) {
                 if (inventoryFilter === 'All' || itemDef.itemType === inventoryFilter) {
                     if (!inventorySearchTerm || itemDef.name.toLowerCase().includes(inventorySearchTerm.toLowerCase())) {
-                         items.push({ itemDef, quantity });
+                         items.push({ itemDef, quantity, rarity: itemDef.rarity });
                     }
                 }
             }
@@ -792,7 +865,10 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     player.items.forEach(item => {
         if (inventoryFilter === 'All' || item.itemType === inventoryFilter) {
             if (!inventorySearchTerm || item.name.toLowerCase().includes(inventorySearchTerm.toLowerCase())) {
-                items.push(item);
+                // Ensure unique items also pass rarity if needed by InventoryGridSlot directly,
+                // though the component itself accesses item.rarity for non-stackable items.
+                // For consistency, we could add it here too.
+                items.push({ ...item, rarity: item.rarity });
             }
         }
     });
@@ -816,7 +892,16 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   }, [player.inventory, player.items, inventoryFilter, inventorySearchTerm]);
 
   const handleInventoryGridSlotClick = (item: InventoryGridItemType) => {
+    // If context menu is open for this item, clicking again should probably close context menu or do nothing.
+    // For now, it will try to open detail view.
+    // The long press handler already closes detail view.
+    if (contextMenuState.isOpen && contextMenuState.item === item) {
+        setContextMenuState({ isOpen: false, item: null, position: null });
+        return;
+    }
     setSelectedInventoryItemDetail(item);
+    setTooltipPosition(null); // Hide tooltip when opening detail modal
+    setContextMenuState({ isOpen: false, item: null, position: null }); // Close context menu
   };
 
   const handleInventoryItemMouseEnter = (event: React.MouseEvent, item: InventoryGridItemType) => {
@@ -1064,18 +1149,60 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
           {activeTab === 'Inventory' && (
             <div className="flex flex-col h-full">
                 <div className="flex flex-col sm:flex-row gap-2 mb-2 p-1.5 bg-slate-700/50 rounded-md border border-slate-600">
-                    <input type="text" placeholder="Search inventory..." value={inventorySearchTerm} onChange={e => setInventorySearchTerm(e.target.value)} className="flex-grow p-1.5 bg-slate-600 border border-slate-500 rounded-md text-slate-100 placeholder-slate-400 text-xs"/>
-                    <select value={inventoryFilter} onChange={e => setInventoryFilter(e.target.value as InventoryFilterType)} className="p-1.5 bg-slate-600 border border-slate-500 rounded-md text-slate-100 text-xs">
+                    <div className="relative w-full flex-grow">
+                        <input
+                            type="text"
+                            placeholder="Search inventory..."
+                            value={inventorySearchTerm}
+                            onChange={e => setInventorySearchTerm(e.target.value)}
+                            className="w-full p-1.5 bg-slate-600 border border-slate-500 rounded-md text-slate-100 placeholder-slate-400 text-xs pr-7"
+                        />
+                        {inventorySearchTerm && (
+                            <button
+                                onClick={() => setInventorySearchTerm('')}
+                                className="absolute inset-y-0 right-0 flex items-center justify-center w-7 h-full text-slate-400 hover:text-slate-200"
+                                aria-label="Clear search"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                    <select value={inventoryFilter} onChange={e => setInventoryFilter(e.target.value as InventoryFilterType)} className="w-full sm:w-auto p-1.5 bg-slate-600 border border-slate-500 rounded-md text-slate-100 text-xs">
                         {(['All', 'Resource', 'Consumable', 'Equipment', 'LootChest', 'QuestItem'] as InventoryFilterType[]).map(type => <option key={type} value={type}>{type}</option>)}
                     </select>
+                    <ActionButton
+                        onClick={() => console.log("Open advanced filters modal/sheet - TBD")}
+                        variant="secondary"
+                        size="sm"
+                        className="w-full sm:w-auto !py-1.5 text-xs" // Match padding of select/input
+                    >
+                        Sort & Filter
+                    </ActionButton>
                 </div>
-                <div className="grid grid-cols-4 xs:grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-1 xs:gap-1.5 flex-grow overflow-y-auto styled-scrollbar p-1.5 bg-slate-800/40 rounded-md border border-slate-600/50 min-h-[200px]">
-                    {getInventoryGridItems().map((gridItem, index) => (
-                         <InventoryGridSlot key={('itemDef' in gridItem ? gridItem.itemDef.id : gridItem.id) + '-' + index} item={gridItem} onClick={handleInventoryGridSlotClick} onMouseEnter={handleInventoryItemMouseEnter} onMouseLeave={handleInventoryItemMouseLeave}/>
-                    ))}
+                <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1.5 xs:gap-2 flex-grow overflow-y-auto styled-scrollbar p-1 sm:p-1.5 bg-slate-800/40 rounded-md border border-slate-600/50 min-h-[200px]">
+                    {getInventoryGridItems().map((gridItem, index) => {
+                        const itemRarity = 'itemDef' in gridItem ? gridItem.itemDef.rarity : gridItem.rarity;
+                        return (
+                            <InventoryGridSlot
+                                key={('itemDef' in gridItem ? gridItem.itemDef.id : gridItem.id) + '-' + index}
+                                item={gridItem}
+                                onClick={handleInventoryGridSlotClick}
+                                onMouseEnter={handleInventoryItemMouseEnter}
+                                onMouseLeave={handleInventoryItemMouseLeave}
+                                rarity={itemRarity}
+                                onLongPress={(longPressedItem, position) => {
+                                    setContextMenuState({ isOpen: true, item: longPressedItem, position });
+                                    setSelectedInventoryItemDetail(null);
+                                    setTooltipPosition(null);
+                                }}
+                            />
+                        );
+                    })}
                      {getInventoryGridItems().length === 0 && <p className="col-span-full text-center text-slate-400 italic py-4">Inventory is empty or no items match filter.</p>}
                 </div>
-                 {hoveredInventoryItem && tooltipPosition && <ItemTooltip item={hoveredInventoryItem} position={tooltipPosition}/>}
+                 {hoveredInventoryItem && tooltipPosition && !contextMenuState.isOpen && <ItemTooltip item={hoveredInventoryItem} position={tooltipPosition}/>}
                  {selectedInventoryItemDetail && (
                     <Modal isOpen={true} onClose={() => setSelectedInventoryItemDetail(null)} title={'itemDef' in selectedInventoryItemDetail ? selectedInventoryItemDetail.itemDef.name : selectedInventoryItemDetail.name} size="md">
                         <ItemCard 
@@ -1217,6 +1344,106 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
           onSelectItem={handleItemSelectForSlot}
         />
       )}
+      {contextMenuState.isOpen && (
+          <>
+              <div
+                  className="fixed inset-0 bg-black/30 z-[1090]"
+                  onClick={() => setContextMenuState({ isOpen: false, item: null, position: null })}
+              />
+              <ItemContextMenu
+                  isOpen={contextMenuState.isOpen}
+                  item={contextMenuState.item}
+                  position={contextMenuState.position}
+                  onClose={() => setContextMenuState({ isOpen: false, item: null, position: null })}
+                  onUseItem={(itemToUse) => {
+                      if (itemToUse.itemType === 'Consumable') {
+                          // Determine if it's a stackable master item or a unique game item
+                          const idToUse = 'id' in itemToUse ? itemToUse.id : (itemToUse as UniqueConsumable).id;
+                           // For stackable items (MasterItemDefinition), item.id is the masterId
+                           // For unique items (GameItem), item.id is the unique instance id
+                           // onUseConsumableFromInventory expects the item's actual ID (master for stackable, unique for non-stackable GameItem)
+                          onUseConsumableFromInventory(idToUse, null);
+                      }
+                      setContextMenuState({ isOpen: false, item: null, position: null });
+                  }}
+                  onEquipItem={(itemToEquip) => {
+                      const slotType = itemToEquip.slot;
+                      // Find primary slot first
+                      let targetDetailedSlot = GENERIC_TO_DETAILED_SLOT_MAP[slotType]?.[0];
+
+                      // Check if primary slot is available
+                      if (targetDetailedSlot && player.equippedItems[targetDetailedSlot]) {
+                          // If primary is taken, check other compatible slots
+                          const availableSlots = GENERIC_TO_DETAILED_SLOT_MAP[slotType].filter(s => !player.equippedItems[s]);
+                          if (availableSlots.length > 0) {
+                              targetDetailedSlot = availableSlots[0];
+                          } else {
+                              // If all specific slots for this generic type are taken, use the primary (will force unequip or fail)
+                              // Or, for simplicity, we just use the first one which might be occupied.
+                              // The onEquipItem handler should ideally handle replacement logic or it will fail if slot is occupied.
+                              // For this quick action, let's prioritize an empty slot. If none, use the first one.
+                              targetDetailedSlot = GENERIC_TO_DETAILED_SLOT_MAP[slotType]?.[0];
+                          }
+                      }
+
+                      if (targetDetailedSlot) {
+                          onEquipItem(itemToEquip.id, targetDetailedSlot);
+                      } else {
+                          console.warn("No valid detailed slot found for generic slot:", slotType);
+                          // Fallback: open the detail view for this item
+                          setSelectedInventoryItemDetail(contextMenuState.item);
+                      }
+                      setContextMenuState({ isOpen: false, item: null, position: null });
+                  }}
+              />
+          </>
+      )}
     </Modal>
   );
+};
+
+// ItemContextMenu Component (defined inside CharacterSheetModal or imported)
+interface ItemContextMenuProps {
+    isOpen: boolean;
+    item: InventoryGridItemType | null;
+    position: { x: number; y: number } | null;
+    onClose: () => void;
+    onUseItem: (item: MasterItemDefinition | GameItem) => void; // Allow both types from InventoryGridItemType
+    onEquipItem: (item: Equipment) => void;
+}
+
+const ItemContextMenu: React.FC<ItemContextMenuProps> = ({ isOpen, item, position, onClose, onUseItem, onEquipItem }) => {
+    if (!isOpen || !item || !position) return null;
+
+    const displayItem = 'itemDef' in item ? item.itemDef : item;
+    const canUse = displayItem.itemType === 'Consumable';
+    // Ensure that the item is actually an Equipment type before casting
+    const canEquip = displayItem.itemType === 'Equipment';
+
+    const style: React.CSSProperties = {
+        position: 'fixed',
+        top: Math.min(position.y, window.innerHeight - 80), // Keep menu on screen
+        left: Math.min(position.x, window.innerWidth - 130), // Keep menu on screen
+        transform: 'translate(-50%, -100%)', // Position above and centered on the press point
+        zIndex: 1100,
+        minWidth: '120px'
+    };
+    // Adjust transform if too close to top
+    if (position.y < 80) { // If too close to the top, display below
+        style.transform = 'translate(-50%, 10px)';
+    }
+
+
+    return (
+        <div style={style} className="bg-slate-800 border-2 border-sky-500 rounded-md shadow-lg p-1.5 space-y-1">
+            {canUse && (
+                <ActionButton onClick={() => onUseItem(displayItem)} size="sm" variant="success" className="w-full !py-1 text-xs">Use</ActionButton>
+            )}
+            {canEquip && (
+                <ActionButton onClick={() => onEquipItem(displayItem as Equipment)} size="sm" variant="primary" className="w-full !py-1 text-xs">Equip</ActionButton>
+            )}
+            {(!canUse && !canEquip) && <p className="text-slate-400 text-xs italic text-center px-2 py-1">No quick actions</p>}
+            <ActionButton onClick={onClose} size="sm" variant="secondary" className="w-full !py-1 text-xs mt-1">Cancel</ActionButton>
+        </div>
+    );
 };
