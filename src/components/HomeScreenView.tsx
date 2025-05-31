@@ -1,12 +1,14 @@
 import React from 'react';
-import { Player } from '../types';
+import { Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
+import PlayerStatsDisplay from './PlayerStatsDisplay';
 import ActivityCard from './ActivityCard';
 import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon } from './IconComponents';
 import { getLocation } from '../services/locationService';
 
 interface HomeScreenViewProps {
   player: Player;
+  effectiveStats: PlayerEffectiveStats;
   onFindEnemy: () => void;
   isLoading: boolean;
   onExploreMap: () => void;
@@ -21,6 +23,7 @@ interface HomeScreenViewProps {
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   player,
+  effectiveStats,
   onFindEnemy,
   isLoading,
   onExploreMap,
@@ -127,6 +130,10 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
   return (
     <div className="min-h-[calc(100vh-12rem)] h-[calc(100vh-12rem)] w-full max-w-none mx-0 -mx-3 sm:-mx-4 md:-mx-6 px-1 sm:px-2 md:px-3 lg:px-4 xl:px-6 overflow-hidden">
+      {/* Player Stats Display */}
+      <div className="mb-4">
+        <PlayerStatsDisplay player={player} effectiveStats={effectiveStats} />
+      </div>
       {/* Main Content Container */}
       <div className="h-full py-2 sm:py-3 md:py-4 lg:py-5">
         
