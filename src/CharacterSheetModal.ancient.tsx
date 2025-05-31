@@ -6,7 +6,7 @@ import {
     GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon,
     HealIcon, SpeedIcon, SwordSlashIcon, ShieldIcon, BodyIcon, ReflexIcon,
     ChestIcon, CollectionIcon
-} from './IconComponents';
+} from './components/IconComponents';
 import {
     DETAILED_EQUIPMENT_SLOTS_LEFT_COL, DETAILED_EQUIPMENT_SLOTS_RIGHT_COL,
     DETAILED_SLOT_PLACEHOLDER_ICONS, RESOURCE_ICONS, STATUS_EFFECT_ICONS, DEFAULT_ENCYCLOPEDIA_ICON, GENERIC_TO_DETAILED_SLOT_MAP,

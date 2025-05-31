@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { Ability } from '../types';
-import { GetSpellIcon, MindIcon, CheckmarkCircleIcon, FilterListIcon, SortAlphaIcon } from './IconComponents';
-import ActionButton from './ActionButton';
+import React, { useState } from 'react';
+import { Ability, Player, SpellIconName } from './types';
+import { GetSpellIcon, MindIcon, CheckmarkCircleIcon, FilterListIcon, SortAlphaIcon } from './components/IconComponents';
+import ActionButton from './components/ActionButton';
 
 interface AbilityCardProps {
   ability: Ability;

@@ -5,7 +5,7 @@ import '../../src/styles/ability-list.css'; // Assuming path is correct relative
 import ActionButton from '../../../ui/ActionButton'; // Corrected
 import {
     UserIcon, BagIcon, WandIcon, StarIcon, BookIcon, CollectionIcon // Icons used in TABS array
-} from './IconComponents';
+} from '../IconComponents';
 import {
     STATUS_EFFECT_ICONS, GENERIC_TO_DETAILED_SLOT_MAP // GENERIC_TO_DETAILED_SLOT_MAP needed for getCompatibleItemsForSlot
 } from '../../../constants'; // Corrected
