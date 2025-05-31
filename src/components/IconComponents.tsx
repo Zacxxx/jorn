@@ -480,6 +480,18 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
     case 'TagIcon': return <TagIcon className={className} />;
     case 'LayoutIcon': return <LayoutIcon className={className} />;
     case 'ToggleIcon': return <ToggleIcon className={className} />;
+    case 'ElementFire': return <ElementFire className={className} />;
+    case 'ElementIce': return <ElementIce className={className} />;
+    case 'ElementLightning': return <ElementLightning className={className} />;
+    case 'ElementEarth': return <ElementEarth className={className} />;
+    case 'ElementAir': return <ElementAir className={className} />;
+    case 'ElementLight': return <ElementLight className={className} />;
+    case 'ElementDark': return <ElementDark className={className} />;
+    case 'ElementArcane': return <ElementArcane className={className} />;
+    case 'ElementNature': return <ElementNature className={className} />;
+    case 'ElementPoison': return <ElementPoison className={className} />;
+    case 'ElementHealing': return <ElementHealing className={className} />;
+    case 'TagGeneric': return <TagGeneric className={className} />;
     case 'Default':
     default:
       return <BookIcon className={className} />;
@@ -489,5 +501,44 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
 export const SaveIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+  </svg>
+);
+
+// Element Icons
+export const ElementFire: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <FireballIcon className={className} />;
+export const ElementIce: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <IceShardIcon className={className} />;
+export const ElementLightning: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <LightningBoltIcon className={className} />;
+export const ElementEarth: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <GemIcon className={className} />;
+export const ElementAir: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+  </svg>
+);
+export const ElementLight: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <HolyLightIcon className={className} />;
+export const ElementDark: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <ShadowBoltIcon className={className} />;
+export const ElementArcane: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <ArcaneBlastIcon className={className} />;
+export const ElementNature: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <PlantIcon className={className} />;
+export const ElementPoison: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <StatusPoisonIcon className={className} />;
+export const ElementHealing: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <HealIcon className={className} />;
+
+// Tag Generic Icon
+export const TagGeneric: React.FC<IconProps> = ({ className = "w-6 h-6" }) => <TagIcon className={className} />;
+
+// Upload/Download/Chest Icons
+export const UploadIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+  </svg>
+);
+
+export const DownloadIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+  </svg>
+);
+
+export const ChestIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
   </svg>
 );

@@ -506,7 +506,7 @@ Fields:
 - magnitude: Integer. For _RESTORE (10-50 + Lvl*2). For APPLY_BUFF (1-5 for stats, 5-10 for regen). Omit if CURE_STATUS.
 - duration: Integer (2-4 turns). Only for APPLY_BUFF.
 - statusToCure: Optional. If CURE_STATUS, one from ${AVAILABLE_STATUS_EFFECTS.filter(se => ['Poison', 'Burn', 'Stun', 'Freeze', 'WeakenBody', 'WeakenMind', 'WeakenReflex', 'PoisonDoTActive', 'BurningDoTActive', 'Silenced', 'Rooted'].includes(se)).join(', ')}.
-- buffToApply: Optional. If APPLY_BUFF, one from ${AVAILABLE_STATUS_EFFECTS.filter(se => se.startsWith('TEMP_')).join(', ')}.
+- buffToApply: Optional. If APPLY_BUFF, one from ${AVAILABLE_STATUS_EFFECTS.filter((se: StatusEffectName) => se.startsWith('TEMP_')).join(', ')}.
 - resourceCost: Optional array of 1-2 { "itemId": "string_id_from_master_list", "type": "ResourceType from ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}", "quantity": integer (1-3) }.
 - rarity: (integer, 0-10) Rarity of the consumable.
 - tags: (optional array of strings, max 3) Functional tags, from ${ALL_TAG_NAMES.join(', ')}.

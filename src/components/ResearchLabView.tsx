@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player, SpellComponent, ResourceType, GeneratedSpellComponentData } from '../types';
 import ActionButton from './ActionButton';
-import { GetSpellIcon, FlaskIcon, GoldCoinIcon, AtomIcon, CheckmarkCircleIcon, EssenceIcon, SearchIcon, WandIcon } from './IconComponents';
+import { GetSpellIcon, FlaskIcon, GoldCoinIcon, CheckmarkCircleIcon, EssenceIcon, SearchIcon, WandIcon } from './IconComponents';
 import SpellComponentCard from './SpellComponentCard';
 import { RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST } from '../constants';
 import { getRarityColorClass } from '../utils'; 

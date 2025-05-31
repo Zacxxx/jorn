@@ -30,7 +30,7 @@ export interface AppShellProps {
   gameState: string;
   player: Player;
   effectivePlayerStats: PlayerEffectiveStats;
-  modalContent: { title: string; message: string } | null;
+  modalContent: { title: string; message: string; type?: 'info' | 'error' | 'success' } | null;
   defaultCharacterSheetTab: CharacterSheetTab;
   useLegacyFooter: boolean;
   maxRegisteredSpells: number;
@@ -191,7 +191,7 @@ const AppShell: React.FC<AppShellProps> = (props) => {
   );
 
   // Prepare ViewRouter props
-  const routerProps = {
+  const routerProps: ViewRouterProps = {
     gameState,
     isLoading: isLoading || false,
     player,
@@ -204,7 +204,7 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     defaultCharacterSheetTab,
     initialSpellPromptForStudio: initialSpellPromptForStudio || '',
     currentShopId: currentShopId || null,
-    modalContent,
+    modalContent: modalContent ? { ...modalContent, type: modalContent.type || 'info' } : null,
     pendingSpellCraftData: pendingSpellCraftData || null,
     pendingSpellEditData: pendingSpellEditData || null,
     pendingItemCraftData: pendingItemCraftData || null,
@@ -216,7 +216,61 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     debugMode: debugMode || false,
     autoSave: autoSave !== undefined ? autoSave : true,
     showMessageModal,
-    ...viewRouterProps
+    
+    // Extract all the ViewRouter handlers from props
+    onFindEnemy: (props as any).onFindEnemy,
+    onExploreMap: (props as any).onExploreMap,
+    onOpenResearchArchives: (props as any).onOpenResearchArchives,
+    onOpenCamp: (props as any).onOpenCamp,
+    onOpenHomestead: (props as any).onOpenHomestead,
+    onAccessSettlement: (props as any).onAccessSettlement,
+    onOpenNPCs: (props as any).onOpenNPCs,
+    onNavigateHome: onNavigateHome,
+    onOpenCraftingHub: onOpenCraftingHub,
+    onRestComplete: (props as any).onRestComplete,
+    onStartHomesteadProject: (props as any).onStartHomesteadProject,
+    onCompleteHomesteadProject: (props as any).onCompleteHomesteadProject,
+    onUpgradeHomesteadProperty: (props as any).onUpgradeHomesteadProperty,
+    onOpenShop: (props as any).onOpenShop,
+    onOpenTavern: (props as any).onOpenTavern,
+    onTalkToNPC: (props as any).onTalkToNPC,
+    onExplorePointOfInterest: (props as any).onExplorePointOfInterest,
+    onPurchaseItem: (props as any).onPurchaseItem,
+    onPurchaseService: (props as any).onPurchaseService,
+    onDiscoverRecipe: (props as any).onDiscoverRecipe,
+    onCraftItem: (props as any).onCraftItem,
+    onOpenSpellDesignStudio: onOpenSpellDesignStudio,
+    onOpenTheorizeComponentLab: (props as any).onOpenTheorizeComponentLab,
+    onAICreateComponent: (props as any).onAICreateComponent,
+    onInitiateItemCraft: (props as any).onInitiateItemCraft,
+    onFinalizeSpellDesign: (props as any).onFinalizeSpellDesign,
+    onOldSpellCraftInitiation: (props as any).onOldSpellCraftInitiation,
+    onInitiateSpellRefinement: (props as any).onInitiateSpellRefinement,
+    onCraftTrait: (props as any).onCraftTrait,
+    onSetTargetEnemy: (props as any).onSetTargetEnemy,
+    onPlayerAttack: (props as any).onPlayerAttack,
+    onPlayerBasicAttack: (props as any).onPlayerBasicAttack,
+    onPlayerDefend: (props as any).onPlayerDefend,
+    onPlayerFlee: (props as any).onPlayerFlee,
+    onPlayerFreestyleAction: (props as any).onPlayerFreestyleAction,
+    onUseConsumable: onUseConsumable,
+    onUseAbility: (props as any).onUseAbility,
+    onConfirmSpellCraft: (props as any).onConfirmSpellCraft,
+    onConfirmSpellEdit: (props as any).onConfirmSpellEdit,
+    onConfirmItemCraft: (props as any).onConfirmItemCraft,
+    onCancelCrafting: (props as any).onCancelCrafting,
+    onToggleLegacyFooter: (props as any).onToggleLegacyFooter,
+    onToggleDebugMode: (props as any).onToggleDebugMode,
+    onToggleAutoSave: (props as any).onToggleAutoSave,
+    onSetGameState: (props as any).onSetGameState,
+    onSetDefaultCharacterSheetTab: (props as any).onSetDefaultCharacterSheetTab,
+    onOpenLootChest: onOpenLootChest,
+    
+    // Utility functions
+    getPreparedSpells: (props as any).getPreparedSpells,
+    getPreparedAbilities: (props as any).getPreparedAbilities,
+    checkResources: (props as any).checkResources,
+    renderResourceList: (props as any).renderResourceList,
   };
 
   return (

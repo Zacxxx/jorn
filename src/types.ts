@@ -34,7 +34,7 @@ export interface TagDefinition {
   // effectParameters?: { damageMultiplier?: number; durationChange?: number; etc. }
 }
 
-export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource';
+export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource' | 'Physical' | 'Poison' | 'Psychic';
 export type TagName =
   // Damage Types
   | 'Fire' | 'Ice' | 'Lightning' | 'Physical' | 'Arcane' | 'Nature' | 'Dark' | 'Light' | 'Poison' | 'Psychic'
@@ -109,6 +109,12 @@ export type TagName =
   | 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic' | 'Divine'
   | 'Forbidden' | 'Ancient' | 'Primordial' | 'Cosmic'
   | 'Utility' | 'LootChest'
+  
+  // Additional tags for biomes and enemies
+  | 'Wise' | 'Nature_Master' | 'Web' | 'Crystal' | 'Incorporeal' | 'Construct' | 'Massive'
+  | 'Elemental' | 'Shapeshifting' | 'Dragon' | 'Fire_Master' | 'Undead' | 'Shambling'
+  | 'Witch' | 'Potion' | 'Ghost' | 'Hunting' | 'Pack' | 'Amplification'
+  
   // Elements as Tags
   | ElementName;
 

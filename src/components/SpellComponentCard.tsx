@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SpellComponent, ResourceCost, SpellIconName } from '../types';
-import { GetSpellIcon, GoldCoinIcon, EssenceIcon, WandIcon, AtomIcon, BookIcon, ReflexIcon, StarIcon, CollectionIcon, GearIcon } from './IconComponents'; // Added GearIcon
+import { GetSpellIcon, GoldCoinIcon, EssenceIcon, WandIcon, AtomIcon, BookIcon, ReflexIcon, CollectionIcon, GearIcon } from './IconComponents'; // Added GearIcon
 import { RESOURCE_ICONS } from '../../constants';
 import { getRarityColorClass } from '../../utils';
 import ActionButton from '../../ui/ActionButton'; // Assuming ActionButton is in ui folder

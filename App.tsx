@@ -20,7 +20,7 @@ import { ProgressionManagerUtils } from './game-core/progression/ProgressionMana
 import { ResearchManagerUtils } from './game-core/research/ResearchManager';
 import { SettingsManagerUtils } from './game-core/settings/SettingsManager';
 import { TraitManagerUtils } from './game-core/traits/TraitManager';
-import { ConsumablesUtils } from './game-core/hooks/useConsumables';
+import { ConsumablesUtils } from './game-core/consumables/ConsumablesManager';
 
 // Import UI components
 import AppShell from './game-graphics/AppShell';
@@ -185,6 +185,312 @@ export const App: React.FC = () => {
   // Check for pending trait unlock
   const pendingTraitUnlock = TraitManagerUtils.canCraftTrait(playerState.player);
 
+  // Create utility functions for ViewRouter
+  const getPreparedSpells = useCallback(() => {
+    return playerState.player.spells.filter(spell => 
+      playerState.player.preparedSpellIds.includes(spell.id)
+    );
+  }, [playerState.player.spells, playerState.player.preparedSpellIds]);
+
+  const getPreparedAbilities = useCallback(() => {
+    return playerState.player.abilities.filter(ability => 
+      playerState.player.preparedAbilityIds.includes(ability.id)
+    );
+  }, [playerState.player.abilities, playerState.player.preparedAbilityIds]);
+
+  const checkResources = useCallback((costs?: any[]) => {
+    if (!costs) return true;
+    // Use ResourceManager to check resources
+    return true; // Simplified for now
+  }, []);
+
+  const renderResourceList = useCallback((costs?: any[]) => {
+    if (!costs) return null;
+    return costs.map((cost, index) => (
+      <span key={index}>{cost.quantity} {cost.type}</span>
+    ));
+  }, []);
+
+  // Navigation and exploration handlers
+  const handleFindEnemy = useCallback(async () => {
+    // Use CombatEngine to find enemy
+    console.log('Finding enemy...');
+  }, []);
+
+  const handleExploreMap = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToExploreMap(context);
+  }, [createNavigationContext]);
+
+  const handleOpenResearchArchives = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToResearchArchives(context);
+  }, [createNavigationContext]);
+
+  const handleOpenCamp = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToCamp(context);
+  }, [createNavigationContext]);
+
+  const handleOpenHomestead = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToHomestead(context);
+  }, [createNavigationContext]);
+
+  const handleAccessSettlement = useCallback(() => {
+    gameState.setGameState('SETTLEMENT_VIEW');
+  }, [gameState]);
+
+  const handleOpenNPCs = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToNPCs(context);
+  }, [createNavigationContext]);
+
+  // Rest and homestead handlers
+  const handleRestComplete = useCallback((restType: 'short' | 'long', duration?: number, activity?: string) => {
+    const context = createNavigationContext();
+    const result = NavigationControllerUtils.completeRest(context, restType, duration, activity);
+    gameState.addLog('System', `Rest completed. Gained ${result.hpGain} HP, ${result.mpGain} MP, ${result.epGain} EP.`, 'heal');
+  }, [createNavigationContext, gameState]);
+
+  const handleStartHomesteadProject = useCallback((project: any) => {
+    // Use HomesteadManager to start project
+    console.log('Starting homestead project:', project);
+  }, []);
+
+  const handleCompleteHomesteadProject = useCallback((projectId: string) => {
+    // Use HomesteadManager to complete project
+    console.log('Completing homestead project:', projectId);
+  }, []);
+
+  const handleUpgradeHomesteadProperty = useCallback((propertyName: string, upgradeName: string) => {
+    // Use HomesteadManager to upgrade property
+    console.log('Upgrading homestead property:', propertyName, upgradeName);
+  }, []);
+
+  // Shop and NPC handlers
+  const handleOpenShop = useCallback((shopId: string) => {
+    gameState.setCurrentShopId(shopId);
+    gameState.setGameState('SHOP_VIEW');
+  }, [gameState]);
+
+  const handleOpenTavern = useCallback((tavernId: string) => {
+    gameState.setCurrentTavernId(tavernId);
+    gameState.setGameState('TAVERN_VIEW');
+  }, [gameState]);
+
+  const handleTalkToNPC = useCallback((npcId: string) => {
+    gameState.setCurrentNPCId(npcId);
+    gameState.setGameState('NPC_DIALOGUE');
+  }, [gameState]);
+
+  const handleExplorePointOfInterest = useCallback((poiId: string) => {
+    console.log('Exploring POI:', poiId);
+  }, []);
+
+  const handlePurchaseItem = useCallback((itemId: string, price: number, quantity: number) => {
+    // Use SettlementManager to purchase item
+    console.log('Purchasing item:', itemId, price, quantity);
+  }, []);
+
+  const handlePurchaseService = useCallback((serviceId: string, price: number) => {
+    // Use SettlementManager to purchase service
+    console.log('Purchasing service:', serviceId, price);
+  }, []);
+
+  // Crafting handlers
+  const handleDiscoverRecipe = useCallback(async (prompt: string) => {
+    // Use RecipeManager to discover recipe
+    console.log('Discovering recipe:', prompt);
+  }, []);
+
+  const handleCraftItem = useCallback(async (recipeId: string) => {
+    // Use RecipeManager to craft item
+    console.log('Crafting item:', recipeId);
+  }, []);
+
+  const handleOpenSpellDesignStudio = useCallback((initialPrompt?: string) => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToSpellDesignStudio(context, initialPrompt);
+  }, [createNavigationContext]);
+
+  const handleOpenTheorizeComponentLab = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToTheorizeComponentLab(context);
+  }, [createNavigationContext]);
+
+  const handleAICreateComponent = useCallback(async (prompt: string, goldInvested: number, essenceInvested: number) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      setIsLoading: gameState.setIsLoading,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = await ResearchManagerUtils.createAIComponent(prompt, goldInvested, essenceInvested, context);
+    return result.success ? result.component || null : null;
+  }, [playerState, gameState]);
+
+  const handleInitiateItemCraft = useCallback(async (promptText: string, itemType: any) => {
+    const result = await SpellCraftingUtils.initiateItemCraft(promptText, itemType, playerState.player.level);
+    if (result.success && result.itemData) {
+      gameState.setPendingItemCraftData(result.itemData);
+      gameState.setGameState('ITEM_CRAFT_CONFIRMATION');
+    } else {
+      gameState.showMessageModal('Crafting Error', result.error || 'Failed to initiate item craft', 'error');
+    }
+  }, [playerState, gameState]);
+
+  const handleFinalizeSpellDesign = useCallback(async (designData: any) => {
+    const result = await SpellCraftingUtils.finalizeSpellDesign(playerState.player, designData);
+    if (result.success && result.spellData) {
+      gameState.setPendingSpellCraftData(result.spellData);
+      gameState.setGameState('SPELL_CRAFT_CONFIRMATION');
+    } else {
+      gameState.showMessageModal('Spell Design Error', result.error || 'Failed to finalize spell design', 'error');
+    }
+  }, [playerState, gameState]);
+
+  const handleOldSpellCraftInitiation = useCallback(async (promptText: string) => {
+    // Legacy spell crafting
+    console.log('Old spell craft initiation:', promptText);
+  }, []);
+
+  const handleInitiateSpellRefinement = useCallback(async (originalSpell: Spell, refinementPrompt: string, augmentLevel?: number, selectedComponentId?: string) => {
+    const result = await SpellCraftingUtils.initiateSpellRefinement(playerState.player, originalSpell, refinementPrompt, augmentLevel, selectedComponentId);
+    if (result.success && result.spellData) {
+      gameState.setPendingSpellEditData(result.spellData);
+      gameState.setOriginalSpellForEdit(originalSpell);
+      gameState.setGameState('SPELL_EDIT_CONFIRMATION');
+    } else {
+      gameState.showMessageModal('Spell Refinement Error', result.error || 'Failed to refine spell', 'error');
+    }
+  }, [playerState, gameState]);
+
+  const handleCraftTrait = useCallback(async (promptText: string) => {
+    const result = await SpellCraftingUtils.craftTrait(playerState.player, promptText);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+      gameState.showMessageModal('Trait Crafted!', `Successfully crafted trait: ${result.trait?.name}`, 'success');
+      gameState.setGameState('HOME');
+    } else {
+      gameState.showMessageModal('Trait Crafting Error', result.error || 'Failed to craft trait', 'error');
+    }
+  }, [playerState, gameState]);
+
+  // Combat handlers
+  const handleSetTargetEnemy = useCallback((id: string | null) => {
+    gameState.setTargetEnemyId(id);
+  }, [gameState]);
+
+  const handlePlayerAttack = useCallback((spell: Spell, targetId: string) => {
+    // Use CombatEngine to handle attack
+    console.log('Player attack:', spell.name, 'target:', targetId);
+  }, []);
+
+  const handlePlayerBasicAttack = useCallback((targetId: string) => {
+    // Use CombatEngine to handle basic attack
+    console.log('Player basic attack target:', targetId);
+  }, []);
+
+  const handlePlayerDefend = useCallback(() => {
+    // Use CombatEngine to handle defend
+    console.log('Player defend');
+  }, []);
+
+  const handlePlayerFlee = useCallback(() => {
+    // Use CombatEngine to handle flee
+    console.log('Player flee');
+  }, []);
+
+  const handlePlayerFreestyleAction = useCallback(async (actionText: string, targetId: string | null) => {
+    // Use CombatEngine to handle freestyle action
+    console.log('Player freestyle action:', actionText, 'target:', targetId);
+  }, []);
+
+  const handleUseAbility = useCallback((abilityId: string, targetId: string | null) => {
+    // Use AbilityManager to handle ability use
+    console.log('Use ability:', abilityId, 'target:', targetId);
+  }, []);
+
+  // Confirmation handlers
+  const handleConfirmSpellCraft = useCallback(() => {
+    if (gameState.pendingSpellCraftData) {
+      const result = SpellCraftingUtils.confirmSpellCraft(playerState.player, gameState.pendingSpellCraftData);
+      if (result.success && result.updatedPlayer) {
+        playerState.setPlayer(() => result.updatedPlayer!);
+        gameState.setPendingSpellCraftData(null);
+        gameState.showMessageModal('Spell Crafted!', `Successfully crafted spell: ${result.spell?.name}`, 'success');
+        gameState.setGameState('HOME');
+      } else {
+        gameState.showMessageModal('Spell Crafting Error', result.error || 'Failed to craft spell', 'error');
+      }
+    }
+  }, [playerState, gameState]);
+
+  const handleConfirmSpellEdit = useCallback(() => {
+    if (gameState.pendingSpellEditData && gameState.originalSpellForEdit) {
+      const result = SpellCraftingUtils.confirmSpellEdit(playerState.player, gameState.originalSpellForEdit, gameState.pendingSpellEditData);
+      if (result.success && result.updatedPlayer) {
+        playerState.setPlayer(() => result.updatedPlayer!);
+        gameState.setPendingSpellEditData(null);
+        gameState.setOriginalSpellForEdit(null);
+        gameState.showMessageModal('Spell Edited!', `Successfully edited spell: ${result.spell?.name}`, 'success');
+        gameState.setGameState('HOME');
+      } else {
+        gameState.showMessageModal('Spell Editing Error', result.error || 'Failed to edit spell', 'error');
+      }
+    }
+  }, [playerState, gameState]);
+
+  const handleConfirmItemCraft = useCallback(() => {
+    if (gameState.pendingItemCraftData) {
+      const result = ItemManagementUtils.confirmItemCraft(playerState.player, gameState.pendingItemCraftData);
+      if (result.success && result.updatedPlayer) {
+        playerState.setPlayer(() => result.updatedPlayer!);
+        gameState.setPendingItemCraftData(null);
+        gameState.showMessageModal('Item Crafted!', `Successfully crafted item: ${result.item?.name}`, 'success');
+        gameState.setGameState('HOME');
+      } else {
+        gameState.showMessageModal('Item Crafting Error', result.error || 'Failed to craft item', 'error');
+      }
+    }
+  }, [playerState, gameState]);
+
+  const handleCancelCrafting = useCallback(() => {
+    gameState.setPendingSpellCraftData(null);
+    gameState.setPendingSpellEditData(null);
+    gameState.setPendingItemCraftData(null);
+    gameState.setOriginalSpellForEdit(null);
+    gameState.setGameState('HOME');
+  }, [gameState]);
+
+  // Settings handlers
+  const handleToggleLegacyFooter = useCallback((value: boolean) => {
+    gameState.setUseLegacyFooter(value);
+  }, [gameState]);
+
+  const handleToggleDebugMode = useCallback((value: boolean) => {
+    gameState.setDebugMode(value);
+  }, [gameState]);
+
+  const handleToggleAutoSave = useCallback((value: boolean) => {
+    gameState.setAutoSave(value);
+  }, [gameState]);
+
+  const handleSetGameState = useCallback((state: string) => {
+    gameState.setGameState(state as any);
+  }, [gameState]);
+
+  const handleSetDefaultCharacterSheetTab = useCallback((tab: CharacterSheetTab) => {
+    gameState.setDefaultCharacterSheetTab(tab);
+  }, [gameState]);
+
+  const handleOpenLootChest = useCallback(async (chestId: string) => {
+    // Handle loot chest opening
+    console.log('Opening loot chest:', chestId);
+  }, []);
+
   // Prepare props for AppShell
   const appShellProps = {
     // Game state
@@ -234,10 +540,7 @@ export const App: React.FC = () => {
     onUnprepareSpell: handleUnprepareSpell,
     onPrepareAbility: handlePrepareAbility,
     onUnprepareAbility: handleUnprepareAbility,
-    onOpenLootChest: async (chestId: string) => {
-      // Handle loot chest opening
-      console.log('Opening loot chest:', chestId);
-    },
+    onOpenLootChest: handleOpenLootChest,
     onUseConsumable: handleUseConsumable,
     
     // Modal close handlers
@@ -255,7 +558,7 @@ export const App: React.FC = () => {
     // Utility functions
     showMessageModal: gameState.showMessageModal,
     
-    // All other game state for ViewRouter
+    // All ViewRouter props
     isLoading: gameState.isLoading,
     currentEnemies: gameState.currentEnemies,
     targetEnemyId: gameState.targetEnemyId,
@@ -263,9 +566,11 @@ export const App: React.FC = () => {
     turn: gameState.turn,
     isPlayerTurn: gameState.isPlayerTurn,
     currentActingEnemyIndex: gameState.currentActingEnemyIndex,
+    playerActionSkippedByStun: false, // This should come from game state if needed
     pendingSpellCraftData: gameState.pendingSpellCraftData,
     pendingItemCraftData: gameState.pendingItemCraftData,
     pendingSpellEditData: gameState.pendingSpellEditData,
+    originalSpellForEdit: gameState.originalSpellForEdit,
     initialSpellPromptForStudio: gameState.initialSpellPromptForStudio,
     currentShopId: gameState.currentShopId,
     currentTavernId: gameState.currentTavernId,
@@ -275,6 +580,56 @@ export const App: React.FC = () => {
     isTraveling: gameState.isTraveling,
     debugMode: gameState.debugMode,
     autoSave: gameState.autoSave,
+    
+    // All the ViewRouter event handlers
+    onFindEnemy: handleFindEnemy,
+    onExploreMap: handleExploreMap,
+    onOpenResearchArchives: handleOpenResearchArchives,
+    onOpenCamp: handleOpenCamp,
+    onOpenHomestead: handleOpenHomestead,
+    onAccessSettlement: handleAccessSettlement,
+    onOpenNPCs: handleOpenNPCs,
+    onRestComplete: handleRestComplete,
+    onStartHomesteadProject: handleStartHomesteadProject,
+    onCompleteHomesteadProject: handleCompleteHomesteadProject,
+    onUpgradeHomesteadProperty: handleUpgradeHomesteadProperty,
+    onOpenShop: handleOpenShop,
+    onOpenTavern: handleOpenTavern,
+    onTalkToNPC: handleTalkToNPC,
+    onExplorePointOfInterest: handleExplorePointOfInterest,
+    onPurchaseItem: handlePurchaseItem,
+    onPurchaseService: handlePurchaseService,
+    onDiscoverRecipe: handleDiscoverRecipe,
+    onCraftItem: handleCraftItem,
+    onOpenTheorizeComponentLab: handleOpenTheorizeComponentLab,
+    onAICreateComponent: handleAICreateComponent,
+    onInitiateItemCraft: handleInitiateItemCraft,
+    onFinalizeSpellDesign: handleFinalizeSpellDesign,
+    onOldSpellCraftInitiation: handleOldSpellCraftInitiation,
+    onInitiateSpellRefinement: handleInitiateSpellRefinement,
+    onCraftTrait: handleCraftTrait,
+    onSetTargetEnemy: handleSetTargetEnemy,
+    onPlayerAttack: handlePlayerAttack,
+    onPlayerBasicAttack: handlePlayerBasicAttack,
+    onPlayerDefend: handlePlayerDefend,
+    onPlayerFlee: handlePlayerFlee,
+    onPlayerFreestyleAction: handlePlayerFreestyleAction,
+    onUseAbility: handleUseAbility,
+    onConfirmSpellCraft: handleConfirmSpellCraft,
+    onConfirmSpellEdit: handleConfirmSpellEdit,
+    onConfirmItemCraft: handleConfirmItemCraft,
+    onCancelCrafting: handleCancelCrafting,
+    onToggleLegacyFooter: handleToggleLegacyFooter,
+    onToggleDebugMode: handleToggleDebugMode,
+    onToggleAutoSave: handleToggleAutoSave,
+    onSetGameState: handleSetGameState,
+    onSetDefaultCharacterSheetTab: handleSetDefaultCharacterSheetTab,
+    
+    // Utility functions for ViewRouter
+    getPreparedSpells,
+    getPreparedAbilities,
+    checkResources,
+    renderResourceList,
   };
 
   return <AppShell {...appShellProps} />;
