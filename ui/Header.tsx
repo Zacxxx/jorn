@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { Player } from '../../types';
-import ActionButton from '../../ui/ActionButton';
-import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon } from './IconComponents'; 
+import { Player } from '../types';
+import ActionButton from './ActionButton';
+import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon } from '../src/components/IconComponents'; 
 
 interface HeaderProps {
   player: Player;

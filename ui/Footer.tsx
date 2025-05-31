@@ -1,6 +1,6 @@
 import React from 'react';
-import ActionButton from '../../ui/ActionButton';
-import { BookIcon, GearIcon, StarIcon, BagIcon, Bars3Icon, CollectionIcon } from './IconComponents';
+import ActionButton from './ActionButton';
+import { BookIcon, GearIcon, StarIcon, BagIcon, Bars3Icon, CollectionIcon } from '../src/components/IconComponents';
 
 interface FooterProps {
   onOpenSpellbook: () => void;

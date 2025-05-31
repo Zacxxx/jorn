@@ -261,65 +261,6 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                     <span className="sm:hidden">Homestead (Soon)</span>
                   </ActionButton>
                 </div>
-
-                {/* World Map Section - New Addition for Symmetry */}
-                <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 rounded-lg p-2 sm:p-3 border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-200">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
-                      <MapIcon className="w-4 h-4 text-emerald-400" />
-                    </div>
-                    <h4 className="text-sm sm:text-base lg:text-lg font-medium text-emerald-300">World Map</h4>
-                  </div>
-                  <p className="text-xs text-slate-300 mb-2 line-clamp-2">Explore the vast world, discover new locations, and plan your adventures across different regions.</p>
-                  <div className="grid grid-cols-2 gap-1 mb-3 text-xs">
-                    <div className="bg-slate-800/30 rounded p-1 text-center">
-                      <div className="text-slate-400">Discovered</div>
-                      <div className="text-emerald-300 font-medium">3 Locations</div>
-                    </div>
-                    <div className="bg-slate-800/30 rounded p-1 text-center">
-                      <div className="text-slate-400">Available</div>
-                      <div className="text-emerald-300 font-medium">Fast Travel</div>
-                    </div>
-                  </div>
-                  <ActionButton 
-                    onClick={onExploreMap} 
-                    variant="success" 
-                    size="sm"
-                    className="w-full text-xs"
-                    icon={<MapIcon />}
-                  >
-                    <span className="hidden sm:inline">Open World Map</span>
-                    <span className="sm:hidden">World Map</span>
-                  </ActionButton>
-                </div>
-
-                {/* Quick Stats Section - New Addition */}
-                <div className="bg-gradient-to-br from-slate-500/10 to-slate-600/10 rounded-lg p-2 sm:p-3 border border-slate-500/30">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-slate-500/20 to-slate-600/20 border border-slate-500/30 rounded-lg flex items-center justify-center">
-                      <UserIcon className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <h4 className="text-sm sm:text-base lg:text-lg font-medium text-slate-300">Quick Stats</h4>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 text-xs">
-                    <div className="bg-slate-800/30 rounded p-1 text-center">
-                      <div className="text-slate-400">Level</div>
-                      <div className="text-slate-200 font-medium">{player.level}</div>
-                    </div>
-                    <div className="bg-slate-800/30 rounded p-1 text-center">
-                      <div className="text-slate-400">Spells</div>
-                      <div className="text-slate-200 font-medium">{player.spells.length}</div>
-                    </div>
-                    <div className="bg-slate-800/30 rounded p-1 text-center">
-                      <div className="text-slate-400">Gold</div>
-                      <div className="text-yellow-300 font-medium">{player.gold}</div>
-                    </div>
-                    <div className="bg-slate-800/30 rounded p-1 text-center">
-                      <div className="text-slate-400">Essence</div>
-                      <div className="text-purple-300 font-medium">{player.essence}</div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
