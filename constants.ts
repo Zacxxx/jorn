@@ -510,17 +510,22 @@ export const TAG_DEFINITIONS: { [key in TagName]: TagDefinition } = {
     effectType: "trigger", // Was 'passive'
     unlockLevel: 4,
   },
-  Piercing: { name: 'Piercing', description: 'Ignores a portion of target armor/resistance.', category: TagCategory.DAMAGE_MODIFIER, color: 'grey', rarity: 3, powerLevel: 4, synergizesWith: ['Projectile', 'Physical'], unlockLevel: 3, effectType: 'modifier' },
-  Armor_Ignoring: { name: 'Armor_Ignoring', description: 'Completely bypasses all armor and resistances.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkred', rarity: 7, powerLevel: 8, conflictsWith: ["Piercing", "True_Damage"], unlockLevel: 12, effectType: 'modifier' },
+  // Armor Penetration - Ordered by precedence: True_Damage > Armor_Ignoring > Piercing
   True_Damage: { name: 'True_Damage', description: 'Damage that cannot be mitigated by armor or resistances.', category: TagCategory.DAMAGE_MODIFIER, color: 'lightgrey', rarity: 7, powerLevel: 9, conflictsWith: ["Piercing", "Armor_Ignoring"], unlockLevel: 18, effectType: 'modifier' },
+  Armor_Ignoring: { name: 'Armor_Ignoring', description: 'Completely bypasses all armor and resistances.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkred', rarity: 7, powerLevel: 8, conflictsWith: ["Piercing", "True_Damage"], unlockLevel: 12, effectType: 'modifier' },
+  Piercing: { name: 'Piercing', description: 'Ignores a portion of target armor/resistance.', category: TagCategory.DAMAGE_MODIFIER, color: 'grey', rarity: 3, powerLevel: 4, conflictsWith: ["True_Damage", "Armor_Ignoring"], synergizesWith: ['Projectile', 'Physical'], unlockLevel: 3, effectType: 'modifier' },
+
+  // Damage Boost - Ordered by precedence: Devastating > Brutal > Overwhelming
+  Devastating: { name: 'Devastating', description: 'Massively increases damage, potentially with a drawback or high cost.', category: TagCategory.DAMAGE_MODIFIER, color: 'black', rarity: 8, powerLevel: 0, conflictsWith: ["Brutal", "Overwhelming"], effectType: 'modifier', unlockLevel: 15 },
+  Brutal: { name: 'Brutal', description: 'Increases base damage significantly.', category: TagCategory.DAMAGE_MODIFIER, color: 'brown', rarity: 4, powerLevel: 0, conflictsWith: ["Devastating", "Overwhelming"], synergizesWith: ['Critical', 'Physical'], effectType: 'modifier', unlockLevel: 7 },
+  Overwhelming: { name: 'Overwhelming', description: 'Slightly increases damage and may add a minor secondary effect.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkred', rarity: 3, powerLevel: 0, conflictsWith: ["Devastating", "Brutal"], effectType: 'modifier', unlockLevel: 9 },
+
+  // Other Damage Modifiers
   Percentage_Damage: { name: 'Percentage_Damage', description: 'Deals damage equal to a percentage of the target\'s max or current health.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkpurple', rarity: 6, powerLevel: 0, unlockLevel: 10, effectType: 'modifier' },
   Explosive: { name: 'Explosive', description: 'Deals area damage around the primary target upon impact.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkorange', rarity: 5, powerLevel: 0, synergizesWith: ['Fire', 'AreaOfEffect'], effectType: 'trigger', unlockLevel: 5 },
   Cleave: { name: 'Cleave', description: 'Attack hits multiple enemies in front of the attacker.', category: TagCategory.DAMAGE_MODIFIER, color: 'maroon', rarity: 3, powerLevel: 4, synergizesWith: ['Physical', 'Melee'], unlockLevel: 3, effectType: 'modifier' },
-  Brutal: { name: 'Brutal', description: 'Increases base damage significantly.', category: TagCategory.DAMAGE_MODIFIER, color: 'brown', rarity: 4, powerLevel: 0, synergizesWith: ['Critical', 'Physical'], effectType: 'modifier', unlockLevel: 7 },
-  Overwhelming: { name: 'Overwhelming', description: 'Slightly increases damage and may add a minor secondary effect.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkred', rarity: 3, powerLevel: 0, effectType: 'modifier', unlockLevel: 9 },
   Penetrating: { name: 'Penetrating', description: 'Passes through magical shields and barriers.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkcyan', rarity: 5, powerLevel: 5, synergizesWith: ['Arcane'], unlockLevel: 7, effectType: 'modifier' },
   Shattering: { name: 'Shattering', description: 'Destroys armor and shields on critical hits.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkblue', rarity: 5, powerLevel: 6, synergizesWith: ['Ice', 'Critical'], unlockLevel: 8, effectType: 'trigger' },
-  Devastating: { name: 'Devastating', description: 'Massively increases damage, potentially with a drawback or high cost.', category: TagCategory.DAMAGE_MODIFIER, color: 'black', rarity: 8, powerLevel: 0, conflictsWith: ["Brutal", "Overwhelming"], effectType: 'modifier', unlockLevel: 15 },
 
   // Healing & Support
   Healing: {
