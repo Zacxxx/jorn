@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Player } from '../types';
+import { Player, ItemType } from '../types';
 import ActionButton from '../../ui/ActionButton';
 import { GearIcon, HeroBackIcon, FlaskIcon, CheckmarkCircleIcon, GoldCoinIcon, SearchIcon, FilterListIcon, BookIcon, WandIcon, AtomIcon } from './IconComponents';
 import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 import { getAllRecipes, getRecipeById } from '../../services/craftingService';
+import ItemCraftingForm from '../../components/ItemCraftingForm';
 
 interface CraftingWorkshopViewProps {
   player: Player;
@@ -13,11 +14,12 @@ interface CraftingWorkshopViewProps {
   onOpenSpellDesignStudio: (initialPrompt?: string) => void;
   onOpenTheorizeLab: () => void;
   onAICreateComponent: (prompt: string, goldInvested: number, essenceInvested: number) => Promise<any>;
+  onInitiateAppItemCraft: (prompt: string, itemType: ItemType) => Promise<void>;
   isLoading: boolean;
   onShowMessage: (title: string, message: string) => void;
 }
 
-type TabType = 'craft' | 'discover' | 'spells' | 'research';
+type TabType = 'craft' | 'discover' | 'spells' | 'research' | 'items';
 
 const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
   player,
@@ -27,6 +29,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
   onOpenSpellDesignStudio,
   onOpenTheorizeLab,
   onAICreateComponent,
+  onInitiateAppItemCraft,
   isLoading,
   onShowMessage,
 }) => {
@@ -40,6 +43,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
   const [researchPrompt, setResearchPrompt] = useState('');
   const [goldInvestment, setGoldInvestment] = useState(50);
   const [essenceInvestment, setEssenceInvestment] = useState(10);
+  const [activeItemCraftType, setActiveItemCraftType] = useState<ItemType>('Consumable');
 
   // Get all available recipes from the crafting service
   const allRecipes = getAllRecipes();
@@ -174,6 +178,14 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
       setResearchPrompt('');
     } catch (error) {
       onShowMessage('Research Failed', 'Failed to complete research. Please try again.');
+    }
+  };
+
+  const handleItemCraftSubmit = async (prompt: string) => {
+    try {
+      await onInitiateAppItemCraft(prompt, activeItemCraftType);
+    } catch (error) {
+      onShowMessage('Crafting Failed', 'Failed to initiate item crafting. Please try again.');
     }
   };
 
@@ -332,6 +344,15 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           >
             Research Lab
           </ActionButton>
+          <ActionButton
+            onClick={() => setActiveTab('items')}
+            variant={activeTab === 'items' ? 'primary' : 'secondary'}
+            size="sm"
+            icon={<FlaskIcon className="w-4 h-4" />}
+            className="text-sm px-3 py-2"
+          >
+            Item Crafting
+          </ActionButton>
         </div>
         
         <div className="flex items-center justify-center space-x-4 text-xs text-slate-400 mt-2">
@@ -358,6 +379,12 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
               <>
                 <AtomIcon className="w-3 h-3 mr-1" />
                 {player.discoveredComponents.length} components
+              </>
+            )}
+            {activeTab === 'items' && (
+              <>
+                <FlaskIcon className="w-3 h-3 mr-1" />
+                {player.items.length} items
               </>
             )}
           </span>
@@ -762,7 +789,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
               </div>
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'research' ? (
           /* Research Lab Tab */
           <div className="space-y-4 h-full flex flex-col">
             {/* Research Form */}
@@ -925,6 +952,44 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     <p className="text-slate-400 italic text-sm">No components discovered yet. Conduct research to discover new spell components!</p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Item Crafting Tab */
+          <div className="space-y-4 h-full flex flex-col">
+            {/* Item Crafting Form */}
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-shrink-0">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h3 className="text-xl font-semibold text-slate-200 mb-3">AI Item Creation</h3>
+                  <p className="text-slate-300">Create consumables and equipment using AI-powered generation.</p>
+                </div>
+                
+                <div className="flex justify-center gap-4 mb-6">
+                  <ActionButton
+                    onClick={() => setActiveItemCraftType('Consumable')}
+                    variant={activeItemCraftType === 'Consumable' ? 'primary' : 'secondary'}
+                    icon={<FlaskIcon className="w-4 h-4"/>}
+                    size="sm"
+                  >
+                    Consumables
+                  </ActionButton>
+                  <ActionButton
+                    onClick={() => setActiveItemCraftType('Equipment')}
+                    variant={activeItemCraftType === 'Equipment' ? 'primary' : 'secondary'}
+                    icon={<GearIcon className="w-4 h-4"/>}
+                    size="sm"
+                  >
+                    Equipment
+                  </ActionButton>
+                </div>
+                
+                <ItemCraftingForm
+                  itemType={activeItemCraftType}
+                  onInitiateCraft={handleItemCraftSubmit}
+                  isLoading={isLoading}
+                />
               </div>
             </div>
           </div>
