@@ -39,7 +39,6 @@ import CombatView from '../src/components/CombatView';
 import ConfirmationView from '../src/components/ConfirmationView';
 import GameOverView from '../src/components/GameOverView';
 import LoadingSpinner from '../src/components/LoadingSpinner';
-import MultiplayerView from '../src/components/MultiplayerView';
 
 /**
  * View Router Component
@@ -503,14 +502,6 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onReturnHome={onNavigateHome} 
           onOpenTheorizeLab={onOpenTheorizeComponentLab} 
           onShowMessage={(t,m) => showMessageModal(t,m,'info')} 
-        />
-      );
-
-    case 'MULTIPLAYER_VIEW': 
-      return (
-        <MultiplayerView 
-          player={player} 
-          onBack={onNavigateHome} 
         />
       );
 
