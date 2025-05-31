@@ -299,13 +299,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Activities Section - Enhanced with Detailed Cards */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0 max-h-[calc(100vh-20rem)]">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
               {/* Enhanced Activity Cards Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 h-full overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 max-h-80 overflow-y-auto">
                 {activityCards.map((activity) => (
                   <div
                     key={activity.id}
-                    className={`relative bg-gradient-to-br ${activity.color} backdrop-blur-sm rounded-lg border ${activity.borderColor} p-3 transition-all duration-300 hover:shadow-lg cursor-pointer group overflow-hidden`}
+                    className={`relative bg-gradient-to-br ${activity.color} backdrop-blur-sm rounded-lg border ${activity.borderColor} p-2.5 transition-all duration-300 hover:shadow-lg cursor-pointer group overflow-hidden h-fit`}
                     onClick={activity.onClick}
                   >
                     {/* Background Illustration */}
@@ -341,8 +341,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
                     {/* Content */}
                     <div className="relative z-10">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className={`w-6 h-6 bg-gradient-to-br ${activity.color} border ${activity.borderColor} rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
+                      <div className="flex items-center space-x-2 mb-1.5">
+                        <div className={`w-5 h-5 bg-gradient-to-br ${activity.color} border ${activity.borderColor} rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
                           <div className={`w-3 h-3 ${activity.iconColor} flex items-center justify-center`}>
                             {activity.icon}
                           </div>
@@ -355,13 +355,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                         </div>
                       </div>
                       
-                      <p className="text-xs text-slate-300 group-hover:text-slate-200 transition-colors mb-2 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-300 group-hover:text-slate-200 transition-colors mb-1.5 line-clamp-2 leading-relaxed">
                         {activity.description}
                       </p>
                       
                       {/* Compact Benefits Grid */}
-                      <div className="grid grid-cols-1 gap-1 mb-2">
-                        {activity.benefits.slice(0, 3).map((benefit, index) => (
+                      <div className="grid grid-cols-1 gap-0.5 mb-1.5">
+                        {activity.benefits.slice(0, 2).map((benefit, index) => (
                           <div key={index} className="flex items-center text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
                             <div className={`w-1 h-1 rounded-full ${activity.iconColor} mr-2 opacity-60 flex-shrink-0`}></div>
                             <span className="truncate">{benefit}</span>

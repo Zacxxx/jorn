@@ -44,6 +44,7 @@ import CraftingWorkshopView from './src/components/CraftingWorkshopView';
 import WorldMapModal from './src/components/WorldMapModal';
 import ExplorationJournalModal from './src/components/ExplorationJournalModal';
 import NPCsView from './src/components/NPCsView';
+import ParametersView from './components/ParametersView';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21';
@@ -263,6 +264,11 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [isWorldMapOpen, setIsWorldMapOpen] = useState(false);
   const [isExplorationJournalOpen, setIsExplorationJournalOpen] = useState(false);
   const [isTraveling, setIsTraveling] = useState(false);
+
+  // Parameters state
+  const [useLegacyFooter, setUseLegacyFooter] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [autoSave, setAutoSave] = useState(true);
 
   useEffect(() => {
     async function initApp() {
@@ -529,6 +535,12 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     setCombatLog([]);
     setModalContent(null);
   };
+
+  // Parameters handlers
+  const handleOpenParameters = () => setGameState('PARAMETERS');
+  const handleToggleLegacyFooter = (value: boolean) => setUseLegacyFooter(value);
+  const handleToggleDebugMode = (value: boolean) => setDebugMode(value);
+  const handleToggleAutoSave = (value: boolean) => setAutoSave(value);
 
   // Homestead handlers
   const handleOpenHomestead = () => setGameState('HOMESTEAD_VIEW');
@@ -2320,6 +2332,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
       case 'RESEARCH_ARCHIVES': return <ResearchView player={player} onReturnHome={handleNavigateHome} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'EXPLORING_MAP': return <MapView player={player} onReturnHome={handleNavigateHome} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'PARAMETERS': return <ParametersView onReturnHome={handleNavigateHome} useLegacyFooter={useLegacyFooter} onToggleLegacyFooter={handleToggleLegacyFooter} debugMode={debugMode} onToggleDebugMode={handleToggleDebugMode} autoSave={autoSave} onToggleAutoSave={handleToggleAutoSave} />;
       case 'SPELL_EDITING': return originalSpellForEdit ? <SpellEditingView originalSpell={originalSpellForEdit} onInitiateSpellRefinement={handleInitiateSpellRefinement} isLoading={isLoading} onCancel={() => { setGameState('CHARACTER_SHEET'); setDefaultCharacterSheetTab('Spells');}} player={player} availableComponents={player.discoveredComponents}/> : <p>Error: No spell selected for editing.</p>;
       case 'TRAIT_CRAFTING': return <TraitCraftingView onCraftTrait={handleCraftTrait} isLoading={isLoading} currentTraits={player.traits.length} playerLevel={player.level} onReturnHome={handleNavigateHome} />;
       case 'IN_COMBAT': return <CombatView player={player} effectivePlayerStats={effectivePlayerStats} currentEnemies={currentEnemies} targetEnemyId={targetEnemyId} onSetTargetEnemy={setTargetEnemyId} preparedSpells={getPreparedSpells()} onPlayerAttack={playerAttack} onPlayerBasicAttack={handlePlayerBasicAttack} onPlayerDefend={handlePlayerDefend} onPlayerFlee={handlePlayerFlee} onPlayerFreestyleAction={handlePlayerFreestyleAction} combatLog={combatLog} isPlayerTurn={isPlayerTurn} playerActionSkippedByStun={playerActionSkippedByStun} onSetGameState={setGameState} onUseConsumable={handleUseConsumable} onUseAbility={handleUseAbility} consumables={player.items.filter(i => i.itemType === 'Consumable') as Consumable[] } abilities={getPreparedAbilities()} />;
@@ -2350,13 +2363,14 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         onOpenQuestsPage={() => handleOpenCharacterSheet('Quests')}
         onOpenEncyclopedia={() => handleOpenCharacterSheet('Encyclopedia')}
         onOpenGameMenu={handleOpenGameMenu}
+        useLegacyFooter={useLegacyFooter}
       >
         {renderCurrentView()}
       </MainLayout>
       {modalContent && <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md"><p>{modalContent.message}</p></Modal>}
       {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={ () => {setGameState('HOME'); setTimeout(() => handleOpenSpellDesignStudio(),0);}} onOpenTraitCraftingScreen={() => {setGameState('HOME'); setTimeout(() => handleOpenTraitsPage(),0);}} canCraftNewTrait={pendingTraitUnlock || (player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) +1) )} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
-      <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onOpenHelpWiki={handleOpenHelpWiki} onShowMessage={(t,m) => showMessageModal(t,m,'info')} onExportSave={handleExportSave} onImportSave={handleImportSave}/>
+      <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onOpenHelpWiki={handleOpenHelpWiki} onShowMessage={(t,m) => showMessageModal(t,m,'info')} onExportSave={handleExportSave} onImportSave={handleImportSave} onOpenParameters={handleOpenParameters}/>
       <MobileMenuModal 
         isOpen={isMobileMenuOpen} 
         onClose={handleCloseMobileMenu}

@@ -16,6 +16,7 @@ interface MainLayoutProps {
   onOpenQuestsPage: () => void;
   onOpenEncyclopedia: () => void;
   onOpenGameMenu: () => void;
+  useLegacyFooter?: boolean;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({
@@ -31,6 +32,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   onOpenQuestsPage,
   onOpenEncyclopedia,
   onOpenGameMenu,
+  useLegacyFooter = false,
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col" style={{fontFamily: "'Inter', sans-serif"}}>
@@ -51,6 +53,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         onOpenQuestsPage={onOpenQuestsPage}
         onOpenEncyclopedia={onOpenEncyclopedia}
         onOpenGameMenu={onOpenGameMenu}
+        useLegacyLayout={useLegacyFooter}
       />
     </div>
   );
