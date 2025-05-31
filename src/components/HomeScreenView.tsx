@@ -42,6 +42,11 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenNPCs,
   onNavigateToMultiplayer,
 }) => {
+  // State for activity card ordering
+  const [activityOrder] = React.useState([
+    'camp', 'research', 'crafting', 'npcs', 'quests', 'trading'
+  ]);
+
   const currentLocation = getLocation(player.currentLocationId);
   const locationName = currentLocation?.name || 'Unknown Location';
   const locationDescription = currentLocation?.description || 'A mysterious place...';
@@ -153,10 +158,10 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       <div className="h-full py-2 sm:py-3 md:py-4 lg:py-5">
         
         {/* Desktop Layout - Three Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lg:gap-5 h-full max-w-none mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 lg:gap-3 h-full max-w-none mx-auto">
           
           {/* Left Column - Location & Exploration */}
-          <div className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 h-full">
+          <div className="flex flex-col space-y-1.5 sm:space-y-2 md:space-y-2.5 lg:space-y-3 h-full">
             {/* Current Location Section - Enhanced and Optimized */}
             <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-green-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -322,7 +327,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Right Column - Combat & Activities */}
-          <div className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 h-full">
+          <div className="flex flex-col space-y-1.5 sm:space-y-2 md:space-y-2.5 lg:space-y-3 h-full">
             {/* Combat Section - Enhanced */}
             <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-red-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
               <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
@@ -416,17 +421,17 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
           </div>
 
-            {/* Third Column - Feature Cards with Enhanced Responsive Layout */}
-            <div className="flex flex-col h-full min-h-0">
-              {/* Feature Cards Grid - Single Column Layout with SortableContext */}
-              <SortableContext items={activityOrder} strategy={verticalListSortingStrategy}>
-                <div className="grid grid-cols-1 gap-1 sm:gap-1.5 md:gap-2 h-full overflow-y-auto">
+            {/* Third Column - Feature Cards */}
+            <div className="flex flex-col h-full overflow-hidden">
+              {/* Feature Cards Grid - Optimized Spacing and Layout */}
+              <div className="flex-1 overflow-y-auto px-1 py-1">
+                <div className="space-y-1.5">
                   {activityOrder.map((activityId) => {
                     const activity = activityCards.find(card => card.id === activityId);
                     if (!activity) return null;
                     
                     return (
-                      <div key={activity.id} className="transition-all duration-300 ease-in-out">
+                      <div key={activity.id} className="w-full">
                         <ActivityCard
                           id={activity.id}
                           title={activity.title}
@@ -445,7 +450,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                     );
                   })}
                 </div>
-              </SortableContext>
+              </div>
             </div>
           </div>
 
