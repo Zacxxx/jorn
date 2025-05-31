@@ -227,6 +227,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
       return (
         <HomeScreenView 
           player={player} 
+          effectiveStats={effectivePlayerStats}
           onFindEnemy={onFindEnemy} 
           isLoading={isLoading} 
           onExploreMap={onExploreMap} 
