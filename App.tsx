@@ -4,27 +4,17 @@ import React, { useEffect, useCallback } from 'react';
 import { useGameState } from './game-core/state/GameState';
 import { usePlayerState } from './game-core/player/PlayerState';
 import { calculateEffectiveStats, calculateMaxRegisteredSpells, calculateMaxPreparedSpells, calculateMaxPreparedAbilities } from './game-core/player/PlayerStats';
-import { getEffectiveTags } from './game-core/spells/TagSystem';
 import { SpellCraftingUtils } from './game-core/spells/SpellCrafting';
 import { ItemManagementUtils } from './game-core/items/ItemManagement';
-import { HomesteadManagerUtils } from './game-core/homestead/HomesteadManager';
-import { SettlementManagerUtils } from './game-core/settlement/SettlementManager';
-import { CombatEngineUtils } from './game-core/combat/CombatEngine';
-import { NavigationControllerUtils } from './game-core/navigation/NavigationController';
-import { SaveManagerUtils } from './game-core/persistence/SaveManager';
-import { RecipeManagerUtils } from './game-core/crafting/RecipeManager';
-import { AbilityManagerUtils } from './game-core/abilities/AbilityManager';
-import { TurnManagerUtils } from './game-core/game-loop/TurnManager';
-import { CampManagerUtils } from './game-core/camp/CampManager';
-import { ProgressionManagerUtils } from './game-core/progression/ProgressionManager';
-import { ResearchManagerUtils } from './game-core/research/ResearchManager';
-import { SettingsManagerUtils } from './game-core/settings/SettingsManager';
+import * as NavigationController from './game-core/navigation/NavigationController';
+import { ConsumablesUtils } from './game-core/hooks/useConsumables';
 import { TraitManagerUtils } from './game-core/traits/TraitManager';
-import { ConsumablesUtils } from './game-core/consumables/ConsumablesManager';
+import { SaveManagerUtils } from './game-core/persistence/SaveManager';
+import { ResourceManagerUtils } from './game-core/resources/ResourceManager';
+import { ResearchManagerUtils } from './game-core/research/ResearchManager';
 
-// Import UI components
+// Import the main app shell
 import AppShell from './game-graphics/AppShell';
-import ViewRouter from './game-graphics/ViewRouter';
 
 // Import types
 import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName } from './types';
@@ -75,17 +65,17 @@ export const App: React.FC = () => {
   // Navigation handlers using our extracted NavigationController
   const handleNavigateHome = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToHome(context);
+    NavigationController.navigateToHome(context);
   }, [createNavigationContext]);
 
   const handleOpenCharacterSheet = useCallback((tab?: CharacterSheetTab) => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToCharacterSheet(context, tab || 'Main');
+    NavigationController.navigateToCharacterSheet(context, tab || 'Main');
   }, [createNavigationContext]);
 
   const handleOpenCraftingHub = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToCraftingHub(context);
+    NavigationController.navigateToCraftingHub(context);
   }, [createNavigationContext]);
 
   // Equipment handlers using our extracted ItemManagement
@@ -219,22 +209,22 @@ export const App: React.FC = () => {
 
   const handleExploreMap = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToExploreMap(context);
+    NavigationController.navigateToExploreMap(context);
   }, [createNavigationContext]);
 
   const handleOpenResearchArchives = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToResearchArchives(context);
+    NavigationController.navigateToResearchArchives(context);
   }, [createNavigationContext]);
 
   const handleOpenCamp = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToCamp(context);
+    NavigationController.navigateToCamp(context);
   }, [createNavigationContext]);
 
   const handleOpenHomestead = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToHomestead(context);
+    NavigationController.navigateToHomestead(context);
   }, [createNavigationContext]);
 
   const handleAccessSettlement = useCallback(() => {
@@ -243,13 +233,13 @@ export const App: React.FC = () => {
 
   const handleOpenNPCs = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToNPCs(context);
+    NavigationController.navigateToNPCs(context);
   }, [createNavigationContext]);
 
   // Rest and homestead handlers
   const handleRestComplete = useCallback((restType: 'short' | 'long', duration?: number, activity?: string) => {
     const context = createNavigationContext();
-    const result = NavigationControllerUtils.completeRest(context, restType, duration, activity);
+    const result = NavigationController.completeRest(context, restType, duration, activity);
     gameState.addLog('System', `Rest completed. Gained ${result.hpGain} HP, ${result.mpGain} MP, ${result.epGain} EP.`, 'heal');
   }, [createNavigationContext, gameState]);
 
@@ -311,12 +301,12 @@ export const App: React.FC = () => {
 
   const handleOpenSpellDesignStudio = useCallback((initialPrompt?: string) => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToSpellDesignStudio(context, initialPrompt);
+    NavigationController.navigateToSpellDesignStudio(context, initialPrompt);
   }, [createNavigationContext]);
 
   const handleOpenTheorizeComponentLab = useCallback(() => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToTheorizeComponentLab(context);
+    NavigationController.navigateToTheorizeComponentLab(context);
   }, [createNavigationContext]);
 
   const handleAICreateComponent = useCallback(async (prompt: string, goldInvested: number, essenceInvested: number) => {
@@ -524,7 +514,7 @@ export const App: React.FC = () => {
     onCloseMobileMenu: () => gameState.setIsMobileMenuOpen(false),
     onOpenParameters: () => {
       const context = createNavigationContext();
-      NavigationControllerUtils.navigateToParameters(context);
+      NavigationController.navigateToParameters(context);
     },
     onExportSave: handleExportSave,
     onImportSave: handleImportSave,
@@ -548,11 +538,11 @@ export const App: React.FC = () => {
     onCloseCharacterSheet: () => gameState.setGameState('HOME'),
     onOpenSpellDesignStudio: () => {
       const context = createNavigationContext();
-      NavigationControllerUtils.navigateToSpellDesignStudio(context);
+      NavigationController.navigateToSpellDesignStudio(context);
     },
     onOpenTraitsPage: () => {
       const context = createNavigationContext();
-      NavigationControllerUtils.navigateToTraitsPage(context);
+      NavigationController.navigateToTraitsPage(context);
     },
     
     // Utility functions
