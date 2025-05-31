@@ -39,14 +39,14 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
 
   return (
     <div
-      className={`relative bg-gradient-to-br ${color} backdrop-blur-sm rounded-lg border ${borderColor} p-2.5 transition-all duration-300 hover:shadow-lg cursor-pointer group overflow-hidden h-fit`}
+      className={`relative bg-gradient-to-br ${color} backdrop-blur-sm rounded-md border ${borderColor} p-1.5 transition-all duration-300 hover:shadow-lg cursor-pointer group overflow-hidden h-fit`}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Background Illustration */}
       <div className={`absolute inset-0 ${isCampCard ? 'opacity-70' : 'opacity-0 group-hover:opacity-10'} transition-opacity duration-300`}>
-        <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-lg overflow-hidden`}>
+        <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-md overflow-hidden`}>
           {isCampCard ? (
             // Special handling for camp card with gif
             <div className="relative w-full h-full">
@@ -88,13 +88,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           
           {/* Fallback icon illustration */}
           <div className="hidden w-full h-full">
-            <div className="absolute top-2 right-2 w-16 h-16 opacity-30">
-              <div className={`w-full h-full ${iconColor} scale-[4] transform rotate-12`}>
+            <div className="absolute top-0.5 right-0.5 w-6 h-6 opacity-30">
+              <div className={`w-full h-full ${iconColor} scale-[1.5] transform rotate-12`}>
                 {icon}
               </div>
             </div>
-            <div className="absolute bottom-1 left-1 w-12 h-12 opacity-20">
-              <div className={`w-full h-full ${iconColor} scale-[3] transform -rotate-12`}>
+            <div className="absolute bottom-0.5 left-0.5 w-4 h-4 opacity-20">
+              <div className={`w-full h-full ${iconColor} scale-[1.5] transform -rotate-12`}>
                 {icon}
               </div>
             </div>
@@ -104,16 +104,16 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
 
       {/* Content */}
       <div className={`relative z-10 ${isCampCard && isHovered ? 'drop-shadow-lg' : ''}`}>
-        <div className="flex items-center space-x-2 mb-1.5">
-          <div className={`w-5 h-5 bg-gradient-to-br ${color} border ${borderColor} rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200 ${
+        <div className="flex items-center space-x-1.5 mb-0.5">
+          <div className={`w-3.5 h-3.5 bg-gradient-to-br ${color} border ${borderColor} rounded-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200 ${
             isCampCard && isHovered ? 'shadow-lg shadow-amber-500/30' : ''
           }`}>
-            <div className={`w-3 h-3 ${iconColor} flex items-center justify-center`}>
+            <div className={`w-2 h-2 ${iconColor} flex items-center justify-center`}>
               {icon}
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`text-sm font-semibold transition-colors truncate ${
+            <h4 className={`text-xs font-semibold transition-colors truncate leading-none ${
               isCampCard && isHovered 
                 ? 'text-white drop-shadow-md' 
                 : 'text-slate-100 group-hover:text-white'
@@ -124,30 +124,22 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           </div>
         </div>
         
-        <p className={`text-xs transition-colors mb-1.5 line-clamp-2 leading-relaxed ${
-          isCampCard && isHovered 
-            ? 'text-slate-100 drop-shadow-sm' 
-            : 'text-slate-300 group-hover:text-slate-200'
-        }`}>
-          {description}
-        </p>
-        
-        {/* Compact Benefits Grid */}
-        <div className="grid grid-cols-1 gap-0.5 mb-1.5">
+        {/* Compact Benefits - Single Line */}
+        <div className="flex items-center space-x-2 mb-0.5">
           {benefits.slice(0, 2).map((benefit, index) => (
             <div key={index} className={`flex items-center text-xs transition-colors ${
               isCampCard && isHovered 
                 ? 'text-slate-200 drop-shadow-sm' 
                 : 'text-slate-400 group-hover:text-slate-300'
             }`}>
-              <div className={`w-1 h-1 rounded-full ${iconColor} mr-2 opacity-60 flex-shrink-0`}></div>
-              <span className="truncate">{benefit}</span>
+              <div className={`w-0.5 h-0.5 rounded-full ${iconColor} mr-1 opacity-60 flex-shrink-0`}></div>
+              <span className="truncate text-xs">{benefit}</span>
             </div>
           ))}
         </div>
         
         {/* Compact Action Footer */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-600/20">
+        <div className="flex items-center justify-between border-t border-slate-600/20 pt-0.5">
           <div className={`text-xs ${iconColor} font-medium transition-all duration-200 ${
             isCampCard && isHovered 
               ? 'brightness-125 drop-shadow-sm' 

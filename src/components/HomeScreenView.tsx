@@ -92,6 +92,34 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       borderColor: 'border-purple-500/30',
       iconColor: 'text-purple-400',
       backgroundImage: '/assets/activity-card/npcs.svg'
+    },
+    {
+      id: 'quests',
+      title: 'Quest Log',
+      shortTitle: 'Quests',
+      description: 'Track your active quests and view completed adventures.',
+      icon: <BookIcon />,
+      variant: 'warning' as const,
+      onClick: onOpenNPCs,
+      benefits: ['Active: 3', 'Completed: 12', 'New Available: 2'],
+      color: 'from-yellow-500/20 to-yellow-600/20',
+      borderColor: 'border-yellow-500/30',
+      iconColor: 'text-yellow-400',
+      backgroundImage: '/assets/activity-card/quests.svg'
+    },
+    {
+      id: 'trading',
+      title: 'Trading Hub',
+      shortTitle: 'Trading',
+      description: 'Access the global marketplace to buy and sell items.',
+      icon: <GearIcon />,
+      variant: 'success' as const,
+      onClick: () => console.log('Trading Hub clicked'),
+      benefits: ['Market: Active', 'Listings: 5', 'Recent Sales: 8'],
+      color: 'from-emerald-500/20 to-emerald-600/20',
+      borderColor: 'border-emerald-500/30',
+      iconColor: 'text-emerald-400',
+      backgroundImage: '/assets/activity-card/trading.svg'
     }
   ];
 
@@ -304,140 +332,77 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               </ActionButton>
             </div>
 
-            {/* Activities Section - Enhanced with Detailed Cards */}
+            {/* Multiplayer Section - Enhanced with Detailed Interface */}
             <div className="flex-1 min-h-0">
-              {/* Enhanced Activity Cards Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4 h-full overflow-y-auto">
-                {activityCards.map((activity) => (
-                  <ActivityCard
-                    key={activity.id}
-                    id={activity.id}
-                    title={activity.title}
-                    shortTitle={activity.shortTitle}
-                    description={activity.description}
-                    icon={activity.icon}
-                    onClick={activity.onClick}
-                    benefits={activity.benefits}
-                    color={activity.color}
-                    borderColor={activity.borderColor}
-                    iconColor={activity.iconColor}
-                    backgroundImage={activity.backgroundImage}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Third Column - Social & Economy */}
-          <div className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 h-full">
-            {/* Quests Card */}
-            <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-yellow-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-lg flex items-center justify-center">
-                  <BookIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-yellow-400" />
-                </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-yellow-300">Quests</h3>
-              </div>
-              
-              <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-lg p-2 sm:p-3 border border-slate-600/50 shadow-inner mb-2 sm:mb-3">
-                <p className="text-xs text-slate-300 mb-1 sm:mb-2">
-                  Embark on epic adventures and complete challenging quests for rewards.
-                </p>
-                <div className="text-xs text-slate-400 space-y-0.5">
-                  <div>• Active Quests: 3</div>
-                  <div>• Completed: 12</div>
-                  <div>• New Available: 2</div>
-                </div>
-              </div>
-
-              <ActionButton 
-                onClick={onOpenNPCs} 
-                variant="warning" 
-                size="lg" 
-                icon={<BookIcon />} 
-                className="w-full text-sm hover:scale-105 transition-transform duration-200"
-              >
-                View Quests
-              </ActionButton>
-            </div>
-
-            {/* Trading Hub Card */}
-            <div className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-emerald-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
-                  <GearIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-emerald-400" />
-                </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-emerald-300">Trading Hub</h3>
-              </div>
-              
-              <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-lg p-2 sm:p-3 border border-slate-600/50 shadow-inner mb-2 sm:mb-3">
-                <p className="text-xs text-slate-300 mb-1 sm:mb-2">
-                  Access the global marketplace to buy and sell items with other players.
-                </p>
-                <div className="text-xs text-slate-400 space-y-0.5">
-                  <div>• Market Status: Active</div>
-                  <div>• Your Listings: 5</div>
-                  <div>• Recent Sales: 8</div>
-                </div>
-              </div>
-
-              <ActionButton 
-                onClick={() => console.log('Trading Hub clicked')} 
-                variant="success" 
-                size="lg" 
-                icon={<GearIcon />} 
-                className="w-full text-sm hover:scale-105 transition-transform duration-200"
-              >
-                Open Market
-              </ActionButton>
-            </div>
-
-            {/* Multiplayer Card */}
-            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-purple-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-1 min-h-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
-                  <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
-                </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Multiplayer</h3>
-              </div>
-              
-              {/* Multiplayer Tabs */}
-              <div className="h-full flex flex-col">
-                <div className="flex border-b border-slate-600/30 mb-3">
-                  <button className="flex-1 py-2 px-3 text-xs font-medium text-purple-300 border-b-2 border-purple-500/50 bg-purple-500/10">
-                    Chat
-                  </button>
-                  <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
-                    Group
-                  </button>
-                  <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
-                    Community
-                  </button>
+              <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-purple-700/60 p-2 sm:p-3 md:p-4 lg:p-5 h-full">
+                <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
+                    <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
+                  </div>
+                  <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Multiplayer</h3>
                 </div>
                 
-                {/* Chat Content */}
-                <div className="flex-1 bg-slate-800/30 rounded-lg p-2 overflow-hidden">
-                  <div className="h-full flex flex-col">
-                    <div className="flex-1 text-xs text-slate-400 mb-2">
-                      <div className="space-y-1">
-                        <div><span className="text-blue-300">Player1:</span> Anyone up for a dungeon run?</div>
-                        <div><span className="text-green-300">Player2:</span> I'm in! What level?</div>
-                        <div><span className="text-yellow-300">Player3:</span> Need help with crafting quest</div>
+                {/* Multiplayer Tabs */}
+                <div className="h-full flex flex-col">
+                  <div className="flex border-b border-slate-600/30 mb-3">
+                    <button className="flex-1 py-2 px-3 text-xs font-medium text-purple-300 border-b-2 border-purple-500/50 bg-purple-500/10">
+                      Chat
+                    </button>
+                    <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
+                      Group
+                    </button>
+                    <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
+                      Community
+                    </button>
+                  </div>
+                  
+                  {/* Chat Content */}
+                  <div className="flex-1 bg-slate-800/30 rounded-lg p-2 overflow-hidden">
+                    <div className="h-full flex flex-col">
+                      <div className="flex-1 text-xs text-slate-400 mb-2">
+                        <div className="space-y-1">
+                          <div><span className="text-blue-300">Player1:</span> Anyone up for a dungeon run?</div>
+                          <div><span className="text-green-300">Player2:</span> I'm in! What level?</div>
+                          <div><span className="text-yellow-300">Player3:</span> Need help with crafting quest</div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <input 
-                        type="text" 
-                        placeholder="Type message..." 
-                        className="flex-1 bg-slate-700/50 border border-slate-600/30 rounded px-2 py-1 text-xs text-slate-200 placeholder-slate-500"
-                      />
-                      <button className="bg-purple-600/50 hover:bg-purple-600/70 border border-purple-500/30 rounded px-2 py-1 text-xs text-purple-200 transition-colors">
-                        Send
-                      </button>
+                      <div className="flex space-x-1">
+                        <input 
+                          type="text" 
+                          placeholder="Type message..." 
+                          className="flex-1 bg-slate-700/50 border border-slate-600/30 rounded px-2 py-1 text-xs text-slate-200 placeholder-slate-500"
+                        />
+                        <button className="bg-purple-600/50 hover:bg-purple-600/70 border border-purple-500/30 rounded px-2 py-1 text-xs text-purple-200 transition-colors">
+                          Send
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Third Column - Feature Cards */}
+          <div className="flex flex-col h-full">
+            {/* Feature Cards Grid - Single Column Layout */}
+            <div className="grid grid-cols-1 gap-1 sm:gap-1.5 md:gap-2 h-full overflow-y-auto">
+              {activityCards.map((activity) => (
+                <ActivityCard
+                  key={activity.id}
+                  id={activity.id}
+                  title={activity.title}
+                  shortTitle={activity.shortTitle}
+                  description={activity.description}
+                  icon={activity.icon}
+                  onClick={activity.onClick}
+                  benefits={activity.benefits}
+                  color={activity.color}
+                  borderColor={activity.borderColor}
+                  iconColor={activity.iconColor}
+                  backgroundImage={activity.backgroundImage}
+                />
+              ))}
             </div>
           </div>
         </div>
