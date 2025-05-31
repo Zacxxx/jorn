@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Player, Quest } from '../../../types';
-import Modal from '../../../ui/Modal'; // Adjusted import path
-import { GetSpellIcon } from '../../IconComponents'; // Adjusted import path
+import { Player, Quest } from '../../types'; // Corrected path
+import Modal from '../../ui/Modal'; // Corrected path for global UI
+import { GetSpellIcon } from '../IconComponents'; // Corrected path
 
 interface QuestsTabProps {
   player: Player;

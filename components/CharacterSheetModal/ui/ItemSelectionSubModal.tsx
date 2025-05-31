@@ -1,8 +1,8 @@
 import React from 'react';
-import { DetailedEquipmentSlot, Equipment } from '../../types'; // Adjusted path
-import Modal from '../../ui/Modal'; // Adjusted path
-import ActionButton from '../../ui/ActionButton'; // Adjusted path
-import { ItemCard } from './ItemCard'; // ItemCard is in the same /ui directory
+import { DetailedEquipmentSlot, Equipment } from '../../../types'; // Corrected path
+import Modal from '../../../ui/Modal'; // Corrected path for global UI
+import ActionButton from '../../../ui/ActionButton'; // Corrected path for global UI
+import { ItemCard } from './ItemCard'; // Path is correct
 
 interface ItemSelectionSubModalProps {
   isOpen: boolean;

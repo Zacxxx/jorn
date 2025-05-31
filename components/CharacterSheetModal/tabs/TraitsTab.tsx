@@ -1,9 +1,9 @@
 import React from 'react';
-import { Player, Trait } from '../../../types';
-import ActionButton from '../../../ui/ActionButton'; // Adjusted import path
-import { GetSpellIcon, StarIcon } from '../../IconComponents'; // Adjusted import path
-import { getRarityColorClass } from '../../../utils'; // Adjusted import path
-import { DEFAULT_TRAIT_ICON } from '../../../constants'; // Adjusted import path
+import { Player, Trait } from '../../types'; // Corrected path
+import ActionButton from '../../ui/ActionButton'; // Corrected path for global UI
+import { GetSpellIcon, StarIcon } from '../IconComponents'; // Corrected path
+import { getRarityColorClass } from '../../utils'; // Corrected path
+import { DEFAULT_TRAIT_ICON } from '../../constants'; // Corrected path
 
 
 interface TraitsTabProps {

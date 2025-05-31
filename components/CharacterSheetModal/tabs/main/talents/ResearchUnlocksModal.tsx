@@ -1,7 +1,7 @@
 import React from 'react';
-import Modal from '../../../../ui/Modal'; // Adjusted path
-import ActionButton from '../../../../ui/ActionButton'; // Adjusted path
-// import { ResearchUnlock } from '../../../../types'; // If ResearchUnlock type is defined globally
+import Modal from '../../../../../ui/Modal'; // Corrected path for global UI
+import ActionButton from '../../../../../ui/ActionButton'; // Corrected path for global UI
+// import { ResearchUnlock } from '../../../../../types'; // Corrected path if ResearchUnlock type is needed
 
 interface ResearchUnlock { // Using local definition as per MainTab.tsx for now
     id: string;

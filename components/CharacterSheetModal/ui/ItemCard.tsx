@@ -1,12 +1,12 @@
 import React from 'react';
 import {
     Player, GameItem, MasterItemDefinition, UniqueConsumable, MasterConsumableItem, LootChestItem, Equipment, SpellIconName
-} from '../../types'; // Adjusted path
-import ActionButton from '../../ui/ActionButton'; // Adjusted path
-import { GetSpellIcon, ChestIcon, GearIcon } from '../IconComponents'; // Adjusted path
-import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService'; // Adjusted path
-import { RESOURCE_ICONS } from '../../constants'; // Adjusted path
-import { getRarityColorClass } from '../../utils'; // Adjusted path
+} from '../../../types'; // Corrected path
+import ActionButton from '../../../ui/ActionButton'; // Corrected path for global UI
+import { GetSpellIcon, ChestIcon, GearIcon } from '../IconComponents'; // Path is correct
+import { MASTER_ITEM_DEFINITIONS } from '../../../services/itemService'; // Corrected path
+import { RESOURCE_ICONS } from '../../../constants'; // Corrected path
+import { getRarityColorClass } from '../../../utils'; // Corrected path
 
 interface ItemCardProps {
   item: GameItem | MasterItemDefinition;

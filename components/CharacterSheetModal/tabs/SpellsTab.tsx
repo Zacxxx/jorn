@@ -1,8 +1,8 @@
 import React from 'react';
-import { Spell, Player } from '../../../types';
-import SpellbookDisplay from '../../SpellbookDisplay'; // Adjusted import path
-import ActionButton from '../../../ui/ActionButton'; // Adjusted import path
-import { WandIcon }   from '../../IconComponents'; // Adjusted import path
+import { Spell, Player } from '../../types'; // Corrected path
+import SpellbookDisplay from '../SpellbookDisplay'; // Corrected path
+import ActionButton from '../../ui/ActionButton'; // Corrected path for global UI
+import { WandIcon }   from '../IconComponents'; // Corrected path
 
 interface SpellsTabProps {
   player: Player;

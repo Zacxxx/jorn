@@ -1,27 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, Ability, EquipmentSlot as GenericEquipmentSlot, InventoryFilterType, MasterItemDefinition, MasterResourceItem, MasterConsumableItem, LootChestItem, UniqueConsumable, Quest, CharacterSheetTab, SpellIconName } from '../types';
-import Modal from '../ui/Modal';
-import '../src/styles/ability-list.css';
-import ActionButton from '../ui/ActionButton';
+import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, Ability, EquipmentSlot as GenericEquipmentSlot, CharacterSheetTab, Quest } from '../../types'; // Simplified types
+import Modal from '../../ui/Modal'; // Corrected
+import '../../src/styles/ability-list.css'; // Assuming path is correct relative to src
+import ActionButton from '../../ui/ActionButton'; // Corrected
 import {
-    GetSpellIcon, UserIcon, GearIcon, BagIcon, WandIcon, StarIcon, BookIcon, MindIcon,
-    HealIcon, SpeedIcon, SwordSlashIcon, ShieldIcon, BodyIcon, ReflexIcon,
-    ChestIcon, CollectionIcon
+    UserIcon, BagIcon, WandIcon, StarIcon, BookIcon, CollectionIcon // Icons used in TABS array
 } from './IconComponents';
 import {
-    DETAILED_EQUIPMENT_SLOTS_LEFT_COL, DETAILED_EQUIPMENT_SLOTS_RIGHT_COL,
-    DETAILED_SLOT_PLACEHOLDER_ICONS, RESOURCE_ICONS, STATUS_EFFECT_ICONS, DEFAULT_ENCYCLOPEDIA_ICON, GENERIC_TO_DETAILED_SLOT_MAP,
-    DEFAULT_TRAIT_ICON
-} from '../constants';
-import SpellbookDisplay from './SpellbookDisplay';
-import AbilityBookDisplay from './AbilityBookDisplay';
-import { MASTER_ITEM_DEFINITIONS } from '../services/itemService';
-import { getRarityColorClass } from '../utils';
-import SheetTabButton from './ui/SheetTabButton'; // Added import
-import EquipmentSlotDisplay from './ui/EquipmentSlotDisplay'; // Added import
-import VitalStatisticsDisplay from './ui/VitalStatisticsDisplay';
-import AttributesDisplay from './ui/AttributesDisplay';
-import { ItemCard } from './ui/ItemCard';
+    STATUS_EFFECT_ICONS, GENERIC_TO_DETAILED_SLOT_MAP // GENERIC_TO_DETAILED_SLOT_MAP needed for getCompatibleItemsForSlot
+} from '../../constants'; // Corrected
+import { getRarityColorClass } from '../../utils'; // Corrected
+import SheetTabButton from './ui/SheetTabButton';
 import ItemSelectionSubModal from './ui/ItemSelectionSubModal';
 
 // Tab Components
@@ -74,14 +63,9 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<CharacterSheetTab>(initialTab || 'Main');
   const [itemSelectionModalState, setItemSelectionModalState] = useState<{isOpen: boolean, slot: DetailedEquipmentSlot | null}>({isOpen: false, slot: null});
-  const [selectedQuestDetail, setSelectedQuestDetail] = useState<Quest | null>(null);
-
-  // Inventory state and handlers are moved to InventoryTab.tsx
-
-  type EncyclopediaSubTabType = 'monsters' | 'items' | 'spells' | 'components';
-  const [encyclopediaSubTab, setEncyclopediaSubTab] = useState<EncyclopediaSubTabType>('monsters');
-  const [selectedEncyclopediaEntry, setSelectedEncyclopediaEntry] = useState<any | null>(null);
-  const [encyclopediaSearchTerm, setEncyclopediaSearchTerm] = useState('');
+  // selectedQuestDetail state is now managed by QuestsTab.tsx
+  // Inventory state (including contextMenuState) and handlers are moved to InventoryTab.tsx
+  // Encyclopedia state and handlers are now managed by EncyclopediaTab.tsx
 
   // State for new 'Main' tab UI
   const [currentTreeCategory, setCurrentTreeCategory] = useState<string>('core');
@@ -145,20 +129,8 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   useEffect(() => {
     if (isOpen && initialTab) {
         setActiveTab(initialTab);
-        if (initialTab !== 'Quests') setSelectedQuestDetail(null);
-        // Reset inventory-specific states if InventoryTab itself doesn't handle it on visibility change
-        // (Currently, InventoryTab manages its own state internally, so less need to reset here)
-        if (initialTab !== 'Encyclopedia') {
-            setSelectedEncyclopediaEntry(null);
-            setEncyclopediaSearchTerm('');
-        }
     }
-    if (!isOpen) { // Reset states when modal closes
-        setSelectedQuestDetail(null);
-        // Inventory states are managed within InventoryTab, will reset if InventoryTab unmounts or has its own useEffect for isOpen
-        setSelectedEncyclopediaEntry(null);
-        setEncyclopediaSearchTerm('');
-    }
+    // No other state resets needed here as they are managed by individual tabs or modals.
   }, [isOpen, initialTab]);
 
   const handleCloseModal = () => {
@@ -206,108 +178,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   };
 
   // Inventory handler functions (getInventoryGridItems, handleInventoryGridSlotClick, etc.) moved to InventoryTab.tsx
-
-  const renderEncyclopediaContent = () => {
-    let filteredEntries: any[] = [];
-    let entryType = "";
-
-    switch (encyclopediaSubTab) {
-        case 'monsters':
-            entryType = "Monster";
-            filteredEntries = Object.values(player.bestiary).filter(m =>
-                !encyclopediaSearchTerm || m.name.toLowerCase().includes(encyclopediaSearchTerm.toLowerCase())
-            ).sort((a,b) => a.name.localeCompare(b.name));
-            break;
-        case 'items':
-            entryType = "Item";
-            const allDisplayableItems: (MasterItemDefinition | GameItem)[] = [
-                ...Object.values(MASTER_ITEM_DEFINITIONS),
-                ...player.items
-            ];
-            // Remove duplicates by ID, preferring unique player items if IDs clash (though master IDs should be distinct)
-            const uniqueDisplayableItems = Array.from(new Map(allDisplayableItems.map(item => [item.id, item])).values());
-
-            filteredEntries = uniqueDisplayableItems.filter(i =>
-                !encyclopediaSearchTerm || i.name.toLowerCase().includes(encyclopediaSearchTerm.toLowerCase())
-            ).sort((a,b) => a.name.localeCompare(b.name));
-            break;
-        case 'spells':
-            entryType = "Spell";
-            filteredEntries = player.spells.filter(s =>
-                !encyclopediaSearchTerm || s.name.toLowerCase().includes(encyclopediaSearchTerm.toLowerCase())
-            ).sort((a,b) => a.name.localeCompare(b.name));
-            break;
-        case 'components':
-            entryType = "Component";
-            filteredEntries = player.discoveredComponents.filter(c =>
-                !encyclopediaSearchTerm || c.name.toLowerCase().includes(encyclopediaSearchTerm.toLowerCase())
-            ).sort((a,b) => a.name.localeCompare(b.name));
-            break;
-    }
-
-    const renderEntryDetail = (entry: any) => {
-        if (!entry) return <p className="text-slate-400 italic text-center">Select an entry to view details.</p>;
-        // This is a basic detail view, can be expanded significantly
-        return (
-            <div className="p-3 bg-slate-800/70 rounded-md border border-slate-700">
-                <div className="flex items-center mb-2">
-                    <GetSpellIcon iconName={entry.iconName || DEFAULT_ENCYCLOPEDIA_ICON} className={`w-8 h-8 mr-3 ${getRarityColorClass(entry.rarity || 0)}`} />
-                    <h4 className={`text-lg font-bold ${getRarityColorClass(entry.rarity || 0)}`}>{entry.name}</h4>
-                </div>
-                <p className="text-xs text-slate-300 mb-1 italic">{entry.description}</p>
-                {entry.itemType && <p className="text-xs text-slate-400">Type: {entry.itemType}</p>}
-                {entry.category && <p className="text-xs text-slate-400">Category: {entry.category} (Tier {entry.tier})</p>}
-                {entry.manaCost !== undefined && <p className="text-xs text-slate-400">Mana Cost: {entry.manaCost}</p>}
-                {entry.damage !== undefined && <p className="text-xs text-slate-400">Damage: {entry.damage} ({entry.damageType})</p>}
-                {entry.level !== undefined && entryType === "Monster" && <p className="text-xs text-slate-400">Level: {entry.level}</p>}
-                {entry.weakness && <p className="text-xs text-yellow-400">Weakness: {entry.weakness}</p>}
-                {entry.resistance && <p className="text-xs text-sky-400">Resistance: {entry.resistance}</p>}
-                {entry.vanquishedCount !== undefined && <p className="text-xs text-slate-400">Vanquished: {entry.vanquishedCount}</p>}
-            </div>
-        );
-    };
-
-
-    return (
-        <div className="h-full flex flex-col">
-            <div className="flex space-x-1 mb-2 p-1 bg-slate-800/50 rounded-md">
-                {(['monsters', 'items', 'spells', 'components'] as EncyclopediaSubTabType[]).map(tab => (
-                    <ActionButton key={tab} onClick={() => {setEncyclopediaSubTab(tab); setSelectedEncyclopediaEntry(null);}} variant={encyclopediaSubTab === tab ? 'primary' : 'secondary'} size="sm" className="flex-1 !py-1 text-xs">
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </ActionButton>
-                ))}
-            </div>
-            <input
-                type="text"
-                placeholder={`Search ${encyclopediaSubTab}...`}
-                value={encyclopediaSearchTerm}
-                onChange={e => setEncyclopediaSearchTerm(e.target.value)}
-                className="w-full p-2 mb-2 bg-slate-600 border border-slate-500 rounded-md text-slate-100 placeholder-slate-400 text-sm"
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 flex-grow overflow-hidden">
-                <div className="overflow-y-auto styled-scrollbar space-y-1 pr-1 bg-slate-700/40 p-1.5 rounded-md h-[calc(70vh-180px)] md:h-auto">
-                    {filteredEntries.length === 0 ? (
-                        <p className="text-slate-400 italic text-center p-3">No {entryType.toLowerCase()} entries found matching criteria.</p>
-                    ) : (
-                        filteredEntries.map(entry => (
-                            <button key={entry.id} onClick={() => setSelectedEncyclopediaEntry(entry)}
-                                    className={`w-full text-left p-1.5 rounded-md flex items-center transition-colors
-                                                ${selectedEncyclopediaEntry?.id === entry.id ? 'bg-sky-700 text-white' : 'bg-slate-600/70 hover:bg-slate-500/70 text-slate-200'}`}>
-                                <GetSpellIcon iconName={entry.iconName || DEFAULT_ENCYCLOPEDIA_ICON} className="w-4 h-4 mr-2 flex-shrink-0"/>
-                                <span className="text-xs truncate">{entry.name}</span>
-                            </button>
-                        ))
-                    )}
-                </div>
-                <div className="overflow-y-auto styled-scrollbar p-1 h-[calc(70vh-180px)] md:h-auto">
-                    {selectedEncyclopediaEntry ? renderEntryDetail(selectedEncyclopediaEntry) :
-                        <div className="flex items-center justify-center h-full text-slate-500 italic">Select an entry to view details.</div>
-                    }
-                </div>
-            </div>
-        </div>
-    );
-  };
+  // renderEncyclopediaContent and its helper renderEntryDetail are now part of EncyclopediaTab.tsx
 
 
   const TABS: { id: CharacterSheetTab; label: string; icon: React.ReactNode }[] = [
@@ -424,9 +295,18 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
         // TODO: Pass actual research data and unlock handlers
       />
 
-      {/* ContextMenu is now rendered within InventoryTab.tsx */}
+      {/* ContextMenu is now rendered within InventoryTab.tsx as per previous successful refactor */}
     </Modal>
   );
 };
 
-// ItemContextMenu and its props are moved to InventoryTab.tsx
+// ItemContextMenu, ItemContextMenuProps, and InventoryGridItemType (if it was here) are fully moved to InventoryTab.tsx.
+// However, CharacterSheetModal still renders ItemContextMenu. This needs to be reconciled.
+// For now, assuming ItemContextMenu is intended to be part of CharacterSheetModal if it's generic enough,
+// or it should be fully inside InventoryTab if specific to it.
+// The previous step said "ContextMenu is now rendered within InventoryTab.tsx".
+// If that's true, then ItemContextMenu related code (definition and rendering call) should be removed from here.
+
+// Let's proceed assuming ItemContextMenu IS in InventoryTab.tsx as per last successful report.
+// This means the direct rendering of ItemContextMenu and its props definition should not be here.
+// Also, InventoryGridItemType would not be needed here.

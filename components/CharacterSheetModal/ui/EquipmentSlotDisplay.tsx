@@ -1,7 +1,7 @@
 import React from 'react';
-import { DetailedEquipmentSlot, GameItem, Equipment, SpellIconName } from '../../types'; // Adjusted path
-import { GetSpellIcon } from '../IconComponents'; // Adjusted path
-import { DETAILED_SLOT_PLACEHOLDER_ICONS } from '../../constants'; // Adjusted path
+import { DetailedEquipmentSlot, GameItem, Equipment, SpellIconName } from '../../../types'; // Corrected path
+import { GetSpellIcon } from '../IconComponents'; // Path is correct
+import { DETAILED_SLOT_PLACEHOLDER_ICONS } from '../../../constants'; // Corrected path
 
 interface EquipmentSlotDisplayProps {
   slot: DetailedEquipmentSlot;

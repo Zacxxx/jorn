@@ -1,9 +1,9 @@
 import React from 'react';
-import { Player, PlayerEffectiveStats } from '../../types'; // Adjusted path
+import { Player, PlayerEffectiveStats } from '../../../types'; // Corrected path
 import {
     GetSpellIcon, SpeedIcon, SwordSlashIcon, MindIcon, ShieldIcon, BodyIcon, ReflexIcon
-} from '../IconComponents'; // Adjusted path
-import { STATUS_EFFECT_ICONS } from '../../constants'; // Adjusted path
+} from '../IconComponents'; // Path is correct
+import { STATUS_EFFECT_ICONS } from '../../../constants'; // Corrected path
 
 const AttributesDisplay: React.FC<{player:Player, stats: PlayerEffectiveStats}> = ({player, stats}) => {
     const combatStats = [

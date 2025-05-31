@@ -1,6 +1,6 @@
 import React from 'react';
-import { Talent } from '../../../../types'; // Adjusted path
-import ActionButton from '../../../../ui/ActionButton'; // Adjusted path
+import { Talent } from '../../../../../types'; // Corrected path
+import ActionButton from '../../../../../ui/ActionButton'; // Corrected path for global UI
 
 interface TalentDetailViewProps {
   selectedTalentDetails: Talent | null;

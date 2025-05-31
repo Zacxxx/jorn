@@ -1,5 +1,5 @@
 import React from 'react';
-import { Talent } from '../../../../types'; // Adjusted path, assuming Talent is defined in global types
+import { Talent } from '../../../../../types'; // Corrected path
 
 interface TalentTreeProps {
   treeData: any; // TODO: Replace with actual TalentTree data type
