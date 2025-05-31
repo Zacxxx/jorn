@@ -1359,7 +1359,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         if (foundEnemy) {
             targetEntity = foundEnemy;
             if (ability.effectType === 'ENEMY_DEBUFF' && ability.targetStatusEffect && ability.duration) {
-                applyStatusEffect(targetId, { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
+            applyStatusEffect(targetId, { name: ability.targetStatusEffect, duration: ability.duration, magnitude: ability.magnitude, chance: 100 }, ability.id);
             }
         }
     }

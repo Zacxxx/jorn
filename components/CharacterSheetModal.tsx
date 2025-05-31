@@ -1016,52 +1016,44 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     { id: 'Encyclopedia', label: 'Encyclopedia', icon: <CollectionIcon /> },
   ];
 
-  // Helper function to get equipment rarity color
-  const getEquipmentRarityBorder = (item: Equipment | null) => {
-    if (!item) return 'border-slate-600/50';
-    const rarity = (item as any).rarity || 0;
-    if (rarity <= 1) return 'border-gray-500/70 bg-gray-500/10';
-    if (rarity <= 2) return 'border-green-500/70 bg-green-500/10';
-    if (rarity <= 4) return 'border-blue-500/70 bg-blue-500/10';
-    if (rarity <= 6) return 'border-purple-500/70 bg-purple-500/10';
-    if (rarity <= 8) return 'border-orange-500/70 bg-orange-500/10';
-    return 'border-yellow-500/70 bg-yellow-500/10';
-  };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCloseModal} title="Character Sheet" size="5xl">
-      <div className="flex flex-col min-h-[75vh]">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={handleCloseModal} 
+      title={
+        <div className="flex items-center gap-3 py-1">
+          <div className="w-12 h-12 border-2 border-white/30 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0 shadow-lg">
+            <UserIcon className="w-8 h-8 text-white/60" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white text-lg font-bold mb-0">{player.name || 'Player'}</h3>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="text-blue-400 font-semibold">Level {player.level} Human Adventurer</span>
+              <span className="text-purple-400 font-medium">The Brave</span>
+              <span className="text-green-400">{player.currentLocationId || 'Unknown'}</span>
+              <span className="text-yellow-400">{player.gold.toLocaleString()} Gold</span>
+              <span className="text-cyan-400">{player.essence.toLocaleString()} Essence</span>
+            </div>
+          </div>
+        </div>
+      } 
+      size="6xl"
+    >
+      <div className="flex flex-col h-[85vh]">
         <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-wrap">
           {TABS.map(tab => (
             <SheetTabButton key={tab.id} icon={tab.icon} label={tab.label} isActive={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} />
           ))}
         </div>
 
-        <div className="flex-grow overflow-y-auto styled-scrollbar p-1">
+        <div className="flex-grow overflow-hidden p-1">
           {activeTab === 'Main' && (
-            <div className="h-full flex flex-col space-y-4 p-4">
-              {/* Character Sheet Header */}
-              <div className="bg-slate-800/60 border border-white/10 rounded-lg p-4 flex-shrink-0">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 border-2 border-white/30 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <UserIcon className="w-12 h-12 text-white/60" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white text-xl font-bold mb-1">{player.name || 'Player'}</h3>
-                    <p className="text-blue-400 text-base font-semibold mb-1">Level {player.level} Human Adventurer</p>
-                    <p className="text-white/80 text-sm">The Brave</p>
-                    <div className="mt-2 flex gap-4 text-xs">
-                      <span className="text-white/70">Location: <span className="text-green-400">{player.currentLocationId || 'Unknown'}</span></span>
-                      <span className="text-white/70">Gold: <span className="text-yellow-400">{player.gold.toLocaleString()}</span></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+            <div className="h-full flex flex-col">
               {/* Main Content Layout */}
               <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-4 min-h-0 overflow-hidden">
                 {/* Left Column: Character Stats */}
-                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full xl:max-h-none">
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full">
                   {/* Core Stats & Attributes */}
                   <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-blue-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-blue-400/50">
                     <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -1277,105 +1269,62 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                 </div>
 
                 {/* Middle Column: Equipment */}
-                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full xl:max-h-none">
-                  {/* Equipment Visual */}
-                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border border-gray-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-gray-400/50">
-                    <div className="flex items-center justify-between mb-2 sm:mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-gray-500/30 to-gray-600/30 border border-gray-500/50 rounded-lg flex items-center justify-center shadow-lg">
-                          <GearIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300" />
-                        </div>
-                        <h4 className="text-gray-200 text-xs sm:text-sm font-bold uppercase tracking-wider">Equipment</h4>
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full">
+                  <div className="bg-slate-800/40 border border-white/10 rounded-lg p-3 flex-shrink-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-white text-sm font-semibold uppercase tracking-wide">Equipment</h4>
+                      <div className="flex gap-1">
+                        <ActionButton variant="warning" size="sm" className="!text-xs !py-1">
+                          Equipment Sets
+                        </ActionButton>
                       </div>
                     </div>
-                    
-                    {/* Equipment Grid */}
-                    <div className="grid grid-cols-3 gap-1 sm:gap-2 max-w-xs mx-auto">
-                      {/* Helmet */}
-                      <div className="col-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
-                        {player.equipment.helmet ? (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-600/20 border border-yellow-500/50 rounded-md flex items-center justify-center">
-                            <span className="text-yellow-300 text-xs font-bold">H</span>
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">H</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
+                    <div className="grid grid-cols-[70px_1fr_70px] grid-rows-[auto_auto_auto_auto] gap-2.5 p-4 bg-slate-900/70 rounded-xl border-2 border-blue-500/40 min-h-[380px]">
+                      {/* Left Side Equipment */}
+                      <div className="flex flex-col gap-2 items-center">
+                        <EquipmentSlotDisplay slot="Head" itemId={player.equippedItems.Head} allItems={player.items} onClick={() => handleEquipmentSlotClick('Head')} />
+                        <EquipmentSlotDisplay slot="Neck" itemId={player.equippedItems.Neck} allItems={player.items} onClick={() => handleEquipmentSlotClick('Neck')} />
+                        <EquipmentSlotDisplay slot="Shoulder" itemId={player.equippedItems.Shoulder} allItems={player.items} onClick={() => handleEquipmentSlotClick('Shoulder')} />
+                        <EquipmentSlotDisplay slot="Back" itemId={player.equippedItems.Back} allItems={player.items} onClick={() => handleEquipmentSlotClick('Back')} />
+                        <EquipmentSlotDisplay slot="Chest" itemId={player.equippedItems.Chest} allItems={player.items} onClick={() => handleEquipmentSlotClick('Chest')} />
                       </div>
-
-                      {/* Left Side - Gloves, Ring, etc */}
-                      <div className="row-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
-                        {player.equipment.gloves ? (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600/20 border border-blue-500/50 rounded-md flex items-center justify-center">
-                            <span className="text-blue-300 text-xs font-bold">G</span>
+                      
+                      {/* Character Model Center */}
+                      <div className="flex items-center justify-center p-3">
+                        <div className="w-full max-w-[180px] h-[260px] bg-gradient-to-br from-slate-800/80 to-slate-700/80 border-2 border-blue-500/30 rounded-xl flex items-center justify-center relative overflow-hidden">
+                          <div className="flex flex-col items-center gap-2 text-white/50 text-center">
+                            <UserIcon className="w-16 h-16 opacity-70" />
+                            <span className="text-sm font-medium uppercase tracking-wide">Character Model</span>
                           </div>
-                        ) : (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">G</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-                      </div>
-
-                      {/* Armor */}
-                      <div className="row-start-2 col-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
-                        {player.equipment.armor ? (
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600/20 border border-red-500/50 rounded-md flex items-center justify-center">
-                            <span className="text-red-300 text-xs font-bold">A</span>
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">A</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-                      </div>
-
-                      {/* Right Side - Weapon, Shield */}
-                      <div className="row-start-2 col-start-3 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
-                        {player.equipment.weapon ? (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-600/20 border border-orange-500/50 rounded-md flex items-center justify-center">
-                            <span className="text-orange-300 text-xs font-bold">W</span>
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">W</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-                      </div>
-
-                      {/* Boots */}
-                      <div className="row-start-3 col-start-2 aspect-square bg-gradient-to-br from-gray-800/60 to-gray-900/60 border border-gray-500/30 rounded-lg hover:border-gray-400/50 transition-all duration-300 flex items-center justify-center group cursor-pointer relative hover:shadow-lg">
-                        {player.equipment.boots ? (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600/20 border border-green-500/50 rounded-md flex items-center justify-center">
-                            <span className="text-green-300 text-xs font-bold">B</span>
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-700/50 border border-gray-600/30 rounded-md flex items-center justify-center">
-                            <span className="text-gray-500 text-xs">B</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-                      </div>
-                    </div>
-
-                    {/* Equipment Summary */}
-                    <div className="mt-2 sm:mt-3 pt-2 border-t border-gray-500/20">
-                      <div className="text-center">
-                        <div className="text-gray-300 text-xs mb-1">Equipment Power</div>
-                        <div className="text-orange-400 text-sm font-bold">
-                          {Object.values(player.equipment).filter(item => item !== null).length} / 6 equipped
                         </div>
+                      </div>
+
+                      {/* Right Side Equipment */}
+                      <div className="flex flex-col gap-2 items-center">
+                        <EquipmentSlotDisplay slot="Hands" itemId={player.equippedItems.Hands} allItems={player.items} onClick={() => handleEquipmentSlotClick('Hands')} />
+                        <EquipmentSlotDisplay slot="Belt" itemId={player.equippedItems.Belt} allItems={player.items} onClick={() => handleEquipmentSlotClick('Belt')} />
+                        <EquipmentSlotDisplay slot="Legs" itemId={player.equippedItems.Legs} allItems={player.items} onClick={() => handleEquipmentSlotClick('Legs')} />
+                        <EquipmentSlotDisplay slot="Feet" itemId={player.equippedItems.Feet} allItems={player.items} onClick={() => handleEquipmentSlotClick('Feet')} />
+                        <EquipmentSlotDisplay slot="Jewels" itemId={player.equippedItems.Jewels} allItems={player.items} onClick={() => handleEquipmentSlotClick('Jewels')} />
+                      </div>
+
+                      {/* Bottom Equipment Row - Accessories */}
+                      <div className="col-span-3 flex gap-2.5 justify-center items-center pt-2">
+                        <EquipmentSlotDisplay slot="Accessory1" itemId={player.equippedItems.Accessory1} allItems={player.items} onClick={() => handleEquipmentSlotClick('Accessory1')} />
+                        <EquipmentSlotDisplay slot="Accessory2" itemId={player.equippedItems.Accessory2} allItems={player.items} onClick={() => handleEquipmentSlotClick('Accessory2')} />
+                      </div>
+
+                      {/* Weapon Slots */}
+                      <div className="col-span-3 flex gap-2.5 justify-center items-center pt-2">
+                        <EquipmentSlotDisplay slot="WeaponLeft" itemId={player.equippedItems.WeaponLeft} allItems={player.items} onClick={() => handleEquipmentSlotClick('WeaponLeft')} />
+                        <EquipmentSlotDisplay slot="WeaponRight" itemId={player.equippedItems.WeaponRight} allItems={player.items} onClick={() => handleEquipmentSlotClick('WeaponRight')} />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Right Column: Quick Actions & Info */}
-                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full xl:max-h-none">
+                <div className="space-y-2 sm:space-y-4 overflow-y-auto max-h-full">
                   {/* Quick Actions */}
                   <div className="bg-gradient-to-br from-purple-800/80 to-purple-900/80 border border-purple-500/30 rounded-xl p-2 sm:p-3 flex-shrink-0 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:border-purple-400/50">
                     <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -1412,7 +1361,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
                       </ActionButton>
                       
                       <ActionButton 
-                        onClick={onOpenLootChest} 
+                        onClick={() => onOpenLootChest && onOpenLootChest('default-chest')} 
                         variant="warning"
                         size="sm" 
                         className="w-full !text-xs !py-1.5"
