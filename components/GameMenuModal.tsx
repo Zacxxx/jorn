@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import ActionButton from '../ui/ActionButton';
@@ -11,7 +10,8 @@ interface GameMenuModalProps {
   onOpenHelpWiki: () => void;
   onShowMessage: (title: string, message: string) => void;
   onExportSave: () => void; 
-  onImportSave: () => void; 
+  onImportSave: () => void;
+  onOpenParameters?: () => void;
 }
 
 const GameMenuModal: React.FC<GameMenuModalProps> = ({ 
@@ -21,14 +21,19 @@ const GameMenuModal: React.FC<GameMenuModalProps> = ({
     onOpenHelpWiki,
     onShowMessage,
     onExportSave,
-    onImportSave
+    onImportSave,
+    onOpenParameters
 }) => {
   const [showSaveOptions, setShowSaveOptions] = useState(false);
 
   const handleParameters = () => {
-    onShowMessage("Parameters", "Game parameters and settings would be configured here. (Not yet implemented)");
+    if (onOpenParameters) {
+      onOpenParameters();
+      onClose();
+    } else {
+      onShowMessage("Parameters", "Game parameters and settings would be configured here. (Not yet implemented)");
+    }
     setShowSaveOptions(false);
-    // onClose(); // Keep modal open if parameters are part of it
   }
   
   const handleUser = () => {

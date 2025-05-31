@@ -503,7 +503,8 @@ export type GameState =
   | 'NPC_DIALOGUE'
   | 'RECIPE_DISCOVERY'
   | 'CRAFTING_WORKSHOP'
-  | 'CAMP'; 
+  | 'CAMP'
+  | 'PARAMETERS'; 
 
 
 export interface GeneratedSpellData { 

@@ -1,0 +1,19 @@
+<svg width="200" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="researchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:0.5" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="120" fill="url(#researchGradient)"/>
+  <!-- Books -->
+  <rect x="60" y="40" width="25" height="35" fill="#3b82f6" opacity="0.6"/>
+  <rect x="90" y="35" width="25" height="40" fill="#1e40af" opacity="0.6"/>
+  <rect x="120" y="45" width="25" height="30" fill="#2563eb" opacity="0.6"/>
+  <!-- Scroll -->
+  <ellipse cx="150" cy="60" rx="15" ry="20" fill="#f3f4f6" opacity="0.5"/>
+  <!-- Magical sparkles -->
+  <circle cx="40" cy="30" r="1.5" fill="#60a5fa" opacity="0.8"/>
+  <circle cx="160" cy="25" r="1" fill="#60a5fa" opacity="0.8"/>
+  <circle cx="170" cy="90" r="1.5" fill="#60a5fa" opacity="0.8"/>
+</svg> 
