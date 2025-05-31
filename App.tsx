@@ -19,7 +19,7 @@ import LoadingSpinner from './ui/LoadingSpinner';
 import { GetSpellIcon } from './components/IconComponents';
 import MainLayout from './src/layouts/MainLayout';
 import { CharacterSheetModal } from './components/CharacterSheetModal';
-import CraftingHubModal from './components/CraftingHubModal';
+import CraftingHubView from './src/components/CraftingHubView';
 import HelpWikiModal from './components/HelpWikiModal';
 import GameMenuModal from './components/GameMenuModal';
 import SpellDesignStudioView from './components/SpellDesignStudioView';
@@ -2157,6 +2157,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       case 'NPC_DIALOGUE': return <NPCsView player={player} onReturnHome={handleNavigateHome} onTalkToNPC={handleTalkToNPC} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'RECIPE_DISCOVERY': return <RecipeDiscoveryView player={player} onReturnHome={handleNavigateHome} onDiscoverRecipe={handleDiscoverRecipe} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'CRAFTING_WORKSHOP': return <CraftingWorkshopView player={player} onReturnHome={handleNavigateHome} onCraftItem={handleCraftItem} onDiscoverRecipe={handleDiscoverRecipe} onOpenSpellDesignStudio={handleOpenSpellDesignStudio} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'CRAFTING_HUB': return <CraftingHubView player={player} onReturnHome={handleNavigateHome} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={handleOpenSpellDesignStudio} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onOpenRecipeDiscovery={handleOpenRecipeDiscovery} onOpenCraftingWorkshop={handleOpenCraftingWorkshop} />;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;
       case 'SPELL_DESIGN_STUDIO': return <SpellDesignStudioView player={player} availableComponents={player.discoveredComponents} onFinalizeDesign={handleFinalizeSpellDesign} isLoading={isLoading} onReturnHome={handleNavigateHome} maxSpells={maxRegisteredSpells} initialPrompt={initialSpellPromptForStudio}/>;
       case 'THEORIZE_COMPONENT': return <ResearchLabView player={player} onAICreateComponent={handleAICreateComponent} isLoading={isLoading} onReturnHome={() => setGameState('RESEARCH_ARCHIVES')}/>;
@@ -2197,7 +2198,6 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       </MainLayout>
       {modalContent && <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md"><p>{modalContent.message}</p></Modal>}
       {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={ () => {setGameState('HOME'); setTimeout(() => handleOpenSpellDesignStudio(),0);}} onOpenTraitCraftingScreen={() => {setGameState('HOME'); setTimeout(() => handleOpenTraitsPage(),0);}} canCraftNewTrait={pendingTraitUnlock || (player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) +1) )} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
-      {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => handleOpenSpellDesignStudio()} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onOpenRecipeDiscovery={handleOpenRecipeDiscovery} onOpenCraftingWorkshop={handleOpenCraftingWorkshop} />}
       <HelpWikiModal isOpen={isHelpWikiOpen} onClose={handleCloseHelpWiki} />
       <GameMenuModal isOpen={isGameMenuOpen} onClose={handleCloseGameMenu} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onOpenHelpWiki={handleOpenHelpWiki} onShowMessage={(t,m) => showMessageModal(t,m,'info')} onExportSave={handleExportSave} onImportSave={handleImportSave}/>
       <MobileMenuModal 
