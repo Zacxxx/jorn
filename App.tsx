@@ -17,8 +17,7 @@ import ActionButton from './ui/ActionButton';
 import Modal from './ui/Modal';
 import LoadingSpinner from './ui/LoadingSpinner';
 import { GetSpellIcon } from './components/IconComponents';
-import Header from './components/Header';
-import Footer from './components/Footer';
+import MainLayout from './src/layouts/MainLayout';
 import { CharacterSheetModal } from './components/CharacterSheetModal';
 import CraftingHubModal from './components/CraftingHubModal';
 import HelpWikiModal from './components/HelpWikiModal';
@@ -2181,20 +2180,22 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col" style={{fontFamily: "'Inter', sans-serif"}}>
-      <Header player={player} onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')} onNavigateHome={handleNavigateHome} onOpenMobileMenu={handleOpenMobileMenu}/>
-      <main className="flex-grow container mx-auto p-3 sm:p-4 md:p-6 max-w-6xl">
+    <>
+      <MainLayout
+        player={player}
+        onOpenCharacterSheet={() => handleOpenCharacterSheet('Main')}
+        onNavigateHome={handleNavigateHome}
+        onOpenMobileMenu={handleOpenMobileMenu}
+        onOpenSpellbook={() => handleOpenCharacterSheet('Spells')}
+        onOpenCraftingHub={handleOpenCraftingHub}
+        onOpenInventory={() => handleOpenCharacterSheet('Inventory')}
+        onOpenTraitsPage={() => handleOpenCharacterSheet('Traits')}
+        onOpenQuestsPage={() => handleOpenCharacterSheet('Quests')}
+        onOpenEncyclopedia={() => handleOpenCharacterSheet('Encyclopedia')}
+        onOpenGameMenu={handleOpenGameMenu}
+      >
         {renderCurrentView()}
-      </main>
-       <Footer 
-            onOpenSpellbook={() => handleOpenCharacterSheet('Spells')} 
-            onOpenCraftingHub={handleOpenCraftingHub}
-            onOpenInventory={() => handleOpenCharacterSheet('Inventory')}
-            onOpenTraitsPage={() => handleOpenCharacterSheet('Traits')}
-            onOpenQuestsPage={() => handleOpenCharacterSheet('Quests')}
-            onOpenEncyclopedia={() => handleOpenCharacterSheet('Encyclopedia')}
-            onOpenGameMenu={handleOpenGameMenu}
-        />
+      </MainLayout>
       {modalContent && <Modal isOpen={true} onClose={() => setModalContent(null)} title={modalContent.title} size="md"><p>{modalContent.message}</p></Modal>}
       {gameState === 'CHARACTER_SHEET' && <CharacterSheetModal isOpen={true} onClose={() => setGameState('HOME')} player={player} effectiveStats={effectivePlayerStats} onEquipItem={handleEquipItem} onUnequipItem={handleUnequipItem} maxRegisteredSpells={maxRegisteredSpells} maxPreparedSpells={maxPreparedSpells} maxPreparedAbilities={maxPreparedAbilities} onEditSpell={handleInitiateEditSpell} onPrepareSpell={handlePrepareSpell} onUnprepareSpell={handleUnprepareSpell} onPrepareAbility={handlePrepareAbility} onUnprepareAbility={handleUnprepareAbility} initialTab={defaultCharacterSheetTab} onOpenSpellCraftingScreen={ () => {setGameState('HOME'); setTimeout(() => handleOpenSpellDesignStudio(),0);}} onOpenTraitCraftingScreen={() => {setGameState('HOME'); setTimeout(() => handleOpenTraitsPage(),0);}} canCraftNewTrait={pendingTraitUnlock || (player.level >= FIRST_TRAIT_LEVEL && player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) +1) )} onOpenLootChest={handleOpenLootChest} onUseConsumableFromInventory={handleUseConsumable}/>}
       {gameState === 'CRAFTING_HUB' && <CraftingHubModal isOpen={true} onClose={() => setGameState('HOME')} onInitiateAppItemCraft={handleInitiateItemCraft} isLoading={isLoading} onOpenSpellDesignStudio={() => handleOpenSpellDesignStudio()} onOpenTheorizeLab={handleOpenTheorizeComponentLab} onOpenRecipeDiscovery={handleOpenRecipeDiscovery} onOpenCraftingWorkshop={handleOpenCraftingWorkshop} />}
@@ -2211,6 +2212,6 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         onOpenEncyclopedia={() => {handleOpenCharacterSheet('Encyclopedia'); handleCloseMobileMenu();}}
         onOpenGameOptions={() => {handleOpenGameMenu(); handleCloseMobileMenu();}}
       />
-    </div>
+    </>
   );
 };
