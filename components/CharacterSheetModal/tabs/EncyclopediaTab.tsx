@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Player, MasterItemDefinition, GameItem, Spell, SpellComponent } from '../../types'; // Corrected path
-import ActionButton from '../ui/ActionButton'; // Corrected path assuming ActionButton is in CharacterSheetModal/ui
-import { GetSpellIcon } from '../IconComponents'; // Corrected path
-import { DEFAULT_ENCYCLOPEDIA_ICON } from '../../constants'; // Corrected path
-import { getRarityColorClass } from '../../utils'; // Corrected path
-import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService'; // Corrected path
+import { Player, MasterItemDefinition, GameItem, Spell, SpellComponent } from '../../../types'; // Corrected path
+import ActionButton from '../../../ui/ActionButton'; // Corrected path assuming ActionButton is in CharacterSheetModal/ui
+import { GetSpellIcon } from '../../IconComponents'; // Corrected path
+import { DEFAULT_ENCYCLOPEDIA_ICON } from '../../../constants'; // Corrected path
+import { getRarityColorClass } from '../../../utils'; // Corrected path
+import { MASTER_ITEM_DEFINITIONS } from '../../../services/itemService'; // Corrected path
 
 type EncyclopediaSubTabType = 'monsters' | 'items' | 'spells' | 'components';
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Ability, Player } from '../../types'; // Corrected path
-import AbilityBookDisplay from '../AbilityBookDisplay'; // Corrected path
+import { Ability, Player } from '../../../types'; // Corrected path
+import AbilityBookDisplay from '../../AbilityBookDisplay'; // Corrected path
 // import ActionButton from '../../ui/ActionButton'; // Corrected path if used & global
 // import { StarIcon } from '../IconComponents'; // Corrected path if used
 
