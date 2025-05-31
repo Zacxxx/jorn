@@ -10,7 +10,7 @@ import {
 import { FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL } from '../constants';
 
 // Import layout and modal components
-import MainLayout from '../src/layouts/MainLayout';
+import MainLayout from '../layouts/MainLayout';
 import Modal from '../components/Modal';
 import { CharacterSheetModal } from '../components/CharacterSheetModal';
 import HelpWikiModal from '../components/HelpWikiModal';

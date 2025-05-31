@@ -19,12 +19,12 @@ import {
 // Import all view components
 import HomeScreenView from '../components/HomeScreenView';
 import CampView from '../components/CampView';
-import HomesteadView from '../src/components/HomesteadView';
-import SettlementView from '../src/components/SettlementView';
-import ShopView from '../src/components/ShopView';
-import NPCsView from '../src/components/NPCsView';
-import RecipeDiscoveryView from '../src/components/RecipeDiscoveryView';
-import CraftingWorkshopView from '../src/components/CraftingWorkshopView';
+import HomesteadView from '../components/HomesteadView';
+import SettlementView from '../components/SettlementView';
+import ShopView from '../components/ShopView';
+import NPCsView from '../components/NPCsView';
+import RecipeDiscoveryView from '../components/RecipeDiscoveryView';
+import CraftingWorkshopView from '../components/CraftingWorkshopView';
 import SpellCraftingView from '../components/SpellCraftingView';
 import SpellDesignStudioView from '../components/SpellDesignStudioView';
 import ResearchLabView from '../components/ResearchLabView';
