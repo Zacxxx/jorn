@@ -10,12 +10,12 @@ import {
 import { FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL } from '../constants';
 
 // Import layout and modal components
-import MainLayout from '../src/components/MainLayout';
-import Modal from '../src/components/Modal';
-import CharacterSheetModal from '../src/components/CharacterSheetModal';
-import HelpWikiModal from '../src/components/HelpWikiModal';
-import GameMenuModal from '../src/components/GameMenuModal';
-import MobileMenuModal from '../src/components/MobileMenuModal';
+import MainLayout from '../src/layouts/MainLayout';
+import Modal from '../components/Modal';
+import { CharacterSheetModal } from '../components/CharacterSheetModal';
+import HelpWikiModal from '../components/HelpWikiModal';
+import GameMenuModal from '../components/GameMenuModal';
+import MobileMenuModal from '../components/MobileMenuModal';
 
 // Import ViewRouter
 import ViewRouter, { ViewRouterProps } from './ViewRouter';
