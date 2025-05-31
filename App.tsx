@@ -142,7 +142,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       iconName: 'UserIcon',
       bestiary: {},
       discoveredComponents: [],
-      discoveredRecipes: [],
+      discoveredRecipes: ['basic_health_potion', 'iron_sword_basic'], // Add some starter recipes
       currentLocationId: 'eldergrove',
       homestead: createInitialHomestead(),
     };

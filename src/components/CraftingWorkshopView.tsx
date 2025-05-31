@@ -3,6 +3,7 @@ import { Player } from '../types';
 import ActionButton from '../../ui/ActionButton';
 import { GearIcon, HeroBackIcon, FlaskIcon, CheckmarkCircleIcon, GoldCoinIcon } from './IconComponents';
 import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
+import { getAllRecipes, getRecipeById } from '../../services/craftingService';
 
 interface CraftingWorkshopViewProps {
   player: Player;
@@ -11,58 +12,6 @@ interface CraftingWorkshopViewProps {
   isLoading: boolean;
   onShowMessage: (title: string, message: string) => void;
 }
-
-// Mock recipe data - in a real implementation, this would come from a service
-const mockRecipes = [
-  {
-    id: 'health_potion_basic',
-    name: 'Basic Health Potion',
-    description: 'A simple healing potion that restores health over time.',
-    category: 'consumable',
-    resultItemId: 'health_potion_minor',
-    resultQuantity: 1,
-    ingredients: [
-      { itemId: 'verdant_leaf', quantity: 3, type: 'Verdant Leaf' },
-      { itemId: 'crystal_shard', quantity: 1, type: 'Crystal Shard' }
-    ],
-    craftingTime: 2,
-    requirements: [
-      { type: 'level', value: 1 }
-    ]
-  },
-  {
-    id: 'mana_potion_basic',
-    name: 'Basic Mana Potion',
-    description: 'A simple potion that restores magical energy.',
-    category: 'consumable',
-    resultItemId: 'mana_potion_minor',
-    resultQuantity: 1,
-    ingredients: [
-      { itemId: 'arcane_dust', quantity: 2, type: 'Arcane Dust' },
-      { itemId: 'emberbloom_petal', quantity: 2, type: 'Emberbloom Petal' }
-    ],
-    craftingTime: 2,
-    requirements: [
-      { type: 'level', value: 2 }
-    ]
-  },
-  {
-    id: 'iron_sword_basic',
-    name: 'Iron Sword',
-    description: 'A sturdy iron sword suitable for combat.',
-    category: 'equipment',
-    resultItemId: 'iron_sword',
-    resultQuantity: 1,
-    ingredients: [
-      { itemId: 'iron_ore', quantity: 5, type: 'Iron Ore' },
-      { itemId: 'ancient_bone', quantity: 1, type: 'Ancient Bone' }
-    ],
-    craftingTime: 4,
-    requirements: [
-      { type: 'level', value: 3 }
-    ]
-  }
-];
 
 const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
   player,
@@ -73,23 +22,65 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'consumable' | 'equipment' | 'component'>('all');
 
-  // Get known recipes - in a real implementation, this would filter based on player.discoveredRecipes
-  const knownRecipes = mockRecipes.filter(recipe => 
-    player.discoveredRecipes.includes(recipe.id) ||
-    player.discoveredRecipes.some(id => id.includes(recipe.name.toLowerCase().replace(/\s+/g, '_')))
+  // Get all available recipes from the crafting service
+  const allRecipes = getAllRecipes();
+  
+  // Debug logging
+  console.log('CraftingWorkshop Debug:', {
+    allRecipesCount: allRecipes.length,
+    playerDiscoveredRecipes: player.discoveredRecipes,
+    allRecipeIds: allRecipes.map(r => r.id)
+  });
+  
+  // Filter recipes based on player's discovered recipes
+  const knownRecipes = allRecipes.filter(recipe => {
+    // Check if player has discovered this recipe
+    return player.discoveredRecipes.includes(recipe.id) ||
+           recipe.discovered === true ||
+           // Also check for partial matches in case recipe IDs were generated differently
+           player.discoveredRecipes.some(discoveredId => 
+             discoveredId.includes(recipe.name.toLowerCase().replace(/\s+/g, '_')) ||
+             discoveredId.includes(recipe.id)
+           );
+  });
+
+  // Add some default recipes that should always be available for testing
+  const defaultAvailableRecipes = allRecipes.filter(recipe => 
+    recipe.id === 'basic_health_potion' || 
+    recipe.id === 'iron_sword_basic' ||
+    recipe.requirements.some(req => req.type === 'level' && (req.value as number) <= player.level)
   );
 
-  const filteredRecipes = selectedCategory === 'all' 
-    ? knownRecipes 
-    : knownRecipes.filter(recipe => recipe.category === selectedCategory);
+  // Combine known recipes with default available ones (remove duplicates)
+  const availableRecipes = [...new Map([...knownRecipes, ...defaultAvailableRecipes].map(recipe => [recipe.id, recipe])).values()];
+  
+  console.log('CraftingWorkshop Recipes:', {
+    knownRecipesCount: knownRecipes.length,
+    defaultAvailableCount: defaultAvailableRecipes.length,
+    finalAvailableCount: availableRecipes.length,
+    availableRecipeIds: availableRecipes.map(r => r.id)
+  });
 
-  const canCraftRecipe = (recipe: typeof mockRecipes[0]): boolean => {
-    return recipe.ingredients.every(ingredient => 
+  const filteredRecipes = selectedCategory === 'all' 
+    ? availableRecipes 
+    : availableRecipes.filter(recipe => recipe.category === selectedCategory);
+
+  const canCraftRecipe = (recipe: any): boolean => {
+    // Check ingredients
+    const hasIngredients = recipe.ingredients.every((ingredient: any) => 
       (player.inventory[ingredient.itemId] || 0) >= ingredient.quantity
-    ) && recipe.requirements.every(req => {
+    );
+    
+    // Check requirements
+    const meetsRequirements = recipe.requirements.every((req: any) => {
       if (req.type === 'level') return player.level >= (req.value as number);
+      if (req.type === 'location') return true; // For now, assume location requirements are met
+      if (req.type === 'skill') return true; // For now, assume skill requirements are met
+      if (req.type === 'tool') return true; // For now, assume tool requirements are met
       return true;
     });
+    
+    return hasIngredients && meetsRequirements;
   };
 
   const handleCraft = async (recipeId: string) => {
@@ -129,7 +120,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
         <div className="flex items-center justify-center space-x-6 text-sm text-slate-400">
           <span className="flex items-center">
             <FlaskIcon className="w-4 h-4 mr-1" />
-            {knownRecipes.length} recipes available
+            {availableRecipes.length} recipes available
           </span>
           <span className="flex items-center">
             <GoldCoinIcon className="w-4 h-4 mr-1" />
@@ -177,11 +168,19 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           <div className="text-center py-8">
             <FlaskIcon className="w-16 h-16 mx-auto text-slate-600 mb-4" />
             <p className="text-slate-400 italic">
-              {knownRecipes.length === 0 
+              {availableRecipes.length === 0 
                 ? 'No recipes discovered yet. Visit the Recipe Discovery Lab to find new recipes!'
                 : 'No recipes in this category.'
               }
             </p>
+            {availableRecipes.length === 0 && (
+              <div className="mt-4 text-sm text-slate-500">
+                <p>Debug info:</p>
+                <p>Player discovered recipes: {player.discoveredRecipes.length}</p>
+                <p>Total recipes in system: {allRecipes.length}</p>
+                <p>Player level: {player.level}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,9 +206,25 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                       </div>
                     </div>
                     
+                    {recipe.requirements && recipe.requirements.length > 0 && (
+                      <div>
+                        <h5 className="text-sm font-medium text-slate-200 mb-2">Requirements:</h5>
+                        <div className="space-y-1">
+                          {recipe.requirements.map((req: any, index: number) => (
+                            <div key={index} className="text-xs text-slate-400">
+                              {req.type === 'level' && `Level ${req.value}`}
+                              {req.type === 'location' && `Location: ${req.value}`}
+                              {req.type === 'skill' && `Skill: ${req.value}`}
+                              {req.type === 'tool' && `Tool: ${req.value}`}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between text-sm text-slate-400">
                       <span>Crafting Time: {recipe.craftingTime}h</span>
-                      <span>Produces: {recipe.resultQuantity}x item</span>
+                      <span>Produces: {recipe.resultQuantity}x {MASTER_ITEM_DEFINITIONS[recipe.resultItemId]?.name || recipe.resultItemId}</span>
                     </div>
                     
                     <ActionButton
@@ -221,7 +236,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                       icon={canCraft ? <CheckmarkCircleIcon className="w-4 h-4" /> : <GearIcon className="w-4 h-4" />}
                       className="w-full"
                     >
-                      {canCraft ? 'Craft Item' : 'Missing Ingredients'}
+                      {canCraft ? 'Craft Item' : 'Missing Requirements'}
                     </ActionButton>
                   </div>
                 </div>

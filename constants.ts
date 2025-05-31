@@ -56,7 +56,12 @@ export const INITIAL_PLAYER_INVENTORY: Record<string, number> = {
   'res_mystic_orb_001': 0,
   'res_iron_ore_001': 3, 
   'res_ancient_bone_001': 0,
-  'con_minor_healing_potion_001': 3, 
+  'con_minor_healing_potion_001': 3,
+  // Add basic crafting ingredients for recipes
+  'healing_herb': 5,
+  'crystal_shard_minor': 3,
+  'iron_ore': 2,
+  'emberbloom_petal': 2,
 };
 
 export const PLAYER_BASE_BODY = 10;
