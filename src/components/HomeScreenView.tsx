@@ -330,52 +330,61 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               >
                 Seek Battle
               </ActionButton>
+
+              {/* Multiplayer Button */}
+              <ActionButton 
+                onClick={() => console.log('Multiplayer clicked')} 
+                variant="primary" 
+                size="sm" 
+                icon={<UserIcon />} 
+                className="w-full text-xs mt-2"
+              >
+                Multiplayer
+              </ActionButton>
             </div>
 
             {/* Multiplayer Section - Enhanced with Detailed Interface */}
-            <div className="flex-1 min-h-0">
-              <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-purple-700/60 p-2 sm:p-3 md:p-4 lg:p-5 h-full">
-                <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
-                    <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
-                  </div>
-                  <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Multiplayer</h3>
+            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-purple-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
+              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
+                  <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
+                </div>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Multiplayer</h3>
+              </div>
+              
+              {/* Multiplayer Tabs */}
+              <div className="flex flex-col h-48">
+                <div className="flex border-b border-slate-600/30 mb-3">
+                  <button className="flex-1 py-2 px-3 text-xs font-medium text-purple-300 border-b-2 border-purple-500/50 bg-purple-500/10">
+                    Chat
+                  </button>
+                  <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
+                    Group
+                  </button>
+                  <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
+                    Community
+                  </button>
                 </div>
                 
-                {/* Multiplayer Tabs */}
-                <div className="h-full flex flex-col">
-                  <div className="flex border-b border-slate-600/30 mb-3">
-                    <button className="flex-1 py-2 px-3 text-xs font-medium text-purple-300 border-b-2 border-purple-500/50 bg-purple-500/10">
-                      Chat
-                    </button>
-                    <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
-                      Group
-                    </button>
-                    <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
-                      Community
-                    </button>
-                  </div>
-                  
-                  {/* Chat Content */}
-                  <div className="flex-1 bg-slate-800/30 rounded-lg p-2 overflow-hidden">
-                    <div className="h-full flex flex-col">
-                      <div className="flex-1 text-xs text-slate-400 mb-2">
-                        <div className="space-y-1">
-                          <div><span className="text-blue-300">Player1:</span> Anyone up for a dungeon run?</div>
-                          <div><span className="text-green-300">Player2:</span> I'm in! What level?</div>
-                          <div><span className="text-yellow-300">Player3:</span> Need help with crafting quest</div>
-                        </div>
+                {/* Chat Content */}
+                <div className="flex-1 bg-slate-800/30 rounded-lg p-2 overflow-hidden">
+                  <div className="h-full flex flex-col">
+                    <div className="flex-1 text-xs text-slate-400 mb-2 overflow-y-auto">
+                      <div className="space-y-1">
+                        <div><span className="text-blue-300">Player1:</span> Anyone up for a dungeon run?</div>
+                        <div><span className="text-green-300">Player2:</span> I'm in! What level?</div>
+                        <div><span className="text-yellow-300">Player3:</span> Need help with crafting quest</div>
                       </div>
-                      <div className="flex space-x-1">
-                        <input 
-                          type="text" 
-                          placeholder="Type message..." 
-                          className="flex-1 bg-slate-700/50 border border-slate-600/30 rounded px-2 py-1 text-xs text-slate-200 placeholder-slate-500"
-                        />
-                        <button className="bg-purple-600/50 hover:bg-purple-600/70 border border-purple-500/30 rounded px-2 py-1 text-xs text-purple-200 transition-colors">
-                          Send
-                        </button>
-                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <input 
+                        type="text" 
+                        placeholder="Type message..." 
+                        className="flex-1 bg-slate-700/50 border border-slate-600/30 rounded px-2 py-1 text-xs text-slate-200 placeholder-slate-500"
+                      />
+                      <button className="bg-purple-600/50 hover:bg-purple-600/70 border border-purple-500/30 rounded px-2 py-1 text-xs text-purple-200 transition-colors">
+                        Send
+                      </button>
                     </div>
                   </div>
                 </div>
