@@ -198,7 +198,7 @@ const CombatView: React.FC<CombatViewProps> = ({
         }
       }
     }
-  }, [isPlayerTurn, playerActionSkippedByStun, activeDynamicView]); 
+  }, [isPlayerTurn, playerActionSkippedByStun]);
 
   const handleCategoryChange = useCallback((view: DynamicAreaView) => {
     setActiveDynamicView(view);
