@@ -1,4 +1,4 @@
-import { LOCAL_STORAGE_KEY } from '../../constants';
+import { LOCAL_STORAGE_KEY } from '../player/PlayerState';
 
 /**
  * Save Manager Module

@@ -22,7 +22,7 @@ import { createInitialHomestead } from '../../src/services/homesteadService';
  * Handles player state initialization, persistence, and management
  */
 
-const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21';
+export const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21';
 
 /**
  * Create initial player state with default values
@@ -119,7 +119,7 @@ const validatePlayerData = (parsed: any): Player => {
     speed: parsed.speed || 0,
     bestiary: parsed.bestiary || {},
     discoveredComponents: Array.isArray(parsed.discoveredComponents) 
-      ? parsed.discoveredComponents.filter(comp => typeof comp === 'object' && comp.id) 
+      ? parsed.discoveredComponents.filter((comp: any) => typeof comp === 'object' && comp.id) 
       : [],
     discoveredRecipes: Array.isArray(parsed.discoveredRecipes) ? parsed.discoveredRecipes : [],
     currentLocationId: parsed.currentLocationId || 'eldergrove',

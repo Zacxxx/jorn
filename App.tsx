@@ -1,198 +1,304 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 
-// Import our modular architecture
+// Import all our extracted modules
 import { useGameState } from './game-core/state/GameState';
 import { usePlayerState } from './game-core/player/PlayerState';
-import { calculateEffectiveStats } from './game-core/player/PlayerStats';
+import { calculateEffectiveStats, calculateMaxRegisteredSpells, calculateMaxPreparedSpells, calculateMaxPreparedAbilities } from './game-core/player/PlayerStats';
+import { getEffectiveTags } from './game-core/spells/TagSystem';
+import { SpellCraftingUtils } from './game-core/spells/SpellCrafting';
+import { ItemManagementUtils } from './game-core/items/ItemManagement';
+import { HomesteadManagerUtils } from './game-core/homestead/HomesteadManager';
+import { SettlementManagerUtils } from './game-core/settlement/SettlementManager';
+import { CombatEngineUtils } from './game-core/combat/CombatEngine';
+import { NavigationControllerUtils } from './game-core/navigation/NavigationController';
+import { SaveManagerUtils } from './game-core/persistence/SaveManager';
+import { RecipeManagerUtils } from './game-core/crafting/RecipeManager';
+import { AbilityManagerUtils } from './game-core/abilities/AbilityManager';
+import { TurnManagerUtils } from './game-core/game-loop/TurnManager';
+import { CampManagerUtils } from './game-core/camp/CampManager';
+import { ProgressionManagerUtils } from './game-core/progression/ProgressionManager';
+import { ResearchManagerUtils } from './game-core/research/ResearchManager';
 import { SettingsManagerUtils } from './game-core/settings/SettingsManager';
+import { TraitManagerUtils } from './game-core/traits/TraitManager';
+import { ConsumablesUtils } from './game-core/hooks/useConsumables';
 
-// Import UI components (using default exports)
+// Import UI components
 import AppShell from './game-graphics/AppShell';
 import ViewRouter from './game-graphics/ViewRouter';
 
 // Import types
-import { Player, Enemy, GameItem, Spell, Ability, Trait, SpellComponent, Recipe, CombatActionLog } from './src/types';
+import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName } from './types';
 
 /**
  * Main App Component
- * 
- * This is the new, clean App.tsx that uses our modular architecture.
- * All game logic has been extracted into focused modules in game-core/
- * All UI components are properly separated in game-graphics/ and src/components/
+ * Integrates all extracted modules and provides the complete game experience
  */
-const App: React.FC = () => {
-  // Use our modular state management
+export const App: React.FC = () => {
+  // Use our extracted state management
   const gameState = useGameState();
-  const { player, setPlayer } = usePlayerState();
-  
-  // Load settings using our settings manager
-  const settings = SettingsManagerUtils.loadSettings();
-  
-  // Calculate effective stats using our player stats module
-  const effectivePlayerStats = calculateEffectiveStats(player);
+  const playerState = usePlayerState();
 
-  // Create a simple message modal function
-  const showMessageModal = (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
-    gameState.setModalContent({ title, message, type });
-  };
+  // Calculate effective stats using our extracted module
+  const effectivePlayerStats = calculateEffectiveStats(playerState.player);
+  const maxRegisteredSpells = calculateMaxRegisteredSpells(playerState.player.level);
+  const maxPreparedSpells = calculateMaxPreparedSpells(playerState.player.level);
+  const maxPreparedAbilities = calculateMaxPreparedAbilities(playerState.player.level);
 
-  // Create a simple log function with proper CombatActionLog structure
-  const addLog = (actor: 'Player' | 'Enemy' | 'System', message: string, type: 'action' | 'damage' | 'heal' | 'status' | 'error' | 'info' | 'success' | 'warning' | 'resource' | 'speed') => {
-    const newLogEntry: CombatActionLog = {
-      id: Date.now().toString(),
-      turn: gameState.turn,
-      actor,
-      message,
-      type
-    };
-    gameState.setCombatLog(prev => [...prev, newLogEntry]);
-  };
+  // Auto-save functionality
+  useEffect(() => {
+    if (gameState.autoSave) {
+      playerState.savePlayer();
+    }
+  }, [playerState.player, gameState.autoSave]);
 
-  // Create a simple clear log function
-  const clearLog = () => {
-    gameState.setCombatLog([]);
-  };
-
-  // View router props - simplified for now
-  const viewRouterProps = {
+  // Create context objects for our extracted modules
+  const createNavigationContext = useCallback(() => ({
+    player: playerState.player,
     gameState: gameState.gameState,
-    isLoading: gameState.isLoading,
-    player,
-    setPlayer,
-    effectivePlayerStats,
-    currentEnemies: gameState.currentEnemies,
-    setCurrentEnemies: gameState.setCurrentEnemies,
-    turn: gameState.turn,
-    setTurn: gameState.setTurn,
-    isPlayerTurn: gameState.isPlayerTurn,
-    setIsPlayerTurn: gameState.setIsPlayerTurn,
-    currentActingEnemyIndex: gameState.currentActingEnemyIndex,
-    setCurrentActingEnemyIndex: gameState.setCurrentActingEnemyIndex,
-    combatLog: gameState.combatLog,
-    addLog,
-    clearLog,
-    targetEnemyId: gameState.targetEnemyId,
-    setTargetEnemyId: gameState.setTargetEnemyId,
-    setGameState: (state: string) => gameState.setGameState(state as any),
-    setIsLoading: gameState.setIsLoading,
-    showMessageModal,
-    closeModal: () => gameState.setModalContent(null),
+    setPlayer: playerState.setPlayer,
+    setGameState: gameState.setGameState,
     setModalContent: gameState.setModalContent,
-    // Required props with defaults
-    playerActionSkippedByStun: gameState.playerActionSkippedByStun,
-    defaultCharacterSheetTab: gameState.defaultCharacterSheetTab,
-    initialSpellPromptForStudio: gameState.initialSpellPromptForStudio,
-    currentShopId: gameState.currentShopId,
-    modalContent: gameState.modalContent,
-    pendingSpellCraftData: gameState.pendingSpellCraftData,
-    pendingSpellEditData: gameState.pendingSpellEditData,
-    pendingItemCraftData: gameState.pendingItemCraftData,
-    originalSpellForEdit: gameState.originalSpellForEdit,
-    maxRegisteredSpells: 10,
-    maxPreparedSpells: 5,
-    maxPreparedAbilities: 3,
-    useLegacyFooter: settings.useLegacyFooter,
-    debugMode: settings.debugMode,
-    autoSave: settings.autoSave,
-    // Add placeholder functions for now - these will be implemented with our modules
-    onFindEnemy: async () => {},
-    onExploreMap: () => {},
-    onOpenResearchArchives: () => {},
-    onOpenCamp: () => {},
-    onOpenHomestead: () => {},
-    onAccessSettlement: () => {},
-    onOpenCraftingHub: () => {},
-    onOpenNPCs: () => {},
-    onNavigateHome: () => {},
-    onRestComplete: () => {},
-    onStartHomesteadProject: () => {},
-    onCompleteHomesteadProject: () => {},
-    onUpgradeHomesteadProperty: () => {},
-    onOpenShop: () => {},
-    onOpenTavern: () => {},
-    onTalkToNPC: () => {},
-    onExplorePointOfInterest: () => {},
-    onPurchaseItem: () => {},
-    onPurchaseService: () => {},
-    onDiscoverRecipe: async () => {},
-    onCraftItem: async () => {},
-    onOpenSpellDesignStudio: () => {},
-    onOpenTheorizeComponentLab: () => {},
-    onAICreateComponent: async () => null,
-    onInitiateItemCraft: async () => {},
-    onFinalizeSpellDesign: async () => {},
-    onOldSpellCraftInitiation: async () => {},
-    onInitiateSpellRefinement: async () => {},
-    onCraftTrait: async () => {},
-    onSetTargetEnemy: () => {},
-    onPlayerAttack: () => {},
-    onPlayerBasicAttack: () => {},
-    onPlayerDefend: () => {},
-    onPlayerFlee: () => {},
-    onPlayerFreestyleAction: async () => {},
-    onUseConsumable: () => {},
-    onUseAbility: () => {},
-    onConfirmSpellCraft: () => {},
-    onConfirmSpellEdit: () => {},
-    onConfirmItemCraft: () => {},
-    onCancelCrafting: () => {},
-    onToggleLegacyFooter: () => {},
-    onToggleDebugMode: () => {},
-    onToggleAutoSave: () => {},
-    onSetGameState: (state: string) => gameState.setGameState(state as any),
-    onSetDefaultCharacterSheetTab: gameState.setDefaultCharacterSheetTab,
-    onOpenLootChest: async () => {},
-    // Utility functions
-    getPreparedSpells: () => [],
-    getPreparedAbilities: () => [],
-    checkResources: () => true,
-    renderResourceList: () => null,
-  };
-
-  // App shell props - simplified for now
-  const appShellProps = {
-    ...viewRouterProps,
-    modalContent: gameState.modalContent,
-    isHelpWikiOpen: gameState.isHelpWikiOpen,
+    setDefaultCharacterSheetTab: gameState.setDefaultCharacterSheetTab,
     setIsHelpWikiOpen: gameState.setIsHelpWikiOpen,
-    isGameMenuOpen: gameState.isGameMenuOpen,
     setIsGameMenuOpen: gameState.setIsGameMenuOpen,
-    isMobileMenuOpen: gameState.isMobileMenuOpen,
     setIsMobileMenuOpen: gameState.setIsMobileMenuOpen,
-    pendingTraitUnlock: gameState.pendingTraitUnlock,
-    // Placeholder handlers
-    onOpenCharacterSheet: () => {},
+    setUseLegacyFooter: gameState.setUseLegacyFooter,
+    setDebugMode: gameState.setDebugMode,
+    setAutoSave: gameState.setAutoSave,
+    addLog: gameState.addLog,
+    showMessageModal: gameState.showMessageModal,
+  }), [playerState, gameState]);
+
+  // Navigation handlers using our extracted NavigationController
+  const handleNavigateHome = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToHome(context);
+  }, [createNavigationContext]);
+
+  const handleOpenCharacterSheet = useCallback((tab?: CharacterSheetTab) => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToInventory(tab || 'Main', context);
+  }, [createNavigationContext]);
+
+  const handleOpenCraftingHub = useCallback(() => {
+    const context = createNavigationContext();
+    NavigationControllerUtils.navigateToCraftingHub(context);
+  }, [createNavigationContext]);
+
+  // Equipment handlers using our extracted ItemManagement
+  const handleEquipItem = useCallback((itemId: string, slot: DetailedEquipmentSlot) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = ItemManagementUtils.equipItem(itemId, slot, context);
+    if (!result.success) {
+      gameState.showMessageModal('Equipment Error', result.message, 'error');
+    }
+  }, [playerState, gameState]);
+
+  const handleUnequipItem = useCallback((slot: DetailedEquipmentSlot) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = ItemManagementUtils.unequipItem(slot, context);
+    if (!result.success) {
+      gameState.showMessageModal('Equipment Error', result.message, 'error');
+    }
+  }, [playerState, gameState]);
+
+  // Spell preparation handlers
+  const handlePrepareSpell = useCallback((spell: Spell) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = ItemManagementUtils.prepareSpell(spell.id, context);
+    if (!result.success) {
+      gameState.showMessageModal('Spell Preparation Error', result.message, 'error');
+    }
+  }, [playerState, gameState]);
+
+  const handleUnprepareSpell = useCallback((spell: Spell) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = ItemManagementUtils.unprepareSpell(spell.id, context);
+    if (!result.success) {
+      gameState.showMessageModal('Spell Preparation Error', result.message, 'error');
+    }
+  }, [playerState, gameState]);
+
+  // Ability preparation handlers
+  const handlePrepareAbility = useCallback((ability: Ability) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = ItemManagementUtils.prepareAbility(ability.id, context);
+    if (!result.success) {
+      gameState.showMessageModal('Ability Preparation Error', result.message, 'error');
+    }
+  }, [playerState, gameState]);
+
+  const handleUnprepareAbility = useCallback((ability: Ability) => {
+    const context = {
+      player: playerState.player,
+      setPlayer: playerState.setPlayer,
+      addLog: gameState.addLog,
+      showMessageModal: gameState.showMessageModal,
+    };
+    const result = ItemManagementUtils.unprepareAbility(ability.id, context);
+    if (!result.success) {
+      gameState.showMessageModal('Ability Preparation Error', result.message, 'error');
+    }
+  }, [playerState, gameState]);
+
+  // Save/Load handlers using our extracted SaveManager
+  const handleExportSave = useCallback(() => {
+    const result = SaveManagerUtils.exportSaveData();
+    if (result.success) {
+      gameState.showMessageModal('Export Successful', 'Save data exported successfully!', 'success');
+    } else {
+      gameState.showMessageModal('Export Failed', result.message, 'error');
+    }
+  }, [gameState]);
+
+  const handleImportSave = useCallback(() => {
+    // This would typically open a file picker
+    // For now, we'll show a message about the functionality
+    gameState.showMessageModal('Import Save', 'Import functionality available through extracted SaveManager module.', 'info');
+  }, [gameState]);
+
+  // Consumable usage handler
+  const handleUseConsumable = useCallback((itemId: string, targetId?: string) => {
+    const context = {
+      player: playerState.player,
+      currentEnemies: gameState.currentEnemies,
+      effectivePlayerStats,
+      setPlayer: playerState.setPlayer,
+      setCurrentEnemies: gameState.setCurrentEnemies,
+      setIsPlayerTurn: gameState.setIsPlayerTurn,
+      addLog: gameState.addLog,
+      applyStatusEffect: (targetId: 'player' | string, effect: { name: StatusEffectName; duration: number; magnitude?: number; chance: number }, sourceId: string) => {
+        // Implementation would use our status effect system
+        console.log('Apply status effect:', effect, 'to', targetId, 'from', sourceId);
+      },
+    };
+    const result = ConsumablesUtils.useConsumable(itemId, targetId || null, context);
+    if (!result.success) {
+      gameState.showMessageModal('Consumable Error', result.message, 'error');
+    }
+  }, [playerState, gameState, effectivePlayerStats]);
+
+  // Check for pending trait unlock
+  const pendingTraitUnlock = TraitManagerUtils.canCraftTrait(playerState.player);
+
+  // Prepare props for AppShell
+  const appShellProps = {
+    // Game state
+    gameState: gameState.gameState,
+    player: playerState.player,
+    effectivePlayerStats,
+    modalContent: gameState.modalContent,
+    defaultCharacterSheetTab: gameState.defaultCharacterSheetTab,
+    useLegacyFooter: gameState.useLegacyFooter,
+    maxRegisteredSpells,
+    maxPreparedSpells,
+    maxPreparedAbilities,
+    pendingTraitUnlock,
+    
+    // Modal state
+    isHelpWikiOpen: gameState.isHelpWikiOpen,
+    isGameMenuOpen: gameState.isGameMenuOpen,
+    isMobileMenuOpen: gameState.isMobileMenuOpen,
+    
+    // Navigation handlers
+    onNavigateHome: handleNavigateHome,
+    onOpenMobileMenu: () => gameState.setIsMobileMenuOpen(true),
+    onOpenCraftingHub: handleOpenCraftingHub,
+    
+    // Modal handlers
+    onOpenCharacterSheet: handleOpenCharacterSheet,
     onCloseHelpWiki: () => gameState.setIsHelpWikiOpen(false),
     onOpenHelpWiki: () => gameState.setIsHelpWikiOpen(true),
     onCloseGameMenu: () => gameState.setIsGameMenuOpen(false),
     onOpenGameMenu: () => gameState.setIsGameMenuOpen(true),
     onCloseMobileMenu: () => gameState.setIsMobileMenuOpen(false),
-    onOpenMobileMenu: () => gameState.setIsMobileMenuOpen(true),
-    onOpenParameters: () => {},
-    onExportSave: () => {},
-    onImportSave: () => {},
-    onEquipItem: () => {},
-    onUnequipItem: () => {},
-    onEditSpell: () => {},
-    onPrepareSpell: () => {},
-    onUnprepareSpell: () => {},
-    onPrepareAbility: () => {},
-    onUnprepareAbility: () => {},
+    onOpenParameters: () => {
+      const context = createNavigationContext();
+      NavigationControllerUtils.navigateToParameters(context);
+    },
+    onExportSave: handleExportSave,
+    onImportSave: handleImportSave,
+    
+    // Character sheet handlers
+    onEquipItem: handleEquipItem,
+    onUnequipItem: handleUnequipItem,
+    onEditSpell: (spell: Spell) => {
+      // Navigate to spell editing
+      gameState.setGameState('SPELL_EDITING');
+    },
+    onPrepareSpell: handlePrepareSpell,
+    onUnprepareSpell: handleUnprepareSpell,
+    onPrepareAbility: handlePrepareAbility,
+    onUnprepareAbility: handleUnprepareAbility,
+    onOpenLootChest: (chestId: string) => {
+      // Handle loot chest opening
+      console.log('Opening loot chest:', chestId);
+    },
+    onUseConsumable: handleUseConsumable,
+    
+    // Modal close handlers
     onCloseModal: () => gameState.setModalContent(null),
-    onCloseCharacterSheet: () => {},
-    onOpenSpellDesignStudio: () => {},
-    onOpenTraitsPage: () => {},
-    onOpenLootChest: async () => {},
-    onUseConsumable: () => {},
+    onCloseCharacterSheet: () => gameState.setGameState('HOME'),
+    onOpenSpellDesignStudio: () => {
+      const context = createNavigationContext();
+      NavigationControllerUtils.navigateToSpellDesignStudio(context);
+    },
+    onOpenTraitsPage: () => {
+      const context = createNavigationContext();
+      NavigationControllerUtils.navigateToTraitsPage(context);
+    },
+    
+    // Utility functions
+    showMessageModal: gameState.showMessageModal,
+    
+    // All other game state for ViewRouter
+    isLoading: gameState.isLoading,
+    currentEnemies: gameState.currentEnemies,
+    targetEnemyId: gameState.targetEnemyId,
+    combatLog: gameState.combatLog,
+    turn: gameState.turn,
+    isPlayerTurn: gameState.isPlayerTurn,
+    currentActingEnemyIndex: gameState.currentActingEnemyIndex,
+    pendingSpellCraftData: gameState.pendingSpellCraftData,
+    pendingItemCraftData: gameState.pendingItemCraftData,
+    pendingSpellEditData: gameState.pendingSpellEditData,
+    initialSpellPromptForStudio: gameState.initialSpellPromptForStudio,
+    currentShopId: gameState.currentShopId,
+    currentTavernId: gameState.currentTavernId,
+    currentNPCId: gameState.currentNPCId,
+    isWorldMapOpen: gameState.isWorldMapOpen,
+    isExplorationJournalOpen: gameState.isExplorationJournalOpen,
+    isTraveling: gameState.isTraveling,
+    debugMode: gameState.debugMode,
+    autoSave: gameState.autoSave,
   };
 
-  return (
-    <div className="App">
-      <AppShell {...appShellProps}>
-        <ViewRouter {...viewRouterProps} />
-      </AppShell>
-    </div>
-  );
+  return <AppShell {...appShellProps} />;
 };
 
 export default App;

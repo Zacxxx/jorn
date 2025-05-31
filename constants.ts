@@ -1,6 +1,6 @@
 import { Player, Spell, SpellIconName, StatusEffectName, ResourceType, ConsumableEffectType, EquipmentSlot, Ability, DetailedEquipmentSlot, SpellComponent } from './types'; // Removed TagName here, will get from src/types
 import { TagName, TagDefinition, TagCategory } from './src/types'; // Import new types from src/types
-import { ALL_GAME_SPELL_COMPONENTS } from './src/research-content';
+import { ALL_GAME_SPELL_COMPONENTS } from './src/research-content'; 
 
 export const GEMINI_MODEL_TEXT = 'gemini-2.5-flash-preview-04-17';
 
@@ -57,7 +57,7 @@ export const INITIAL_PLAYER_INVENTORY: Record<string, number> = {
   'res_mystic_orb_001': 0,
   'res_iron_ore_001': 3, 
   'res_ancient_bone_001': 0,
-  'con_minor_healing_potion_001': 3,
+  'con_minor_healing_potion_001': 3, 
   // Add basic crafting ingredients for recipes
   'healing_herb': 5,
   'crystal_shard_minor': 3,
@@ -277,7 +277,7 @@ export const EXAMPLE_SPELL_COMPONENTS: SpellComponent[] = ALL_GAME_SPELL_COMPONE
 export const RESEARCH_SEARCH_BASE_GOLD_COST = 50;
 export const RESEARCH_SEARCH_BASE_ESSENCE_COST = 20;
 export const DEFAULT_SILENCE_DURATION = 2; 
-export const DEFAULT_ROOT_DURATION = 2;
+export const DEFAULT_ROOT_DURATION = 2; 
 
 // Comprehensive Tag System
 // The TagDefinition interface is now imported from 'src/types.ts'

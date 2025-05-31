@@ -314,8 +314,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           
           <h2 className="text-2xl font-bold text-green-300 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
             <GearIcon className="w-6 h-6 mr-2 text-green-400" />
-            Crafting Workshop
-          </h2>
+          Crafting Workshop
+        </h2>
           
           <div className="w-20"></div> {/* Spacer for balance */}
         </div>
@@ -430,22 +430,22 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-sm"
                   />
-                </div>
+      </div>
 
-                {/* Category Filter */}
+      {/* Category Filter */}
                 <div className="flex flex-wrap gap-1">
-                  {(['all', 'consumable', 'equipment', 'component'] as const).map((category) => (
-                    <ActionButton
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      variant={selectedCategory === category ? 'primary' : 'secondary'}
-                      size="sm"
+          {(['all', 'consumable', 'equipment', 'component'] as const).map((category) => (
+            <ActionButton
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              variant={selectedCategory === category ? 'primary' : 'secondary'}
+              size="sm"
                       className="text-xs px-2 py-1"
-                    >
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </ActionButton>
-                  ))}
-                </div>
+            >
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </ActionButton>
+          ))}
+        </div>
 
                 {/* Sort and Filter Options */}
                 <div className="flex flex-wrap gap-2">
@@ -469,8 +469,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     <FilterListIcon className="w-3 h-3 mr-1" />
                     Craftable Only
                   </ActionButton>
-                </div>
-              </div>
+        </div>
+      </div>
 
               {/* Quick Actions */}
               <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-600/50">
@@ -493,24 +493,24 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             {/* Recipes Grid */}
             <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-1 overflow-y-auto">
               {filteredAndSortedRecipes.length === 0 ? (
-                <div className="text-center py-8">
+          <div className="text-center py-8">
                   <FlaskIcon className="w-12 h-12 mx-auto text-slate-600 mb-3" />
                   <p className="text-slate-400 italic text-sm">
                     {availableRecipes.length === 0 
                       ? 'No recipes discovered yet. Use the Discovery tab to find new recipes!'
                       : searchTerm 
                       ? `No recipes match "${searchTerm}"`
-                      : 'No recipes in this category.'
-                    }
-                  </p>
-                </div>
-              ) : (
+                : 'No recipes in this category.'
+              }
+            </p>
+          </div>
+        ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                   {filteredAndSortedRecipes.map((recipe) => {
-                    const canCraft = canCraftRecipe(recipe);
+              const canCraft = canCraftRecipe(recipe);
                     const levelReq = recipe.requirements.find((req: any) => req.type === 'level')?.value;
-                    
-                    return (
+              
+              return (
                       <div key={recipe.id} className={`bg-slate-700/40 rounded-lg p-3 border transition-all duration-200 hover:bg-slate-700/60 hover:shadow-lg hover:scale-[1.02] ${canCraft ? 'border-green-500/30 hover:border-green-500/50 shadow-green-500/10' : 'border-slate-600/50 hover:border-slate-500/70'}`}>
                         {/* Header */}
                         <div className="flex items-start justify-between mb-2">
@@ -520,8 +520,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                             </h4>
                             <div className="flex items-center gap-2 mt-1">
                               <span className={`text-xs px-2 py-0.5 rounded border transition-all duration-200 hover:scale-105 ${getCategoryColor(recipe.category)}`}>
-                                {recipe.category}
-                              </span>
+                      {recipe.category}
+                    </span>
                               {levelReq && (
                                 <span className={`text-xs px-1.5 py-0.5 rounded ${player.level >= levelReq ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
                                   Lv.{levelReq}
@@ -539,8 +539,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                               {recipe.resultQuantity}x
                             </div>
                           </div>
-                        </div>
-                        
+                  </div>
+                  
                         {/* Description */}
                         <p className="text-xs text-slate-300 mb-2 line-clamp-2 hover:text-slate-200 transition-colors" title={recipe.description}>
                           {recipe.description}
@@ -554,17 +554,17 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                           </h5>
                           <div className="flex flex-wrap gap-1">
                             {recipe.ingredients.map((ingredient: any) => renderIngredient(ingredient, true))}
-                          </div>
-                        </div>
-                        
+                      </div>
+                    </div>
+                    
                         {/* Result */}
                         <div className="mb-3">
                           <div className="text-xs text-slate-400 flex items-center">
                             <span className="mr-1">✨</span>
                             Produces: <span className="text-slate-300 ml-1 font-medium">{MASTER_ITEM_DEFINITIONS[recipe.resultItemId]?.name || recipe.resultItemId}</span>
                           </div>
-                        </div>
-                        
+                    </div>
+                    
                         {/* Requirements */}
                         {recipe.requirements && recipe.requirements.length > 0 && (
                           <div className="mb-3">
@@ -582,12 +582,12 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                         )}
                         
                         {/* Craft Button */}
-                        <ActionButton
-                          onClick={() => handleCraft(recipe.id)}
-                          variant={canCraft ? "success" : "secondary"}
-                          size="sm"
-                          disabled={!canCraft || isLoading}
-                          isLoading={isLoading}
+                    <ActionButton
+                      onClick={() => handleCraft(recipe.id)}
+                      variant={canCraft ? "success" : "secondary"}
+                      size="sm"
+                      disabled={!canCraft || isLoading}
+                      isLoading={isLoading}
                           icon={canCraft ? <CheckmarkCircleIcon className="w-3 h-3" /> : <GearIcon className="w-3 h-3" />}
                           className={`w-full text-xs py-1.5 transition-all duration-200 ${canCraft ? 'hover:scale-105 hover:shadow-md' : ''}`}
                         >

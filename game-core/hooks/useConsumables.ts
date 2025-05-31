@@ -1,5 +1,5 @@
 import { Player, Enemy, PlayerEffectiveStats, UniqueConsumable, MasterConsumableItem, StatusEffectName } from '../../types';
-import { MASTER_ITEM_DEFINITIONS } from '../../constants';
+import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 
 /**
  * Consumables Hook Module

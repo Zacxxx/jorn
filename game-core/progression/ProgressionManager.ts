@@ -1,5 +1,6 @@
 import { Player, Enemy, GameItem, LootChestItem } from '../../types';
-import { ENEMY_DIFFICULTY_XP_REWARD, MASTER_ITEM_DEFINITIONS } from '../../constants';
+import { ENEMY_DIFFICULTY_XP_REWARD } from '../../constants';
+import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 
 /**
  * Progression Manager Module

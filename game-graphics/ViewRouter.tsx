@@ -17,7 +17,7 @@ import {
 } from '../types';
 
 // Import all view components
-import HomeScreenView from '../src/components/HomeScreenView';
+import HomeScreenView from '../components/HomeScreenView';
 import CampView from '../components/CampView';
 import HomesteadView from '../src/components/HomesteadView';
 import SettlementView from '../src/components/SettlementView';

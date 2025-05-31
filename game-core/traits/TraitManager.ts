@@ -1,5 +1,5 @@
+import { generateTrait } from '../../services/geminiService';
 import { Player, Trait } from '../../types';
-import { createTraitFromPrompt } from '../../src/utils/aiUtils';
 import { FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL } from '../../constants';
 
 /**
@@ -63,16 +63,26 @@ export const craftTrait = async (
 
   try {
     // Create trait using AI
-    const newTrait = await createTraitFromPrompt(promptText, context.player.level);
+    const traitData = await generateTrait(promptText, context.player.level);
 
-    if (!newTrait) {
-      context.setIsLoading(false);
+    if (!traitData) {
       return {
         success: false,
-        message: 'Failed to craft trait. The process yielded no results.',
+        message: 'Failed to generate trait from prompt.',
         type: 'error'
       };
     }
+
+    // Convert GeneratedTraitData to Trait by adding required fields
+    const newTrait: Trait = {
+      id: `trait_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: traitData.name,
+      description: traitData.description,
+      iconName: traitData.iconName,
+      tags: traitData.tags,
+      rarity: traitData.rarity,
+      level: context.player.level
+    };
 
     // Add trait to player
     context.setPlayer(prev => ({
@@ -80,32 +90,17 @@ export const craftTrait = async (
       traits: [...prev.traits, newTrait]
     }));
 
-    const successMessage = `Successfully crafted trait: ${newTrait.name}!`;
-    context.addLog('System', successMessage, 'success');
-    context.showMessageModal(
-      'Trait Crafted!',
-      `${successMessage}\n\n${newTrait.description}`,
-      'success'
-    );
-
-    context.setIsLoading(false);
     return {
       success: true,
       trait: newTrait,
-      message: successMessage,
+      message: `Successfully crafted trait: ${newTrait.name}`,
       type: 'success'
     };
-
   } catch (error) {
-    console.error('Trait crafting error:', error);
-    context.setIsLoading(false);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during trait crafting.';
-    context.showMessageModal('Trait Crafting Failed', errorMessage, 'error');
-    
+    console.error('Error crafting trait:', error);
     return {
       success: false,
-      message: errorMessage,
+      message: 'An error occurred while crafting the trait.',
       type: 'error'
     };
   }
@@ -186,8 +181,10 @@ export const isTraitNameTaken = (player: Player, traitName: string): boolean => 
 export const getTraitsByCategory = (player: Player, category?: string): Trait[] => {
   if (!category) return player.traits;
   
+  // Since traits don't have categories in the current type definition,
+  // we'll filter by tags instead
   return player.traits.filter(trait => 
-    trait.category?.toLowerCase() === category.toLowerCase()
+    trait.tags?.some(tag => tag.toLowerCase().includes(category.toLowerCase()))
   );
 };
 
@@ -204,10 +201,9 @@ export const getTraitEffectiveness = (trait: Trait, player: Player): number => {
   const levelBonus = Math.min(0.5, player.level * 0.02); // Max 50% bonus at level 25
   effectiveness += levelBonus;
   
-  // Stat-based bonuses (if trait has stat requirements or scaling)
-  if (trait.requirements) {
-    // TODO: Implement stat-based effectiveness when trait requirements are defined
-  }
+  // Trait rarity bonus
+  const rarityBonus = trait.rarity * 0.1; // 10% per rarity level
+  effectiveness += rarityBonus;
   
   return effectiveness;
 };
@@ -220,63 +216,27 @@ export const getTraitEffectiveness = (trait: Trait, player: Player): number => {
 export const getSuggestedTraitPrompts = (player: Player): string[] => {
   const suggestions: string[] = [];
   
-  // Analyze player's dominant stats
-  const { body, mind, soul } = player;
-  const total = body + mind + soul;
-  
-  if (total === 0) {
-    // New player suggestions
-    suggestions.push(
-      'A trait that enhances learning and experience gain',
-      'A trait that provides basic combat resilience',
-      'A trait that improves resource management'
-    );
-  } else {
-    const bodyPercent = body / total;
-    const mindPercent = mind / total;
-    const soulPercent = soul / total;
-    
-    if (bodyPercent > 0.4) {
-      suggestions.push(
-        'A trait that enhances physical combat abilities',
-        'A trait that improves weapon mastery',
-        'A trait that provides damage resistance'
-      );
-    }
-    
-    if (mindPercent > 0.4) {
-      suggestions.push(
-        'A trait that enhances magical abilities',
-        'A trait that improves spell efficiency',
-        'A trait that provides mana regeneration'
-      );
-    }
-    
-    if (soulPercent > 0.4) {
-      suggestions.push(
-        'A trait that enhances spiritual abilities',
-        'A trait that improves healing effects',
-        'A trait that provides status effect resistance'
-      );
-    }
+  // Stat-based suggestions
+  const highestStat = Math.max(player.body, player.mind, player.reflex);
+  if (player.body === highestStat) {
+    suggestions.push("A trait that enhances physical prowess and combat effectiveness");
+  }
+  if (player.mind === highestStat) {
+    suggestions.push("A trait that amplifies magical abilities and spell power");
+  }
+  if (player.reflex === highestStat) {
+    suggestions.push("A trait that improves agility and reaction speed");
   }
   
   // Level-based suggestions
   if (player.level >= 10) {
-    suggestions.push(
-      'A trait that unlocks advanced combat techniques',
-      'A trait that provides unique exploration abilities'
-    );
+    suggestions.push("A trait that provides unique combat abilities");
   }
-  
   if (player.level >= 20) {
-    suggestions.push(
-      'A trait that grants mastery over a specific element',
-      'A trait that allows manipulation of time or space'
-    );
+    suggestions.push("A trait that grants mastery over elemental forces");
   }
   
-  return suggestions.slice(0, 5); // Limit to 5 suggestions
+  return suggestions;
 };
 
 /**

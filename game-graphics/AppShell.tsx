@@ -25,7 +25,18 @@ import ViewRouter, { ViewRouterProps } from './ViewRouter';
  * Main application shell that handles layout, modals, and view routing
  */
 
-export interface AppShellProps extends ViewRouterProps {
+export interface AppShellProps {
+  // Game state - from ViewRouterProps
+  gameState: string;
+  player: Player;
+  effectivePlayerStats: PlayerEffectiveStats;
+  modalContent: { title: string; message: string } | null;
+  defaultCharacterSheetTab: CharacterSheetTab;
+  useLegacyFooter: boolean;
+  maxRegisteredSpells: number;
+  maxPreparedSpells: number;
+  maxPreparedAbilities: number;
+  
   // Modal state
   isHelpWikiOpen: boolean;
   isGameMenuOpen: boolean;
@@ -43,6 +54,8 @@ export interface AppShellProps extends ViewRouterProps {
   onOpenParameters: () => void;
   onExportSave: () => void;
   onImportSave: () => void;
+  onOpenSpellDesignStudio: () => void;
+  onOpenTraitsPage: () => void;
   
   // Character sheet handlers
   onEquipItem: (itemId: string, slot: DetailedEquipmentSlot) => void;
@@ -52,10 +65,22 @@ export interface AppShellProps extends ViewRouterProps {
   onUnprepareSpell: (spell: Spell) => void;
   onPrepareAbility: (ability: Ability) => void;
   onUnprepareAbility: (ability: Ability) => void;
+  onOpenLootChest: (chestId: string) => Promise<void>;
+  onUseConsumable: (itemId: string, targetId: string | null) => void;
+  
+  // Navigation handlers
+  onNavigateHome: () => void;
+  onOpenCraftingHub: () => void;
   
   // Modal close handlers
   onCloseModal: () => void;
   onCloseCharacterSheet: () => void;
+  
+  // Utility functions
+  showMessageModal: (title: string, message: string, type?: 'info' | 'error' | 'success') => void;
+  
+  // All ViewRouter props
+  [key: string]: any;
 }
 
 const AppShell: React.FC<AppShellProps> = (props) => {
@@ -92,6 +117,8 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     onOpenParameters,
     onExportSave,
     onImportSave,
+    onOpenSpellDesignStudio,
+    onOpenTraitsPage,
     
     // Character sheet handlers
     onEquipItem,
@@ -107,8 +134,6 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     // Modal close handlers
     onCloseModal,
     onCloseCharacterSheet,
-    onOpenSpellDesignStudio,
-    onOpenTraitsPage,
     
     // Utility functions
     showMessageModal,
