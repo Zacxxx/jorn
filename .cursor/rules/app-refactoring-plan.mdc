@@ -1,0 +1,171 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# App.tsx Refactoring Plan
+
+## Overview
+The current App.tsx file is 2390 lines and contains both game logic and UI concerns mixed together. This refactoring will separate concerns into two main folders:
+
+- `/game-core/` - Pure game logic, state management, and business rules
+- `/game-graphics/` - UI components, views, and presentation logic
+
+## Refactoring Strategy
+**Non-destructive approach**: Create new files first, verify functionality, then replace App.tsx imports.
+
+## Phase 1: Core Game Logic Extraction
+
+### 1.1 Game State Management
+**Target**: Lines 140-280 (State declarations)
+**New File**: [game-core/state/GameState.ts](mdc:game-core/state/GameState.ts)
+- Extract all useState declarations
+- Create typed state interface
+- Export state and setters as custom hooks
+
+### 1.2 Player Management System
+**Target**: Lines 140-200 (Player state and stats)
+**New Files**:
+- [game-core/player/PlayerState.ts](mdc:game-core/player/PlayerState.ts)
+- [game-core/player/PlayerStats.ts](mdc:game-core/player/PlayerStats.ts)
+- [game-core/player/PlayerEffects.ts](mdc:game-core/player/PlayerEffects.ts)
+
+### 1.3 Combat System
+**Target**: Lines 1000-1600 (Combat logic)
+**New Files**:
+- [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts)
+- [game-core/combat/DamageCalculation.ts](mdc:game-core/combat/DamageCalculation.ts)
+- [game-core/combat/StatusEffects.ts](mdc:game-core/combat/StatusEffects.ts)
+- [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts)
+
+### 1.4 Tag System
+**Target**: Lines 60-140 (Tag precedence and effective tags)
+**New File**: [game-core/spells/TagSystem.ts](mdc:game-core/spells/TagSystem.ts)
+
+## Phase 2: Game Systems Extraction
+
+### 2.1 Spell System
+**Target**: Lines 600-800 (Spell crafting and editing)
+**New Files**:
+- [game-core/spells/SpellCrafting.ts](mdc:game-core/spells/SpellCrafting.ts)
+- [game-core/spells/SpellEditing.ts](mdc:game-core/spells/SpellEditing.ts)
+- [game-core/spells/SpellValidation.ts](mdc:game-core/spells/SpellValidation.ts)
+
+### 2.2 Item System
+**Target**: Lines 800-900 (Item crafting and management)
+**New Files**:
+- [game-core/items/ItemCrafting.ts](mdc:game-core/items/ItemCrafting.ts)
+- [game-core/items/ItemManagement.ts](mdc:game-core/items/ItemManagement.ts)
+- [game-core/items/Equipment.ts](mdc:game-core/items/Equipment.ts)
+
+### 2.3 Resource Management
+**Target**: Lines 400-500 (Resource checking and deduction)
+**New File**: [game-core/resources/ResourceManager.ts](mdc:game-core/resources/ResourceManager.ts)
+
+## Phase 3: Game Flow Controllers
+
+### 3.1 Navigation Controller
+**Target**: Lines 500-600 (Navigation handlers)
+**New File**: [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts)
+
+### 3.2 Game Loop Controller
+**Target**: Lines 1600-1800 (Turn management, enemy AI)
+**New Files**:
+- [game-core/game-loop/TurnManager.ts](mdc:game-core/game-loop/TurnManager.ts)
+- [game-core/game-loop/EnemyAI.ts](mdc:game-core/game-loop/EnemyAI.ts)
+
+### 3.3 Save/Load System
+**Target**: Lines 2100-2200 (Export/Import save)
+**New File**: [game-core/persistence/SaveManager.ts](mdc:game-core/persistence/SaveManager.ts)
+
+## Phase 4: UI Components Extraction
+
+### 4.1 Main App Shell
+**Target**: Lines 2300-2390 (Main render logic)
+**New File**: [game-graphics/AppShell.tsx](mdc:game-graphics/AppShell.tsx)
+
+### 4.2 View Router
+**Target**: Lines 2200-2300 (renderCurrentView function)
+**New File**: [game-graphics/ViewRouter.tsx](mdc:game-graphics/ViewRouter.tsx)
+
+### 4.3 Modal Manager
+**Target**: Lines 2000-2100 (Modal handling)
+**New File**: [game-graphics/modals/ModalManager.tsx](mdc:game-graphics/modals/ModalManager.tsx)
+
+## Phase 5: Custom Hooks Creation
+
+### 5.1 Game Logic Hooks
+**New Files**:
+- [game-core/hooks/useGameState.ts](mdc:game-core/hooks/useGameState.ts)
+- [game-core/hooks/usePlayer.ts](mdc:game-core/hooks/usePlayer.ts)
+- [game-core/hooks/useCombat.ts](mdc:game-core/hooks/useCombat.ts)
+- [game-core/hooks/useSpells.ts](mdc:game-core/hooks/useSpells.ts)
+
+### 5.2 UI Hooks
+**New Files**:
+- [game-graphics/hooks/useModals.ts](mdc:game-graphics/hooks/useModals.ts)
+- [game-graphics/hooks/useNavigation.ts](mdc:game-graphics/hooks/useNavigation.ts)
+
+## Phase 6: Integration and Testing
+
+### 6.1 Create New App.tsx
+**New File**: [App.tsx](mdc:App.tsx) (replacement)
+- Import all custom hooks
+- Minimal component that orchestrates everything
+- Should be under 200 lines
+
+### 6.2 Verification Steps
+1. Ensure all exports are properly typed
+2. Verify no circular dependencies
+3. Test all game functionality
+4. Performance check (React DevTools)
+
+## Implementation Order
+
+### Week 1: Core Systems
+1. GameState.ts
+2. PlayerState.ts, PlayerStats.ts
+3. TagSystem.ts
+4. ResourceManager.ts
+
+### Week 2: Combat & Spells
+1. CombatEngine.ts
+2. DamageCalculation.ts
+3. StatusEffects.ts
+4. SpellCrafting.ts, SpellEditing.ts
+
+### Week 3: Game Flow
+1. NavigationController.ts
+2. TurnManager.ts
+3. EnemyAI.ts
+4. SaveManager.ts
+
+### Week 4: UI & Integration
+1. AppShell.tsx
+2. ViewRouter.tsx
+3. Custom hooks
+4. New App.tsx
+5. Testing and verification
+
+## Benefits of This Refactoring
+
+1. **Maintainability**: Each system is isolated and testable
+2. **Performance**: Better tree-shaking and code splitting opportunities
+3. **Developer Experience**: Easier to find and modify specific functionality
+4. **Type Safety**: Better TypeScript support with focused interfaces
+5. **Reusability**: Game logic can be reused across different UI implementations
+
+## File Size Targets
+
+- **game-core files**: 100-300 lines each
+- **game-graphics files**: 50-200 lines each
+- **New App.tsx**: Under 200 lines
+- **Custom hooks**: 50-150 lines each
+
+## Dependencies Management
+
+- Core files should have minimal React dependencies
+- UI files can use React freely
+- Shared types in a separate types folder
+- Clear dependency direction: UI depends on Core, never reverse
+

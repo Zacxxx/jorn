@@ -1,0 +1,354 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Refactoring Verification Strategy
+
+## Overview
+This document outlines the testing and verification approach for the App.tsx refactoring to ensure zero functionality loss and maintain code quality throughout the process.
+
+## Pre-Refactoring Baseline
+
+### 1. Functionality Audit
+Before starting any refactoring, document current functionality:
+
+#### Core Game Features Checklist
+- [ ] Player creation and stats calculation
+- [ ] Combat system (player vs enemies)
+- [ ] Spell casting and tag system
+- [ ] Item crafting and equipment
+- [ ] Homestead management
+- [ ] Settlement interactions
+- [ ] Save/load functionality
+- [ ] Navigation between views
+- [ ] Modal system
+- [ ] Status effects and turn management
+
+#### Performance Baseline
+- [ ] Initial load time
+- [ ] Combat turn processing time
+- [ ] View transition speed
+- [ ] Memory usage patterns
+- [ ] Bundle size
+
+### 2. Create Test Scenarios
+Document specific test scenarios for each major feature:
+
+#### Combat Test Scenarios
+```typescript
+// Example test scenarios to verify after each phase
+const combatTestScenarios = [
+  {
+    name: "Basic spell casting",
+    steps: [
+      "Start combat with enemy",
+      "Cast fireball spell",
+      "Verify damage calculation",
+      "Verify status effects applied",
+      "Verify enemy defeat handling"
+    ]
+  },
+  {
+    name: "Tag system interactions",
+    steps: [
+      "Cast spell with conflicting tags",
+      "Verify effective tags calculation",
+      "Verify synergy bonuses applied",
+      "Verify damage modifiers"
+    ]
+  }
+];
+```
+
+## Phase-by-Phase Verification
+
+### Phase 1 Verification (Core Systems)
+
+#### After extracting game-core/state/GameState.ts
+**Verification Steps:**
+1. [ ] All state variables maintain same initial values
+2. [ ] State updates trigger re-renders correctly
+3. [ ] No memory leaks in state management
+4. [ ] TypeScript compilation passes
+5. [ ] All existing functionality works
+
+**Test Commands:**
+```bash
+npm run build
+npm run type-check
+# Manual testing of state-dependent features
+```
+
+#### After extracting game-core/player/PlayerStats.ts
+**Verification Steps:**
+1. [ ] `calculateEffectiveStats` returns identical results
+2. [ ] Equipment bonuses calculated correctly
+3. [ ] Status effect modifiers applied properly
+4. [ ] Player stat display unchanged
+5. [ ] Combat damage calculations unchanged
+
+**Verification Code:**
+```typescript
+// Create test to compare old vs new calculateEffectiveStats
+const testPlayer = { /* test player data */ };
+const oldStats = oldCalculateEffectiveStats(testPlayer);
+const newStats = newCalculateEffectiveStats(testPlayer);
+console.assert(JSON.stringify(oldStats) === JSON.stringify(newStats));
+```
+
+#### After extracting game-core/combat/CombatEngine.ts
+**Verification Steps:**
+1. [ ] Combat initiation works identically
+2. [ ] Damage calculations produce same results
+3. [ ] Status effects applied correctly
+4. [ ] Enemy AI behavior unchanged
+5. [ ] Combat log entries identical
+6. [ ] Victory/defeat conditions work
+
+### Phase 2 Verification (Game Systems)
+
+#### After extracting spell system files
+**Verification Steps:**
+1. [ ] Spell crafting produces identical results
+2. [ ] Spell editing maintains same behavior
+3. [ ] Tag precedence system works correctly
+4. [ ] Spell validation unchanged
+5. [ ] Resource costs calculated correctly
+
+#### After extracting item system files
+**Verification Steps:**
+1. [ ] Item crafting works identically
+2. [ ] Equipment system unchanged
+3. [ ] Inventory management works
+4. [ ] Loot generation identical
+5. [ ] Item usage effects same
+
+### Phase 3 Verification (Game Flow)
+
+#### After extracting navigation controller
+**Verification Steps:**
+1. [ ] All navigation handlers work
+2. [ ] View transitions identical
+3. [ ] State preservation during navigation
+4. [ ] Modal handling unchanged
+5. [ ] Back button behavior same
+
+#### After extracting game loop systems
+**Verification Steps:**
+1. [ ] Turn management identical
+2. [ ] Enemy AI behavior unchanged
+3. [ ] Status effect duration tracking
+4. [ ] Combat flow preservation
+5. [ ] Save/load functionality works
+
+### Phase 4 Verification (UI Components)
+
+#### After extracting UI components
+**Verification Steps:**
+1. [ ] All views render identically
+2. [ ] Component props passed correctly
+3. [ ] Event handlers work properly
+4. [ ] Styling unchanged
+5. [ ] Responsive behavior maintained
+
+## Automated Testing Strategy
+
+### 1. Unit Tests for Extracted Functions
+Create unit tests for each extracted function:
+
+```typescript
+// Example unit test structure
+describe('game-core/combat/DamageCalculation', () => {
+  describe('calculateDamage', () => {
+    it('should calculate damage correctly with no modifiers', () => {
+      const result = calculateDamage(10, 5, 2, 'normal', 0, 0);
+      expect(result).toBe(13); // 10 + 5 - 2
+    });
+    
+    it('should apply weakness modifier correctly', () => {
+      const result = calculateDamage(10, 5, 2, 'weak', 0, 0);
+      expect(result).toBe(19); // (10 + 5) * 1.5 - 2
+    });
+  });
+});
+```
+
+### 2. Integration Tests
+Test interactions between extracted modules:
+
+```typescript
+describe('Combat Integration', () => {
+  it('should handle complete combat turn correctly', () => {
+    const gameState = createTestGameState();
+    const player = createTestPlayer();
+    const enemy = createTestEnemy();
+    
+    // Test complete combat flow
+    const result = processCombatTurn(gameState, player, enemy, 'fireball');
+    
+    expect(result.enemy.hp).toBeLessThan(enemy.hp);
+    expect(result.combatLog).toHaveLength(2); // Attack + damage log
+  });
+});
+```
+
+### 3. End-to-End Tests
+Test complete user workflows:
+
+```typescript
+describe('E2E Game Flow', () => {
+  it('should complete full combat encounter', () => {
+    // Start from home screen
+    // Navigate to combat
+    // Cast spells
+    // Win combat
+    // Return to home
+    // Verify rewards received
+  });
+});
+```
+
+## Performance Verification
+
+### 1. Bundle Size Analysis
+```bash
+# Before refactoring
+npm run build
+npm run analyze
+
+# After each phase
+npm run build
+npm run analyze
+# Compare bundle sizes and chunk distribution
+```
+
+### 2. Runtime Performance
+```typescript
+// Performance monitoring
+const performanceTests = {
+  combatTurnTime: () => {
+    const start = performance.now();
+    processCombatTurn(/* params */);
+    const end = performance.now();
+    return end - start;
+  },
+  
+  viewTransitionTime: () => {
+    const start = performance.now();
+    navigateToView('COMBAT');
+    const end = performance.now();
+    return end - start;
+  }
+};
+```
+
+### 3. Memory Usage
+```typescript
+// Memory leak detection
+const memoryTests = {
+  checkForLeaks: () => {
+    const initialMemory = performance.memory.usedJSHeapSize;
+    
+    // Perform operations
+    for (let i = 0; i < 100; i++) {
+      createAndDestroyCombat();
+    }
+    
+    // Force garbage collection if available
+    if (window.gc) window.gc();
+    
+    const finalMemory = performance.memory.usedJSHeapSize;
+    const memoryIncrease = finalMemory - initialMemory;
+    
+    expect(memoryIncrease).toBeLessThan(1000000); // 1MB threshold
+  }
+};
+```
+
+## Regression Testing Checklist
+
+### After Each Phase
+- [ ] All existing features work identically
+- [ ] No new TypeScript errors
+- [ ] No new console errors or warnings
+- [ ] Performance within acceptable range
+- [ ] Bundle size not significantly increased
+- [ ] All navigation paths work
+- [ ] Save/load functionality preserved
+- [ ] Modal system works correctly
+- [ ] Combat system fully functional
+- [ ] Spell system works identically
+- [ ] Item system unchanged
+- [ ] Homestead features work
+- [ ] Settlement interactions work
+
+### Final Integration Testing
+- [ ] Complete game playthrough possible
+- [ ] All features accessible
+- [ ] No broken functionality
+- [ ] Performance equal or better
+- [ ] Code quality improved
+- [ ] Maintainability enhanced
+- [ ] TypeScript coverage maintained
+- [ ] No circular dependencies
+- [ ] Clean separation of concerns
+
+## Rollback Strategy
+
+### If Issues Found
+1. **Immediate Rollback**: Revert to previous working commit
+2. **Identify Issue**: Determine what broke and why
+3. **Fix Forward**: Address the issue in the refactored code
+4. **Re-verify**: Run full verification suite again
+
+### Rollback Triggers
+- Any core functionality broken
+- Performance degradation > 20%
+- TypeScript compilation failures
+- Critical bugs introduced
+- Memory leaks detected
+
+## Success Criteria
+
+### Technical Criteria
+- [ ] All tests pass
+- [ ] TypeScript compilation clean
+- [ ] No runtime errors
+- [ ] Performance maintained or improved
+- [ ] Bundle size optimized
+- [ ] Code coverage maintained
+
+### Functional Criteria
+- [ ] All game features work identically
+- [ ] User experience unchanged
+- [ ] Save compatibility maintained
+- [ ] No data loss possible
+- [ ] All edge cases handled
+
+### Quality Criteria
+- [ ] Code more maintainable
+- [ ] Better separation of concerns
+- [ ] Improved testability
+- [ ] Cleaner architecture
+- [ ] Better TypeScript support
+- [ ] Reduced coupling
+- [ ] Increased cohesion
+
+## Documentation Requirements
+
+### For Each Extracted Module
+- [ ] Clear API documentation
+- [ ] Usage examples
+- [ ] Type definitions
+- [ ] Dependency requirements
+- [ ] Performance characteristics
+
+### For Integration
+- [ ] Updated architecture diagrams
+- [ ] Dependency graphs
+- [ ] Data flow documentation
+- [ ] State management guide
+- [ ] Testing strategy docs
+
+This verification strategy ensures that the refactoring maintains all existing functionality while improving code quality and maintainability.

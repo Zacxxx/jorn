@@ -1,0 +1,208 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Function Extraction Mapping
+
+## Complete Function Analysis from App.tsx
+
+### Core Utility Functions (Lines 55-140)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `getEffectiveTags` | 60-140 | [game-core/spells/TagSystem.ts](mdc:game-core/spells/TagSystem.ts) | Phase 1.4 |
+
+### Player Management Functions (Lines 300-400)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `calculateEffectiveStats` | 300-350 | [game-core/player/PlayerStats.ts](mdc:game-core/player/PlayerStats.ts) | Phase 1.2 |
+
+### Resource Management Functions (Lines 400-500)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `checkResources` | 400-420 | [game-core/resources/ResourceManager.ts](mdc:game-core/resources/ResourceManager.ts) | Phase 2.3 |
+| `deductResources` | 420-440 | [game-core/resources/ResourceManager.ts](mdc:game-core/resources/ResourceManager.ts) | Phase 2.3 |
+
+### Navigation Handler Functions (Lines 440-600)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleOpenInventory` | 440-441 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenSpellbook` | 442-443 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenCraftingHub` | 444-445 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenRecipeDiscovery` | 446-447 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenCraftingWorkshop` | 448-449 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenSpellDesignStudio` | 450-454 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleExploreMap` | 455-456 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenCamp` | 457-458 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenNPCs` | 459-460 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleNavigateHome` | 530-537 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+
+### Rest and Camp Functions (Lines 460-530)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleRestComplete` | 460-530 | [game-core/camp/RestManager.ts](mdc:game-core/camp/RestManager.ts) | Phase 2.4 |
+
+### Parameters Functions (Lines 540-550)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleOpenParameters` | 540-541 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleToggleLegacyFooter` | 542-543 | [game-core/settings/SettingsManager.ts](mdc:game-core/settings/SettingsManager.ts) | Phase 2.5 |
+| `handleToggleDebugMode` | 544-545 | [game-core/settings/SettingsManager.ts](mdc:game-core/settings/SettingsManager.ts) | Phase 2.5 |
+| `handleToggleAutoSave` | 546-547 | [game-core/settings/SettingsManager.ts](mdc:game-core/settings/SettingsManager.ts) | Phase 2.5 |
+
+### Homestead Functions (Lines 550-650)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleOpenHomestead` | 550-551 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleStartHomesteadProject` | 552-580 | [game-core/homestead/HomesteadManager.ts](mdc:game-core/homestead/HomesteadManager.ts) | Phase 2.6 |
+| `handleCompleteHomesteadProject` | 580-610 | [game-core/homestead/HomesteadManager.ts](mdc:game-core/homestead/HomesteadManager.ts) | Phase 2.6 |
+| `handleUpgradeHomesteadProperty` | 610-650 | [game-core/homestead/HomesteadManager.ts](mdc:game-core/homestead/HomesteadManager.ts) | Phase 2.6 |
+
+### Settlement Functions (Lines 650-750)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleAccessSettlement` | 650-652 | [game-core/navigation/NavigationController.ts](mdc:game-core/navigation/NavigationController.ts) | Phase 3.1 |
+| `handleOpenShop` | 653-656 | [game-core/settlement/SettlementManager.ts](mdc:game-core/settlement/SettlementManager.ts) | Phase 2.7 |
+| `handleOpenTavern` | 657-660 | [game-core/settlement/SettlementManager.ts](mdc:game-core/settlement/SettlementManager.ts) | Phase 2.7 |
+| `handleTalkToNPC` | 661-664 | [game-core/settlement/SettlementManager.ts](mdc:game-core/settlement/SettlementManager.ts) | Phase 2.7 |
+| `handleExplorePointOfInterest` | 665-668 | [game-core/settlement/SettlementManager.ts](mdc:game-core/settlement/SettlementManager.ts) | Phase 2.7 |
+| `handlePurchaseItem` | 669-690 | [game-core/settlement/SettlementManager.ts](mdc:game-core/settlement/SettlementManager.ts) | Phase 2.7 |
+| `handlePurchaseService` | 691-710 | [game-core/settlement/SettlementManager.ts](mdc:game-core/settlement/SettlementManager.ts) | Phase 2.7 |
+
+### Spell Design Functions (Lines 710-850)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleFinalizeSpellDesign` | 710-780 | [game-core/spells/SpellCrafting.ts](mdc:game-core/spells/SpellCrafting.ts) | Phase 2.1 |
+| `handleConfirmSpellCraft` | 780-820 | [game-core/spells/SpellCrafting.ts](mdc:game-core/spells/SpellCrafting.ts) | Phase 2.1 |
+| `handleInitiateEditSpell` | 820-824 | [game-core/spells/SpellEditing.ts](mdc:game-core/spells/SpellEditing.ts) | Phase 2.1 |
+| `handleInitiateSpellRefinement` | 825-850 | [game-core/spells/SpellEditing.ts](mdc:game-core/spells/SpellEditing.ts) | Phase 2.1 |
+
+### Spell Editing Functions (Lines 850-900)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleConfirmSpellEdit` | 850-880 | [game-core/spells/SpellEditing.ts](mdc:game-core/spells/SpellEditing.ts) | Phase 2.1 |
+
+### Trait Functions (Lines 900-950)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleCraftTrait` | 900-930 | [game-core/traits/TraitManager.ts](mdc:game-core/traits/TraitManager.ts) | Phase 2.8 |
+
+### Item Crafting Functions (Lines 950-1000)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleInitiateItemCraft` | 950-970 | [game-core/items/ItemCrafting.ts](mdc:game-core/items/ItemCrafting.ts) | Phase 2.2 |
+| `handleConfirmItemCraft` | 970-1000 | [game-core/items/ItemCrafting.ts](mdc:game-core/items/ItemCrafting.ts) | Phase 2.2 |
+
+### Equipment Functions (Lines 1000-1050)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleEquipItem` | 1000-1010 | [game-core/items/Equipment.ts](mdc:game-core/items/Equipment.ts) | Phase 2.2 |
+| `handleUnequipItem` | 1010-1015 | [game-core/items/Equipment.ts](mdc:game-core/items/Equipment.ts) | Phase 2.2 |
+| `handlePrepareSpell` | 1015-1020 | [game-core/spells/SpellManagement.ts](mdc:game-core/spells/SpellManagement.ts) | Phase 2.1 |
+| `handleUnprepareSpell` | 1020-1025 | [game-core/spells/SpellManagement.ts](mdc:game-core/spells/SpellManagement.ts) | Phase 2.1 |
+| `handlePrepareAbility` | 1025-1030 | [game-core/abilities/AbilityManager.ts](mdc:game-core/abilities/AbilityManager.ts) | Phase 2.9 |
+| `handleUnprepareAbility` | 1030-1035 | [game-core/abilities/AbilityManager.ts](mdc:game-core/abilities/AbilityManager.ts) | Phase 2.9 |
+
+### Combat Core Functions (Lines 1035-1100)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `processPlayerTurnStartEffects` | 1035-1100 | [game-core/player/PlayerEffects.ts](mdc:game-core/player/PlayerEffects.ts) | Phase 1.2 |
+
+### Enemy and Combat Functions (Lines 1100-1200)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleFindEnemy` | 1100-1200 | [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts) | Phase 1.3 |
+
+### Damage Calculation Functions (Lines 1200-1300)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `calculateDamage` | 1200-1220 | [game-core/combat/DamageCalculation.ts](mdc:game-core/combat/DamageCalculation.ts) | Phase 1.3 |
+| `applyDamageAndReflection` | 1220-1280 | [game-core/combat/DamageCalculation.ts](mdc:game-core/combat/DamageCalculation.ts) | Phase 1.3 |
+
+### Spell Combat Functions (Lines 1280-1500)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `playerAttack` | 1280-1350 | [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts) | Phase 1.3 |
+| `applySpellToEnemy` | 1350-1420 | [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts) | Phase 1.3 |
+| `applySpellToSelf` | 1420-1450 | [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts) | Phase 1.3 |
+| `applyTagDamageModifiers` | 1450-1500 | [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts) | Phase 1.3 |
+
+### Tag and Effect Functions (Lines 1500-1600)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `getElementalEffectiveness` | 1500-1530 | [game-core/combat/DamageCalculation.ts](mdc:game-core/combat/DamageCalculation.ts) | Phase 1.3 |
+| `applyTagStatusEffects` | 1530-1600 | [game-core/combat/StatusEffects.ts](mdc:game-core/combat/StatusEffects.ts) | Phase 1.3 |
+
+### Special Mechanics Functions (Lines 1600-1700)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleSpecialSpellMechanics` | 1600-1700 | [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts) | Phase 1.3 |
+
+### Player Action Functions (Lines 1700-1900)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleUseAbility` | 1700-1750 | [game-core/abilities/AbilityManager.ts](mdc:game-core/abilities/AbilityManager.ts) | Phase 2.9 |
+| `handleUseConsumable` | 1750-1820 | [game-core/items/ItemManagement.ts](mdc:game-core/items/ItemManagement.ts) | Phase 2.2 |
+| `handlePlayerBasicAttack` | 1820-1850 | [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts) | Phase 1.3 |
+| `handlePlayerDefend` | 1850-1860 | [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts) | Phase 1.3 |
+| `handlePlayerFlee` | 1860-1880 | [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts) | Phase 1.3 |
+| `handlePlayerFreestyleAction` | 1880-1920 | [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts) | Phase 1.3 |
+
+### Enemy AI Functions (Lines 1920-2000)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `processEnemyTurn` | 1920-2000 | [game-core/game-loop/EnemyAI.ts](mdc:game-core/game-loop/EnemyAI.ts) | Phase 3.2 |
+
+### Status Effect Functions (Lines 2000-2100)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `applyStatusEffect` | 2000-2100 | [game-core/combat/StatusEffects.ts](mdc:game-core/combat/StatusEffects.ts) | Phase 1.3 |
+
+### Reward and Progression Functions (Lines 2100-2200)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `awardCombatRewards` | 2100-2150 | [game-core/progression/RewardManager.ts](mdc:game-core/progression/RewardManager.ts) | Phase 3.3 |
+| `handleEnemyDefeat` | 2150-2170 | [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts) | Phase 1.3 |
+| `handleLevelUp` | 2170-2200 | [game-core/progression/LevelManager.ts](mdc:game-core/progression/LevelManager.ts) | Phase 3.3 |
+
+### Research and Component Functions (Lines 2200-2300)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleAICreateComponent` | 2200-2250 | [game-core/research/ComponentResearch.ts](mdc:game-core/research/ComponentResearch.ts) | Phase 2.10 |
+| `handleOpenLootChest` | 2250-2300 | [game-core/items/LootManager.ts](mdc:game-core/items/LootManager.ts) | Phase 2.2 |
+
+### Utility and Helper Functions (Lines 2300-2350)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `renderResourceList` | 2300-2320 | [game-graphics/components/ResourceList.tsx](mdc:game-graphics/components/ResourceList.tsx) | Phase 4.3 |
+| `handleExportSave` | 2320-2340 | [game-core/persistence/SaveManager.ts](mdc:game-core/persistence/SaveManager.ts) | Phase 3.3 |
+| `handleImportSave` | 2340-2360 | [game-core/persistence/SaveManager.ts](mdc:game-core/persistence/SaveManager.ts) | Phase 3.3 |
+| `showMessageModal` | 2360-2365 | [game-graphics/hooks/useModals.ts](mdc:game-graphics/hooks/useModals.ts) | Phase 5.2 |
+
+### Recipe Functions (Lines 2365-2390)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `handleDiscoverRecipe` | 2365-2380 | [game-core/crafting/RecipeManager.ts](mdc:game-core/crafting/RecipeManager.ts) | Phase 2.11 |
+| `handleCraftItem` | 2380-2390 | [game-core/crafting/RecipeManager.ts](mdc:game-core/crafting/RecipeManager.ts) | Phase 2.11 |
+
+### Render Function (Lines 2390+)
+| Function | Current Lines | Target File | Priority |
+|----------|---------------|-------------|----------|
+| `renderCurrentView` | 2390-2450 | [game-graphics/ViewRouter.tsx](mdc:game-graphics/ViewRouter.tsx) | Phase 4.2 |
+
+## Summary Statistics
+
+- **Total Functions**: 67 functions
+- **Phase 1 Functions**: 12 functions (~800 lines)
+- **Phase 2 Functions**: 35 functions (~1000 lines)
+- **Phase 3 Functions**: 12 functions (~400 lines)
+- **Phase 4 Functions**: 8 functions (~200 lines)
+
+## Extraction Priority Order
+
+1. **High Priority (Phase 1)**: Core combat, player stats, tag system
+2. **Medium Priority (Phase 2)**: Spell/item systems, homestead, settlement
+3. **Low Priority (Phase 3)**: Game flow, AI, progression
+4. **UI Priority (Phase 4)**: Rendering, modals, navigation
+
+This mapping ensures a systematic, non-destructive refactoring approach where each function is moved to its logical domain.

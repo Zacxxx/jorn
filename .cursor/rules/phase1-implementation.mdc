@@ -1,0 +1,202 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Phase 1 Implementation Guide
+
+## Phase 1.1: Game State Management
+
+### Target: Extract State Declarations (Lines 140-280)
+
+**Current State in App.tsx:**
+```typescript
+// Lines 140-280 contain these state declarations:
+const [player, setPlayer] = useState<Player>(...)
+const [currentEnemies, setCurrentEnemies] = useState<Enemy[]>([])
+const [targetEnemyId, setTargetEnemyId] = useState<string | null>(null)
+const [gameState, setGameState] = useState<GameState>('HOME')
+const [combatLog, setCombatLog] = useState<CombatActionLog[]>([])
+const [isLoading, setIsLoading] = useState(false)
+const [modalContent, setModalContent] = useState<...>(null)
+// ... and 15+ more state variables
+```
+
+**New File Structure:**
+
+#### [game-core/state/GameState.ts](mdc:game-core/state/GameState.ts)
+```typescript
+import { useState } from 'react';
+import { Player, Enemy, GameState as GameStateType, CombatActionLog } from '../../types';
+
+export interface GameStateManager {
+  // Core game state
+  gameState: GameStateType;
+  setGameState: (state: GameStateType) => void;
+  
+  // Loading states
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  
+  // Modal state
+  modalContent: ModalContent | null;
+  setModalContent: (content: ModalContent | null) => void;
+  
+  // Combat state
+  currentEnemies: Enemy[];
+  setCurrentEnemies: React.Dispatch<React.SetStateAction<Enemy[]>>;
+  targetEnemyId: string | null;
+  setTargetEnemyId: (id: string | null) => void;
+  combatLog: CombatActionLog[];
+  setCombatLog: React.Dispatch<React.SetStateAction<CombatActionLog[]>>;
+  
+  // Turn management
+  turn: number;
+  setTurn: React.Dispatch<React.SetStateAction<number>>;
+  isPlayerTurn: boolean;
+  setIsPlayerTurn: (isPlayerTurn: boolean) => void;
+}
+
+export const useGameState = (): GameStateManager => {
+  // Extract all useState calls from App.tsx lines 140-280
+  // Return as organized interface
+}
+```
+
+## Phase 1.2: Player Management System
+
+### Target: Player State and Stats (Lines 140-200)
+
+#### [game-core/player/PlayerState.ts](mdc:game-core/player/PlayerState.ts)
+**Extract:**
+- Player state initialization (lines 140-200)
+- Player state management
+- Local storage integration
+
+#### [game-core/player/PlayerStats.ts](mdc:game-core/player/PlayerStats.ts)
+**Extract:**
+- `calculateEffectiveStats` function (lines 300-350)
+- Stat calculation logic
+- Equipment bonuses
+- Status effect modifiers
+
+#### [game-core/player/PlayerEffects.ts](mdc:game-core/player/PlayerEffects.ts)
+**Extract:**
+- `processPlayerTurnStartEffects` function (lines 1400-1500)
+- Status effect processing
+- Turn-based effect updates
+
+## Phase 1.3: Combat System Extraction
+
+### Target: Combat Logic (Lines 1000-1600)
+
+#### [game-core/combat/CombatEngine.ts](mdc:game-core/combat/CombatEngine.ts)
+**Extract Functions:**
+- `handleFindEnemy` (lines 1000-1100)
+- `playerAttack` (lines 1150-1250)
+- `handlePlayerBasicAttack` (lines 1800-1850)
+- `handlePlayerDefend` (lines 1850-1870)
+- `handlePlayerFlee` (lines 1870-1900)
+
+#### [game-core/combat/DamageCalculation.ts](mdc:game-core/combat/DamageCalculation.ts)
+**Extract Functions:**
+- `calculateDamage` (lines 1050-1080)
+- `applyDamageAndReflection` (lines 1080-1150)
+- `getElementalEffectiveness` (lines 1350-1400)
+
+#### [game-core/combat/StatusEffects.ts](mdc:game-core/combat/StatusEffects.ts)
+**Extract Functions:**
+- `applyStatusEffect` (lines 1828-1871)
+- `applyTagStatusEffects` (lines 1400-1500)
+- Status effect validation and application
+
+#### [game-core/combat/SpellCasting.ts](mdc:game-core/combat/SpellCasting.ts)
+**Extract Functions:**
+- `applySpellToEnemy` (lines 1230-1300)
+- `applySpellToSelf` (lines 1300-1330)
+- `applyTagDamageModifiers` (lines 1330-1380)
+- `handleSpecialSpellMechanics` (lines 1500-1600)
+
+## Phase 1.4: Tag System
+
+### Target: Tag Logic (Lines 60-140)
+
+#### [game-core/spells/TagSystem.ts](mdc:game-core/spells/TagSystem.ts)
+**Extract:**
+- `tagPrecedenceList` (line 55)
+- `getEffectiveTags` function (lines 60-140)
+- Tag conflict resolution
+- Tag synergy calculations
+
+## Implementation Steps for Phase 1
+
+### Step 1: Create Directory Structure
+```bash
+mkdir -p game-core/state
+mkdir -p game-core/player
+mkdir -p game-core/combat
+mkdir -p game-core/spells
+```
+
+### Step 2: Extract Game State (Day 1)
+1. Create `game-core/state/GameState.ts`
+2. Move all useState declarations
+3. Create useGameState hook
+4. Test state management isolation
+
+### Step 3: Extract Player System (Day 2)
+1. Create PlayerState.ts with player useState and localStorage logic
+2. Create PlayerStats.ts with calculateEffectiveStats
+3. Create PlayerEffects.ts with turn effects
+4. Test player state management
+
+### Step 4: Extract Combat System (Days 3-4)
+1. Create CombatEngine.ts with main combat functions
+2. Create DamageCalculation.ts with damage logic
+3. Create StatusEffects.ts with effect management
+4. Create SpellCasting.ts with spell application
+5. Test combat functionality
+
+### Step 5: Extract Tag System (Day 5)
+1. Create TagSystem.ts with tag logic
+2. Test tag precedence and conflicts
+3. Verify spell tag interactions
+
+## Verification Checklist for Phase 1
+
+- [ ] All extracted functions maintain exact same behavior
+- [ ] No circular dependencies between new files
+- [ ] TypeScript compilation passes
+- [ ] All tests pass (if any exist)
+- [ ] Game functionality unchanged
+- [ ] Performance impact minimal
+
+## Dependencies for Phase 1 Files
+
+### game-core/state/GameState.ts
+- React (useState)
+- types.ts
+- No other game-core dependencies
+
+### game-core/player/PlayerState.ts
+- React (useState, useEffect)
+- types.ts
+- constants.ts
+- localStorage
+
+### game-core/combat/CombatEngine.ts
+- game-core/player/PlayerStats.ts
+- game-core/combat/DamageCalculation.ts
+- game-core/combat/StatusEffects.ts
+- types.ts
+
+## Success Criteria for Phase 1
+
+1. **Functionality**: All game features work exactly as before
+2. **Performance**: No noticeable performance degradation
+3. **Code Quality**: Each file under 300 lines
+4. **Type Safety**: Full TypeScript coverage
+5. **Testability**: Each function can be unit tested
+6. **Maintainability**: Clear separation of concerns
+
+After Phase 1 completion, the App.tsx file should be reduced by approximately 800-1000 lines while maintaining all functionality.
