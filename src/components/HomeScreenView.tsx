@@ -147,7 +147,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   ];
 
   return (
-    <div className="min-h-[calc(100vh-12rem)] h-[calc(100vh-12rem)] w-full max-w-none mx-0 px-4 overflow-hidden">
+    <div className="min-h-screen md:min-h-[calc(100vh-12rem)] md:h-[calc(100vh-12rem)] w-full max-w-none mx-0 px-4 overflow-hidden">
       {/* Player Stats Display - Conditional Rendering */}
       {PlayerStatsDisplay && (
         <div className="mb-4">
@@ -158,19 +158,19 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       {/* Main Bento Box Layout */}
       <div className="h-full py-2">
         {/* Bento Grid Container */}
-        <div className="grid grid-cols-12 grid-rows-6 gap-3 h-full">
+        <div className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-6 gap-3 h-full">
           
           {/* Top Row - Location Info with Details and Homestead (spans full width) */}
-          <div className="col-span-12 row-span-2 bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-xl shadow-xl border border-green-700/60 p-4">
+          <div className="col-span-full md:col-span-12 md:row-span-2 bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-xl shadow-xl border border-green-700/60 p-4">
             {/* Top Section - Main Location Info */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
-                  {isInSettlement ? <BuildingIcon className="w-6 h-6 text-green-400" /> : <MapIcon className="w-6 h-6 text-green-400" />}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+              <div className="flex items-center space-x-4 mb-2 sm:mb-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
+                  {isInSettlement ? <BuildingIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" /> : <MapIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-green-300">{locationName}</h3>
-                  <p className="text-sm text-slate-300">{currentLocation?.type} • Danger Level {currentLocation?.dangerLevel || '?'}</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-green-300">{locationName}</h3>
+                  <p className="text-xs sm:text-sm text-slate-300">{currentLocation?.type} • Danger Level {currentLocation?.dangerLevel || '?'}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -186,11 +186,11 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Bottom Section - Location Details and Homestead */}
-            <div className="grid grid-cols-12 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
               {/* Location Details */}
-              <div className="col-span-6 bg-gradient-to-r from-slate-700/40 to-slate-800/40 rounded-lg p-3 border border-slate-600/30">
+              <div className="col-span-1 lg:col-span-6 bg-gradient-to-r from-slate-700/40 to-slate-800/40 rounded-lg p-3 border border-slate-600/30">
                 <h4 className="text-base font-semibold text-slate-200 mb-3">Location Details</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Type:</span>
@@ -219,20 +219,20 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               </div>
 
               {/* Homestead Section */}
-              <div className="col-span-6 bg-gradient-to-r from-amber-500/20 to-amber-600/20 rounded-lg p-3 border border-amber-500/30">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
-                      <HomeIcon className="w-5 h-5 text-amber-400" />
+              <div className="col-span-1 lg:col-span-6 bg-gradient-to-r from-amber-500/20 to-amber-600/20 rounded-lg p-3 border border-amber-500/30">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                  <div className="flex items-center space-x-3 mb-2 sm:mb-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
+                      <HomeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
                     </div>
                     <div>
-                      <h4 className="text-base font-semibold text-amber-300">Homestead</h4>
-                      <p className="text-xs text-slate-300">Your base of operations</p>
+                      <h4 className="text-sm sm:text-base font-semibold text-amber-300">Homestead</h4>
+                      <p className="text-2xs sm:text-xs text-slate-300">Your base of operations</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="grid grid-cols-2 gap-1 text-xs">
-                      <div className="bg-slate-800/30 rounded px-2 py-1 text-center">
+                  <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
+                    <div className="grid grid-cols-2 gap-1 text-2xs sm:text-xs flex-grow sm:flex-grow-0">
+                      <div className="bg-slate-800/30 rounded px-1 sm:px-2 py-1 text-center">
                         <div className="text-slate-400">Garden</div>
                         <div className="text-amber-300 font-medium">Lv.1</div>
                       </div>
@@ -251,13 +251,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Left Column - Activity Cards (3 cards) */}
-          <div className="col-span-3 row-span-4 grid grid-rows-3 gap-2">
+          <div className="col-span-full md:col-span-3 md:row-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-rows-3 gap-2">
             {activityOrder.slice(0, 3).map((activityId) => {
               const activity = activityCards.find(card => card.id === activityId);
               if (!activity) return null;
               
               return (
-                <div key={activity.id} className="w-full h-full">
+                <div key={activity.id} className="w-full h-full"> {/* Ensure cards take full width/height of grid cell */}
                   <ActivityCard
                     id={activity.id}
                     title={activity.title}
@@ -278,35 +278,35 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Center Column - BATTLE SECTION (Hero/Focus Area) */}
-          <div className="col-span-6 row-span-4 bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-xl shadow-2xl border border-red-700/60 p-6 flex flex-col">
+          <div className="col-span-full md:col-span-6 md:row-span-4 bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-xl shadow-2xl border border-red-700/60 p-4 sm:p-6 flex flex-col">
             {/* Battle Header */}
-            <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl flex items-center justify-center">
-                <SkullIcon className="w-8 h-8 text-red-400" />
+            <div className="flex items-center justify-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl flex items-center justify-center">
+                <SkullIcon className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
               </div>
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-red-300">COMBAT</h2>
-                <p className="text-lg text-slate-300">Test Your Skills</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-red-300">COMBAT</h2>
+                <p className="text-base sm:text-lg text-slate-300">Test Your Skills</p>
               </div>
             </div>
 
             {/* Battle Info */}
-            <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-xl p-4 border border-slate-600/50 shadow-inner mb-6 flex-1">
-              <div className="text-center mb-4">
-                <h3 className="text-xl font-semibold text-slate-200 mb-2">Battle in {locationName}</h3>
-                <p className="text-slate-300">Danger Level: {currentLocation?.dangerLevel || '?'}</p>
+            <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-xl p-3 sm:p-4 border border-slate-600/50 shadow-inner mb-4 sm:mb-6 flex-1">
+              <div className="text-center mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-slate-200 mb-1 sm:mb-2">Battle in {locationName}</h3>
+                <p className="text-xs sm:text-sm text-slate-300">Danger Level: {currentLocation?.dangerLevel || '?'}</p>
               </div>
               
-              <div className="grid grid-cols-3 gap-4 text-center text-sm">
-                <div className="bg-slate-800/50 rounded-lg p-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center text-xs sm:text-sm">
+                <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3">
                   <div className="text-slate-400">Experience</div>
                   <div className="text-green-300 font-semibold">High Gain</div>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-3">
+                <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3">
                   <div className="text-slate-400">Loot</div>
                   <div className="text-blue-300 font-semibold">Valuable</div>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-3">
+                <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3">
                   <div className="text-slate-400">Risk</div>
                   <div className="text-red-300 font-semibold">Moderate</div>
                 </div>
@@ -321,16 +321,16 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                 size="lg" 
                 isLoading={isLoading} 
                 icon={<SkullIcon />} 
-                className="w-full text-xl py-4 hover:scale-105 transition-transform duration-200 font-bold"
+                className="w-full text-lg sm:text-xl py-3 sm:py-4 hover:scale-105 transition-transform duration-200 font-bold"
               >
                 SEEK BATTLE
               </ActionButton>
               
-              <div className="grid grid-cols-2 gap-3">
-                <ActionButton onClick={onNavigateToMultiplayer} variant="primary" size="sm" icon={<UserIcon />}>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <ActionButton onClick={onNavigateToMultiplayer} variant="primary" size="xs sm:size-sm" icon={<UserIcon />}>
                   Multiplayer
                 </ActionButton>
-                <ActionButton onClick={onOpenCamp} variant="secondary" size="sm" icon={<TentIcon />}>
+                <ActionButton onClick={onOpenCamp} variant="secondary" size="xs sm:size-sm" icon={<TentIcon />}>
                   Rest at Camp
                 </ActionButton>
               </div>
@@ -338,13 +338,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Right Column - Activity Cards (3 cards) */}
-          <div className="col-span-3 row-span-4 grid grid-rows-3 gap-2">
+          <div className="col-span-full md:col-span-3 md:row-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-rows-3 gap-2">
             {activityOrder.slice(3, 6).map((activityId) => {
               const activity = activityCards.find(card => card.id === activityId);
               if (!activity) return null;
               
               return (
-                <div key={activity.id} className="w-full h-full">
+                <div key={activity.id} className="w-full h-full"> {/* Ensure cards take full width/height of grid cell */}
                   <ActivityCard
                     id={activity.id}
                     title={activity.title}
