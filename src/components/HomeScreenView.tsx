@@ -49,7 +49,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-amber-500/20 to-amber-600/20',
       borderColor: 'border-amber-500/30',
       iconColor: 'text-amber-400',
-      backgroundImage: 'camp.gif'
+      backgroundImage: '/assets/activity-card/camp.gif'
     },
     {
       id: 'research',
