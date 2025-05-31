@@ -102,12 +102,14 @@ const MainTab: React.FC<MainTabProps> = ({
 
   return (
     <div className="h-full flex flex-col text-slate-100 p-0.5 xs:p-1">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-1.5 xs:gap-2 flex-grow">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-1.5 xs:gap-2 flex-grow h-full">
         {/* Left Column: Character Stats & Summaries (md:col-span-4) */}
-        <div className="md:col-span-4 lg:col-span-3 space-y-1.5 xs:space-y-2">
-          <VitalStatisticsDisplay player={player} stats={effectiveStats} />
-          <AttributesDisplay player={player} stats={effectiveStats} />
-          <MainTabSection
+        <div className="md:col-span-4 lg:col-span-3 flex flex-col h-full">
+          <div className="overflow-y-auto styled-scrollbar flex-grow">
+            <div className="space-y-1.5 xs:space-y-2">
+              <VitalStatisticsDisplay player={player} stats={effectiveStats} />
+              <AttributesDisplay player={player} stats={effectiveStats} />
+              <MainTabSection
             title="Prepared Spells"
             items={preparedSpellsSummary}
             onManageClick={onManageSpells}
@@ -128,6 +130,8 @@ const MainTab: React.FC<MainTabProps> = ({
             manageLabel="View" // Or "Manage" if applicable
             iconColorClass="text-purple-300"
           />
+            </div>
+          </div>
         </div>
 
         {/* Right Column: Talent Trees & Details (md:col-span-8) */}

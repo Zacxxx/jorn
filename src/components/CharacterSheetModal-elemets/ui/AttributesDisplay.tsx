@@ -40,22 +40,6 @@ const AttributesDisplay: React.FC<{player:Player, stats: PlayerEffectiveStats}> 
             </div>
         ))}
     </div>
-     {player.activeStatusEffects.length > 0 && (
-      <>
-        <h5 className="text-[0.55rem] xs:text-[0.6rem] sm:text-xs font-semibold text-slate-200 mt-1 xs:mt-1.5 mb-0.5">Active Effects:</h5>
-        <div className="flex flex-wrap gap-0.5">
-          {player.activeStatusEffects.map(effect => (
-            <div key={effect.id} title={`${effect.name}${effect.magnitude ? ` (${effect.magnitude})`: ''} - ${effect.duration}t`}
-                 className="text-[0.5rem] xs:text-[0.55rem] bg-slate-600/80 px-0.5 py-0 rounded-sm flex items-center shadow-sm border border-slate-500/70">
-              <GetSpellIcon iconName={STATUS_EFFECT_ICONS[effect.name]} className="w-1.5 h-1.5 xs:w-2 xs:h-2 mr-0.5 opacity-90"/>
-              <span className="text-slate-100">{effect.name.replace('TEMP_','').replace('_UP','')}</span>
-              {effect.magnitude && <span className="ml-0.5 opacity-80">({effect.magnitude})</span>}
-              <span className="ml-0.5 text-slate-300 font-mono bg-slate-800/50 px-0.5 text-[0.45rem] xs:text-[0.5rem] rounded-sm">{effect.duration}t</span>
-            </div>
-          ))}
-        </div>
-      </>
-    )}
   </div>
 );};
 
