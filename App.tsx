@@ -12,6 +12,10 @@ import { getScalingFactorFromRarity } from './utils';
 import { generateBiomeEnemy } from './src/services/biomeEnemyService';
 import { getLocation, updateLocationDiscovery } from './src/services/locationService';
 import { getEnvironmentalEffects } from './src/data/biomes';
+// World exploration imports
+import { generateBiomeEnemy } from './src/services/biomeEnemyService';
+import { getLocation, updateLocationDiscovery } from './src/services/locationService';
+import { getEnvironmentalEffects } from './src/data/biomes';
 
 import ActionButton from './ui/ActionButton';
 import Modal from './ui/Modal';
@@ -42,6 +46,8 @@ import SettlementView from './src/components/SettlementView';
 import ShopView from './src/components/ShopView';
 import RecipeDiscoveryView from './src/components/RecipeDiscoveryView';
 import CraftingWorkshopView from './src/components/CraftingWorkshopView';
+import WorldMapModal from './src/components/WorldMapModal';
+import ExplorationJournalModal from './src/components/ExplorationJournalModal';
 import NPCsView from './src/components/NPCsView';
 import WorldMapModal from './src/components/WorldMapModal';
 import ExplorationJournalModal from './src/components/ExplorationJournalModal';
@@ -176,6 +182,11 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [currentShopId, setCurrentShopId] = useState<string | null>(null);
   const [currentTavernId, setCurrentTavernId] = useState<string | null>(null);
   const [currentNPCId, setCurrentNPCId] = useState<string | null>(null);
+  
+  // New exploration state
+  const [isWorldMapOpen, setIsWorldMapOpen] = useState(false);
+  const [isExplorationJournalOpen, setIsExplorationJournalOpen] = useState(false);
+  const [isTraveling, setIsTraveling] = useState(false);
   
   // New exploration state
   const [isWorldMapOpen, setIsWorldMapOpen] = useState(false);

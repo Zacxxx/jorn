@@ -660,3 +660,11 @@ export interface LootDrop {
     equipmentData?: GeneratedEquipmentData;
     consumableData?: GeneratedConsumableData;
 }
+
+export interface Character {
+  id: number;
+  name: string;
+  race: string;
+  class: string;
+  level: number;
+}
