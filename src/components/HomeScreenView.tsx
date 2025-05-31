@@ -2,7 +2,7 @@ import React from 'react';
 import { Player } from '../types';
 import ActionButton from './ActionButton';
 import ActivityCard from './ActivityCard';
-import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon } from './IconComponents';
+import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon } from './IconComponents';
 import { getLocation } from '../services/locationService';
 
 interface HomeScreenViewProps {
@@ -96,17 +96,17 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   ];
 
   return (
-    <div className="min-h-[calc(100vh-12rem)] h-[calc(100vh-12rem)] w-full max-w-none mx-0 -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 overflow-hidden">
+    <div className="min-h-[calc(100vh-12rem)] h-[calc(100vh-12rem)] w-full max-w-none mx-0 -mx-3 sm:-mx-4 md:-mx-6 px-1 sm:px-2 md:px-3 lg:px-4 xl:px-6 overflow-hidden">
       {/* Main Content Container */}
-      <div className="h-full py-3 sm:py-4 md:py-6 lg:py-8">
+      <div className="h-full py-2 sm:py-3 md:py-4 lg:py-5">
         
-        {/* Desktop Layout - Two Column Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 h-full max-w-7xl mx-auto">
+        {/* Desktop Layout - Three Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lg:gap-5 h-full max-w-none mx-auto">
           
           {/* Left Column - Location & Exploration */}
-          <div className="flex flex-col space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 h-full">
+          <div className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 h-full">
             {/* Current Location Section - Enhanced and Optimized */}
-            <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-green-700/60 p-3 sm:p-4 md:p-5 lg:p-6 flex-shrink-0">
+            <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-green-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
@@ -220,7 +220,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
             {/* Explore World Section - Enhanced */}
             <div className="flex-1 min-h-0">
-              <div className="h-full overflow-y-auto space-y-3 sm:space-y-4 md:space-y-5">
+              <div className="h-full overflow-y-auto space-y-2 sm:space-y-3 md:space-y-4">
                 {/* Homestead Section - Enhanced Card */}
                 <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-lg p-2 sm:p-3 border border-amber-500/30 hover:border-amber-500/50 transition-all duration-200">
                   <div className="flex items-center space-x-2 mb-2">
@@ -244,15 +244,25 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                       <div className="text-amber-300 font-medium">Lv.1</div>
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-1 mb-3 text-xs">
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Resources</div>
+                      <div className="text-green-300 font-medium">Available</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Upgrades</div>
+                      <div className="text-blue-300 font-medium">Ready</div>
+                    </div>
+                  </div>
                   <ActionButton 
                     onClick={onOpenHomestead} 
                     variant="secondary" 
                     size="sm"
-                    className="w-full text-xs opacity-60"
-                    disabled={true}
+                    className="w-full text-xs hover:bg-amber-600/20 hover:border-amber-500/50"
+                    icon={<HomeIcon />}
                   >
-                    <span className="hidden sm:inline">Visit Homestead (Coming Soon)</span>
-                    <span className="sm:hidden">Homestead (Soon)</span>
+                    <span className="hidden sm:inline">Visit Homestead</span>
+                    <span className="sm:hidden">Homestead</span>
                   </ActionButton>
                 </div>
               </div>
@@ -260,10 +270,10 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Right Column - Combat & Activities */}
-          <div className="flex flex-col space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 h-full">
+          <div className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 h-full">
             {/* Combat Section - Enhanced */}
-            <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-red-700/60 p-3 sm:p-4 md:p-5 lg:p-6 flex-shrink-0">
-              <div className="flex items-center space-x-2 mb-3 sm:mb-4 md:mb-5">
+            <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-red-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
+              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-lg flex items-center justify-center">
                   <SkullIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-red-400" />
                 </div>
@@ -297,7 +307,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             {/* Activities Section - Enhanced with Detailed Cards */}
             <div className="flex-1 min-h-0">
               {/* Enhanced Activity Cards Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5 h-full overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4 h-full overflow-y-auto">
                 {activityCards.map((activity) => (
                   <ActivityCard
                     key={activity.id}
@@ -317,13 +327,126 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Third Column - Social & Economy */}
+          <div className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-5 h-full">
+            {/* Quests Card */}
+            <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-yellow-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
+              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-lg flex items-center justify-center">
+                  <BookIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-yellow-400" />
+                </div>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-yellow-300">Quests</h3>
+              </div>
+              
+              <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-lg p-2 sm:p-3 border border-slate-600/50 shadow-inner mb-2 sm:mb-3">
+                <p className="text-xs text-slate-300 mb-1 sm:mb-2">
+                  Embark on epic adventures and complete challenging quests for rewards.
+                </p>
+                <div className="text-xs text-slate-400 space-y-0.5">
+                  <div>• Active Quests: 3</div>
+                  <div>• Completed: 12</div>
+                  <div>• New Available: 2</div>
+                </div>
+              </div>
+
+              <ActionButton 
+                onClick={onOpenNPCs} 
+                variant="warning" 
+                size="lg" 
+                icon={<BookIcon />} 
+                className="w-full text-sm hover:scale-105 transition-transform duration-200"
+              >
+                View Quests
+              </ActionButton>
+            </div>
+
+            {/* Trading Hub Card */}
+            <div className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-emerald-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-shrink-0">
+              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
+                  <GearIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-emerald-400" />
+                </div>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-emerald-300">Trading Hub</h3>
+              </div>
+              
+              <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-lg p-2 sm:p-3 border border-slate-600/50 shadow-inner mb-2 sm:mb-3">
+                <p className="text-xs text-slate-300 mb-1 sm:mb-2">
+                  Access the global marketplace to buy and sell items with other players.
+                </p>
+                <div className="text-xs text-slate-400 space-y-0.5">
+                  <div>• Market Status: Active</div>
+                  <div>• Your Listings: 5</div>
+                  <div>• Recent Sales: 8</div>
+                </div>
+              </div>
+
+              <ActionButton 
+                onClick={() => console.log('Trading Hub clicked')} 
+                variant="success" 
+                size="lg" 
+                icon={<GearIcon />} 
+                className="w-full text-sm hover:scale-105 transition-transform duration-200"
+              >
+                Open Market
+              </ActionButton>
+            </div>
+
+            {/* Multiplayer Card */}
+            <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-purple-700/60 p-2 sm:p-3 md:p-4 lg:p-5 flex-1 min-h-0">
+              <div className="flex items-center space-x-2 mb-2 sm:mb-3 md:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
+                  <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
+                </div>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Multiplayer</h3>
+              </div>
+              
+              {/* Multiplayer Tabs */}
+              <div className="h-full flex flex-col">
+                <div className="flex border-b border-slate-600/30 mb-3">
+                  <button className="flex-1 py-2 px-3 text-xs font-medium text-purple-300 border-b-2 border-purple-500/50 bg-purple-500/10">
+                    Chat
+                  </button>
+                  <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
+                    Group
+                  </button>
+                  <button className="flex-1 py-2 px-3 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">
+                    Community
+                  </button>
+                </div>
+                
+                {/* Chat Content */}
+                <div className="flex-1 bg-slate-800/30 rounded-lg p-2 overflow-hidden">
+                  <div className="h-full flex flex-col">
+                    <div className="flex-1 text-xs text-slate-400 mb-2">
+                      <div className="space-y-1">
+                        <div><span className="text-blue-300">Player1:</span> Anyone up for a dungeon run?</div>
+                        <div><span className="text-green-300">Player2:</span> I'm in! What level?</div>
+                        <div><span className="text-yellow-300">Player3:</span> Need help with crafting quest</div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <input 
+                        type="text" 
+                        placeholder="Type message..." 
+                        className="flex-1 bg-slate-700/50 border border-slate-600/30 rounded px-2 py-1 text-xs text-slate-200 placeholder-slate-500"
+                      />
+                      <button className="bg-purple-600/50 hover:bg-purple-600/70 border border-purple-500/30 rounded px-2 py-1 text-xs text-purple-200 transition-colors">
+                        Send
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Mobile Layout - Additional Actions for smaller screens */}
-        <div className="xl:hidden mt-3 sm:mt-4 md:mt-6">
-          <div className="bg-slate-800/50 backdrop-blur-md rounded-lg border border-slate-700/60 p-3 sm:p-4">
-            <div className="text-xs text-slate-400 text-center mb-3">Additional Features</div>
-            <div className="grid grid-cols-2 gap-3">
+        <div className="xl:hidden mt-2 sm:mt-3 md:mt-4">
+          <div className="bg-slate-800/50 backdrop-blur-md rounded-lg border border-slate-700/60 p-2 sm:p-3">
+            <div className="text-xs text-slate-400 text-center mb-2">Additional Features</div>
+            <div className="grid grid-cols-2 gap-2">
               <div className="bg-slate-700/30 rounded-lg p-2 text-center">
                 <div className="text-xs text-slate-400">Coming Soon</div>
                 <div className="text-xs text-slate-500">Feature 1</div>
