@@ -300,10 +300,25 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
     <div className="space-y-4 p-4 max-h-screen overflow-hidden flex flex-col">
       {/* Header */}
       <div className="text-center p-4 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 flex-shrink-0">
-        <h2 className="text-2xl font-bold text-green-300 mb-2 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
-          <GearIcon className="w-6 h-6 mr-2 text-green-400" />
-          Crafting Workshop
-        </h2>
+        <div className="flex items-center justify-between mb-2">
+          <ActionButton
+            onClick={onReturnHome}
+            variant="secondary"
+            size="sm"
+            icon={<HeroBackIcon />}
+            className="text-xs"
+          >
+            <span className="hidden sm:inline">Return Home</span>
+            <span className="sm:hidden">Home</span>
+          </ActionButton>
+          
+          <h2 className="text-2xl font-bold text-green-300 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
+            <GearIcon className="w-6 h-6 mr-2 text-green-400" />
+            Crafting Workshop
+          </h2>
+          
+          <div className="w-20"></div> {/* Spacer for balance */}
+        </div>
         <p className="text-slate-300 text-sm mb-3">Create and discover crafting recipes</p>
         
         {/* Tabs */}

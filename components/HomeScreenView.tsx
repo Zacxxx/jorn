@@ -47,7 +47,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       benefits: ['Restore HP/MP/EP', 'Choose rest activities', 'Safe recovery'],
       color: 'from-amber-500/20 to-amber-600/20',
       borderColor: 'border-amber-500/30',
-      iconColor: 'text-amber-400'
+      iconColor: 'text-amber-400',
+      backgroundImage: '/assets/activity-card/camp.svg'
     },
     {
       id: 'research',
@@ -60,7 +61,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       benefits: ['Discover components', 'Learn new techniques', 'Expand knowledge'],
       color: 'from-blue-500/20 to-blue-600/20',
       borderColor: 'border-blue-500/30',
-      iconColor: 'text-blue-400'
+      iconColor: 'text-blue-400',
+      backgroundImage: '/assets/activity-card/research.svg'
     },
     {
       id: 'crafting',
@@ -73,7 +75,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       benefits: ['Craft items', 'Discover recipes', 'Design spells'],
       color: 'from-orange-500/20 to-orange-600/20',
       borderColor: 'border-orange-500/30',
-      iconColor: 'text-orange-400'
+      iconColor: 'text-orange-400',
+      backgroundImage: '/assets/activity-card/crafting.svg'
     },
     {
       id: 'npcs',
@@ -86,7 +89,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       benefits: ['Meet characters', 'Accept quests', 'Build relationships'],
       color: 'from-purple-500/20 to-purple-600/20',
       borderColor: 'border-purple-500/30',
-      iconColor: 'text-purple-400'
+      iconColor: 'text-purple-400',
+      backgroundImage: '/assets/activity-card/npcs.svg'
     }
   ];
 
@@ -101,7 +105,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           {/* Left Column - Location & Exploration */}
           <div className="flex flex-col space-y-2 sm:space-y-3 lg:space-y-4 h-full">
             {/* Current Location Section - Enhanced and Optimized */}
-            <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
+            <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-green-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
@@ -295,53 +299,84 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Activities Section - Enhanced with Detailed Cards */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
-                  <BookIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
-                </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Activities</h3>
-              </div>
-              
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0 max-h-[calc(100vh-20rem)]">
               {/* Enhanced Activity Cards Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 h-[calc(100%-3rem)] overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 h-full overflow-y-auto">
                 {activityCards.map((activity) => (
                   <div
                     key={activity.id}
-                    className={`bg-gradient-to-br ${activity.color} backdrop-blur-sm rounded-lg border ${activity.borderColor} p-2 sm:p-3 hover:scale-[1.02] transition-all duration-200 hover:shadow-lg cursor-pointer group`}
+                    className={`relative bg-gradient-to-br ${activity.color} backdrop-blur-sm rounded-lg border ${activity.borderColor} p-3 transition-all duration-300 hover:shadow-lg cursor-pointer group overflow-hidden`}
                     onClick={activity.onClick}
                   >
-                    <div className="flex items-start space-x-2 mb-2">
-                      <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${activity.color} border ${activity.borderColor} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
-                        <div className={`w-4 h-4 sm:w-5 sm:h-5 ${activity.iconColor}`}>
-                          {activity.icon}
+                    {/* Background Illustration */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
+                      <div className={`w-full h-full bg-gradient-to-br ${activity.color.replace('/20', '/40')} rounded-lg overflow-hidden`}>
+                        <img 
+                          src={activity.backgroundImage} 
+                          alt={`${activity.title} background`}
+                          className="w-full h-full object-cover opacity-60"
+                          onError={(e) => {
+                            // Fallback to icon illustration if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'block';
+                          }}
+                        />
+                        {/* Fallback icon illustration */}
+                        <div className="hidden w-full h-full">
+                          <div className="absolute top-2 right-2 w-16 h-16 opacity-30">
+                            <div className={`w-full h-full ${activity.iconColor} scale-[4] transform rotate-12`}>
+                              {activity.icon}
+                            </div>
+                          </div>
+                          <div className="absolute bottom-1 left-1 w-12 h-12 opacity-20">
+                            <div className={`w-full h-full ${activity.iconColor} scale-[3] transform -rotate-12`}>
+                              {activity.icon}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xs sm:text-sm font-semibold text-slate-100 mb-1 group-hover:text-white transition-colors">
-                          <span className="hidden sm:inline">{activity.title}</span>
-                          <span className="sm:hidden">{activity.shortTitle}</span>
-                        </h4>
-                        <p className="text-xs text-slate-300 line-clamp-2 group-hover:text-slate-200 transition-colors">
-                          {activity.description}
-                        </p>
-                      </div>
                     </div>
-                    
-                    {/* Benefits List */}
-                    <div className="space-y-1">
-                      {activity.benefits.map((benefit, index) => (
-                        <div key={index} className="flex items-center text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                          <div className={`w-1 h-1 rounded-full ${activity.iconColor} mr-2 opacity-60`}></div>
-                          <span className="truncate">{benefit}</span>
+
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className={`w-6 h-6 bg-gradient-to-br ${activity.color} border ${activity.borderColor} rounded-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
+                          <div className={`w-3 h-3 ${activity.iconColor} flex items-center justify-center`}>
+                            {activity.icon}
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                    
-                    {/* Action Indicator */}
-                    <div className="mt-2 pt-2 border-t border-slate-600/30">
-                      <div className={`text-xs ${activity.iconColor} font-medium group-hover:scale-105 transition-transform duration-200 text-center`}>
-                        Click to Access →
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold text-slate-100 group-hover:text-white transition-colors truncate">
+                            <span className="hidden sm:inline">{activity.title}</span>
+                            <span className="sm:hidden">{activity.shortTitle}</span>
+                          </h4>
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs text-slate-300 group-hover:text-slate-200 transition-colors mb-2 line-clamp-2 leading-relaxed">
+                        {activity.description}
+                      </p>
+                      
+                      {/* Compact Benefits Grid */}
+                      <div className="grid grid-cols-1 gap-1 mb-2">
+                        {activity.benefits.slice(0, 3).map((benefit, index) => (
+                          <div key={index} className="flex items-center text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                            <div className={`w-1 h-1 rounded-full ${activity.iconColor} mr-2 opacity-60 flex-shrink-0`}></div>
+                            <span className="truncate">{benefit}</span>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Compact Action Footer */}
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-600/20">
+                        <div className={`text-xs ${activity.iconColor} font-medium group-hover:brightness-110 transition-all duration-200`}>
+                          Access
+                        </div>
+                        <div className={`text-xs ${activity.iconColor} opacity-60 group-hover:opacity-100 transition-opacity duration-200`}>
+                          →
+                        </div>
                       </div>
                     </div>
                   </div>
