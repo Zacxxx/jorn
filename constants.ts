@@ -1,5 +1,6 @@
-import { Player, Spell, SpellIconName, StatusEffectName, ResourceType, ConsumableEffectType, EquipmentSlot, Ability, DetailedEquipmentSlot, SpellComponent, TagName } from './types';
-import { ALL_GAME_SPELL_COMPONENTS } from './src/research-content'; 
+import { Player, Spell, SpellIconName, StatusEffectName, ResourceType, ConsumableEffectType, EquipmentSlot, Ability, DetailedEquipmentSlot, SpellComponent } from './types'; // Removed TagName here, will get from src/types
+import { TagName, TagDefinition, TagCategory } from './src/types'; // Import new types from src/types
+import { ALL_GAME_SPELL_COMPONENTS } from './src/research-content';
 
 export const GEMINI_MODEL_TEXT = 'gemini-2.5-flash-preview-04-17';
 
@@ -157,7 +158,12 @@ export const AVAILABLE_STATUS_EFFECTS: StatusEffectName[] = [
     'Defending',
     'DamageReflection',
     'BurningDoTActive', 'BleedingDoTActive', 'CorruptedDoTActive', 'FrostbittenDoTActive', 'RottingDoTActive', 'ShockedDoTActive', 'PoisonDoTActive',
-    'Silenced', 'Rooted'
+    'Silenced', 'Rooted',
+    // Added for tag-based effects
+    'Slow',
+    'Haste',
+    'Shield',
+    'Invisibility'
 ];
 
 export const STATUS_EFFECT_ICONS: Record<StatusEffectName, SpellIconName> = {
@@ -190,6 +196,11 @@ export const STATUS_EFFECT_ICONS: Record<StatusEffectName, SpellIconName> = {
   PoisonDoTActive: 'StatusPoison',
   Silenced: 'StatusSilence',
   Rooted: 'StatusRoot',
+  // Added for tag-based effects
+  Slow: 'StatusRoot', // Placeholder: console.warn("Missing specific icon for 'Slow', using 'StatusRoot'.");
+  Haste: 'SpeedIcon',
+  Shield: 'Shield',
+  Invisibility: 'TagGeneric', // Placeholder: console.warn("Missing specific icon for 'Invisibility', using 'TagGeneric'.");
 };
 
 export const CONSUMABLE_EFFECT_TYPES: ConsumableEffectType[] = ['HP_RESTORE', 'MP_RESTORE', 'EP_RESTORE', 'CURE_STATUS', 'APPLY_BUFF']; 
@@ -266,229 +277,429 @@ export const EXAMPLE_SPELL_COMPONENTS: SpellComponent[] = ALL_GAME_SPELL_COMPONE
 export const RESEARCH_SEARCH_BASE_GOLD_COST = 50;
 export const RESEARCH_SEARCH_BASE_ESSENCE_COST = 20;
 export const DEFAULT_SILENCE_DURATION = 2; 
-export const DEFAULT_ROOT_DURATION = 2; 
+export const DEFAULT_ROOT_DURATION = 2;
 
 // Comprehensive Tag System
-export interface TagDefinition {
-  name: string;
-  description: string;
-  category: 'damage' | 'targeting' | 'properties' | 'modifiers' | 'support' | 'control' | 'buffs' | 'debuffs' | 'dot' | 'vampiric' | 'defensive' | 'resource' | 'scaling' | 'timing' | 'environmental' | 'special' | 'meta' | 'rarity';
-  color: string;
-  rarity: number; // 0-10, affects how often AI includes this tag
-  powerLevel: number; // 1-10, affects mana cost scaling
-  conflictsWith?: TagName[];
-  synergizesWith?: TagName[];
-  unlockLevel?: number;
-  effectType: 'passive' | 'active' | 'trigger' | 'modifier' | 'conditional';
-}
+// The TagDefinition interface is now imported from 'src/types.ts'
+// The TagCategory enum is now imported from 'src/types.ts'
 
-export const TAG_DEFINITIONS: Record<TagName, TagDefinition> = {
+// TAG_DEFINITIONS now uses the imported TagDefinition and TagCategory.
+export const TAG_DEFINITIONS: { [key in TagName]: TagDefinition } = {
   // Damage Types
-  'Fire': { name: 'Fire', description: 'Deals fire damage, may cause burning. Strong vs Ice, weak vs Water.', category: 'damage', color: 'text-red-400', rarity: 1, powerLevel: 3, synergizesWith: ['Explosive', 'Burning', 'Lightning'], conflictsWith: ['Ice', 'Freezing'], unlockLevel: 1, effectType: 'modifier' },
-  'Ice': { name: 'Ice', description: 'Deals cold damage, may slow or freeze targets.', category: 'damage', color: 'text-blue-400', rarity: 1, powerLevel: 3, synergizesWith: ['Slow', 'Freezing', 'Shattering'], conflictsWith: ['Fire', 'Burning'], unlockLevel: 1, effectType: 'modifier' },
-  'Lightning': { name: 'Lightning', description: 'Fast electric damage that may chain between targets.', category: 'damage', color: 'text-yellow-400', rarity: 2, powerLevel: 4, synergizesWith: ['Chain', 'Stunning', 'Shocking'], unlockLevel: 3, effectType: 'modifier' },
-  'Physical': { name: 'Physical', description: 'Raw physical force damage.', category: 'damage', color: 'text-gray-400', rarity: 1, powerLevel: 2, synergizesWith: ['Brutal', 'Cleave', 'Piercing'], unlockLevel: 1, effectType: 'modifier' },
-  'Arcane': { name: 'Arcane', description: 'Pure magical energy, ignores most resistances.', category: 'damage', color: 'text-purple-400', rarity: 3, powerLevel: 5, synergizesWith: ['Penetrating', 'Mana_Burn'], unlockLevel: 5, effectType: 'modifier' },
-  'Nature': { name: 'Nature', description: 'Life force damage that may regenerate the caster.', category: 'damage', color: 'text-green-400', rarity: 2, powerLevel: 3, synergizesWith: ['Regeneration', 'Healing', 'Poison'], unlockLevel: 2, effectType: 'modifier' },
-  'Dark': { name: 'Dark', description: 'Shadow damage that may drain life or cause fear.', category: 'damage', color: 'text-gray-800', rarity: 3, powerLevel: 4, synergizesWith: ['Fear', 'Lifesteal', 'Curse'], conflictsWith: ['Light'], unlockLevel: 4, effectType: 'modifier' },
-  'Light': { name: 'Light', description: 'Holy damage effective against undead and dark creatures.', category: 'damage', color: 'text-yellow-200', rarity: 3, powerLevel: 4, synergizesWith: ['Healing', 'Purify', 'Blessing'], conflictsWith: ['Dark'], unlockLevel: 4, effectType: 'modifier' },
-  'Poison': { name: 'Poison', description: 'Toxic damage that spreads and weakens targets over time.', category: 'damage', color: 'text-green-500', rarity: 2, powerLevel: 3, synergizesWith: ['Corroding', 'Weakness', 'Spreading'], unlockLevel: 2, effectType: 'modifier' },
-  'Psychic': { name: 'Psychic', description: 'Mental damage that bypasses armor and may cause confusion.', category: 'damage', color: 'text-pink-400', rarity: 4, powerLevel: 5, synergizesWith: ['Confusion', 'Charm', 'Mind_Control'], unlockLevel: 6, effectType: 'modifier' },
+  Fire: {
+    name: "Fire",
+    description: "Deals fire damage and may cause burning.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "red", // Consider using Tailwind classes like 'text-red-500' if styling is applied directly
+    rarity: 2,
+    powerLevel: 3,
+    conflictsWith: ["Ice"],
+    synergizesWith: ['Explosive', 'Burning', 'Lightning'],
+    effectType: "active",
+    unlockLevel: 1,
+  },
+  Ice: {
+    name: "Ice",
+    description: "Deals ice damage and may cause freezing or slowing.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "blue",
+    rarity: 2,
+    powerLevel: 3,
+    conflictsWith: ["Fire"],
+    synergizesWith: ['Slow', 'Freezing', 'Shattering'],
+    effectType: "active",
+    unlockLevel: 1,
+  },
+  Lightning: {
+    name: "Lightning",
+    description: "Deals lightning damage and may cause shock.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "yellow",
+    rarity: 3,
+    powerLevel: 4,
+    synergizesWith: ['Chain', 'Stun', 'Shocking'], // Changed 'Stunning' to 'Stun'
+    effectType: "active",
+    unlockLevel: 3,
+  },
+  Physical: {
+    name: "Physical",
+    description: "Deals physical damage.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "gray",
+    rarity: 1,
+    powerLevel: 2,
+    synergizesWith: ['Brutal', 'Cleave', 'Piercing'],
+    effectType: "active",
+    unlockLevel: 1,
+  },
+  Arcane: {
+    name: "Arcane",
+    description: "Pure magical energy, often bypasses conventional defenses.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "purple",
+    rarity: 3,
+    powerLevel: 5,
+    synergizesWith: ['Penetrating', 'Mana_Burn'], // 'Penetrating' might need definition
+    effectType: "active",
+    unlockLevel: 5,
+  },
+  Nature: {
+    name: "Nature",
+    description: "Damage from natural sources, can have restorative aspects.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "green",
+    rarity: 2,
+    powerLevel: 3,
+    synergizesWith: ['Regeneration', 'Healing', 'Poison'],
+    effectType: "active",
+    unlockLevel: 2,
+  },
+  Dark: {
+    name: "Dark",
+    description: "Shadowy energy, often with life-draining or fear effects.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "black", // Consider 'gray-800' for visibility
+    rarity: 4, // Was 3
+    powerLevel: 4,
+    conflictsWith: ["Light", "Healing"],
+    synergizesWith: ['Fear', 'Lifesteal', 'Curse'],
+    effectType: "active",
+    unlockLevel: 4,
+  },
+  Light: {
+    name: "Light",
+    description: "Holy energy, effective against dark or undead, often heals.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "white", // Consider 'yellow-200' for visibility
+    rarity: 4, // Was 3
+    powerLevel: 4,
+    conflictsWith: ["Dark"],
+    synergizesWith: ['Healing', 'Purify', 'Blessing'], // 'Purify', 'Blessing' might need definition
+    effectType: "active",
+    unlockLevel: 4,
+  },
+  Poison: {
+    name: "Poison",
+    description: "Deals damage over time and may weaken the target.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "darkgreen", // Was 'green-500'
+    rarity: 3, // Was 2
+    powerLevel: 3,
+    conflictsWith: ["Healing"],
+    synergizesWith: ['Corroding', 'Weakness', 'Bleeding'], // Changed 'Spreading' to 'Bleeding' for example
+    effectType: "active",
+    unlockLevel: 2,
+  },
+  Psychic: {
+    name: "Psychic",
+    description: "Mental force that bypasses physical armor, may confuse.",
+    category: TagCategory.DAMAGE_TYPE,
+    color: "pink",
+    rarity: 4,
+    powerLevel: 5,
+    synergizesWith: ['Confusion', 'Charm', 'Control'], // 'Mind_Control' to 'Control'
+    effectType: "active",
+    unlockLevel: 6,
+  },
 
   // Targeting & Range
-  'SelfTarget': { name: 'Self Target', description: 'Spell affects only the caster.', category: 'targeting', color: 'text-green-400', rarity: 1, powerLevel: 1, conflictsWith: ['MultiTarget', 'AreaOfEffect'], unlockLevel: 1, effectType: 'modifier' },
-  'SingleTarget': { name: 'Single Target', description: 'Affects one target with full potency.', category: 'targeting', color: 'text-blue-400', rarity: 1, powerLevel: 2, conflictsWith: ['MultiTarget', 'AreaOfEffect'], unlockLevel: 1, effectType: 'modifier' },
-  'MultiTarget': { name: 'Multi Target', description: 'Affects multiple targets with reduced potency per target.', category: 'targeting', color: 'text-orange-400', rarity: 3, powerLevel: 4, conflictsWith: ['SelfTarget', 'SingleTarget'], unlockLevel: 3, effectType: 'modifier' },
-  'AreaOfEffect': { name: 'Area of Effect', description: 'Affects all targets in an area.', category: 'targeting', color: 'text-red-400', rarity: 3, powerLevel: 5, synergizesWith: ['Explosive'], unlockLevel: 4, effectType: 'modifier' },
-  'GlobalTarget': { name: 'Global Target', description: 'Affects all enemies regardless of range.', category: 'targeting', color: 'text-purple-600', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'modifier' },
-  'RandomTarget': { name: 'Random Target', description: 'Targets enemies randomly, may hit multiple times.', category: 'targeting', color: 'text-yellow-300', rarity: 4, powerLevel: 3, unlockLevel: 5, effectType: 'modifier' },
-
-  // Range Types
-  'Melee': { name: 'Melee', description: 'Close combat range, higher damage but requires proximity.', category: 'targeting', color: 'text-red-300', rarity: 1, powerLevel: 3, conflictsWith: ['Ranged'], synergizesWith: ['Physical', 'Brutal'], unlockLevel: 1, effectType: 'modifier' },
-  'Ranged': { name: 'Ranged', description: 'Long distance attacks, safer but may have damage falloff.', category: 'targeting', color: 'text-blue-300', rarity: 1, powerLevel: 2, conflictsWith: ['Melee'], synergizesWith: ['Projectile'], unlockLevel: 1, effectType: 'modifier' },
-  'Touch': { name: 'Touch', description: 'Requires physical contact, extremely potent effects.', category: 'targeting', color: 'text-pink-300', rarity: 5, powerLevel: 6, unlockLevel: 8, effectType: 'modifier' },
-  'Projectile': { name: 'Projectile', description: 'Travels through air, may hit multiple targets in line.', category: 'targeting', color: 'text-cyan-400', rarity: 2, powerLevel: 3, synergizesWith: ['Piercing', 'Chain'], unlockLevel: 2, effectType: 'modifier' },
-  'Beam': { name: 'Beam', description: 'Continuous energy beam that pierces through enemies.', category: 'targeting', color: 'text-yellow-500', rarity: 4, powerLevel: 5, synergizesWith: ['Piercing', 'Lightning'], unlockLevel: 6, effectType: 'modifier' },
-  'Cone': { name: 'Cone', description: 'Spreads out in a cone shape from the caster.', category: 'targeting', color: 'text-orange-300', rarity: 3, powerLevel: 4, synergizesWith: ['AreaOfEffect'], unlockLevel: 4, effectType: 'modifier' },
-  'Line': { name: 'Line', description: 'Affects all targets in a straight line.', category: 'targeting', color: 'text-gray-300', rarity: 3, powerLevel: 4, synergizesWith: ['Piercing'], unlockLevel: 3, effectType: 'modifier' },
-  'Circle': { name: 'Circle', description: 'Affects all targets within a circular area.', category: 'targeting', color: 'text-indigo-300', rarity: 3, powerLevel: 4, synergizesWith: ['AreaOfEffect'], unlockLevel: 4, effectType: 'modifier' },
+  SingleTarget: {
+    name: "SingleTarget",
+    description: "Affects a single target.",
+    category: TagCategory.TARGETING,
+    color: "cyan",
+    rarity: 1,
+    powerLevel: 1, // Was 2
+    conflictsWith: ["MultiTarget", "AreaOfEffect"],
+    effectType: "modifier",
+    unlockLevel: 1,
+  },
+  MultiTarget: {
+    name: "MultiTarget",
+    description: "Affects multiple targets.",
+    category: TagCategory.TARGETING,
+    color: "teal", // Was 'orange-400'
+    rarity: 3,
+    powerLevel: 3, // Was 4
+    conflictsWith: ["SingleTarget", "SelfTarget"],
+    effectType: "modifier",
+    unlockLevel: 3,
+  },
+  AreaOfEffect: {
+    name: "AreaOfEffect",
+    description: "Affects all targets within a specified area.",
+    category: TagCategory.TARGETING,
+    color: "green", // Was 'red-400'
+    rarity: 4, // Was 3
+    powerLevel: 4, // Was 5
+    conflictsWith: ["SingleTarget", "SelfTarget"],
+    synergizesWith: ['Explosive'],
+    effectType: "modifier",
+    unlockLevel: 4,
+  },
+   SelfTarget: {
+    name: "SelfTarget",
+    description: "The spell affects the caster.",
+    category: TagCategory.TARGETING,
+    color: "silver", // Was 'green-400'
+    rarity: 1,
+    powerLevel: 0, // Was 1
+    conflictsWith: ["MultiTarget", "AreaOfEffect", "SingleTarget"],
+    effectType: "modifier",
+    unlockLevel: 1,
+  },
+  GlobalTarget: { name: 'GlobalTarget', description: 'Affects all enemies regardless of range.', category: TagCategory.TARGETING, color: 'purple', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'modifier' },
+  RandomTarget: { name: 'RandomTarget', description: 'Targets enemies randomly, may hit multiple times.', category: TagCategory.TARGETING, color: 'yellow', rarity: 4, powerLevel: 3, unlockLevel: 5, effectType: 'modifier' },
+  Melee: { name: 'Melee', description: 'Close combat range.', category: TagCategory.TARGETING, color: 'red', rarity: 1, powerLevel: 1, conflictsWith: ['Ranged'], synergizesWith: ['Physical', 'Brutal'], unlockLevel: 1, effectType: 'modifier' },
+  Ranged: { name: 'Ranged', description: 'Long distance attacks.', category: TagCategory.TARGETING, color: 'blue', rarity: 1, powerLevel: 1, conflictsWith: ['Melee'], synergizesWith: ['Projectile'], unlockLevel: 1, effectType: 'modifier' },
+  Touch: { name: 'Touch', description: 'Requires physical contact.', category: TagCategory.TARGETING, color: 'pink', rarity: 5, powerLevel: 6, unlockLevel: 8, effectType: 'modifier' },
+  Projectile: { name: 'Projectile', description: 'Travels through air.', category: TagCategory.TARGETING, color: 'cyan', rarity: 2, powerLevel: 2, synergizesWith: ['Piercing', 'Chain'], unlockLevel: 2, effectType: 'modifier' },
+  Beam: { name: 'Beam', description: 'Continuous energy beam.', category: TagCategory.TARGETING, color: 'gold', rarity: 4, powerLevel: 5, synergizesWith: ['Piercing', 'Lightning'], unlockLevel: 6, effectType: 'modifier' },
+  Cone: { name: 'Cone', description: 'Spreads out in a cone shape.', category: TagCategory.TARGETING, color: 'orange', rarity: 3, powerLevel: 4, synergizesWith: ['AreaOfEffect'], unlockLevel: 4, effectType: 'modifier' },
+  Line: { name: 'Line', description: 'Affects all targets in a straight line.', category: TagCategory.TARGETING, color: 'grey', rarity: 3, powerLevel: 4, synergizesWith: ['Piercing'], unlockLevel: 3, effectType: 'modifier' },
+  Circle: { name: 'Circle', description: 'Affects all targets within a circular area.', category: TagCategory.TARGETING, color: 'indigo', rarity: 3, powerLevel: 4, synergizesWith: ['AreaOfEffect'], unlockLevel: 4, effectType: 'modifier' },
 
   // Spell Properties
-  'Instant': { name: 'Instant', description: 'Takes effect immediately upon casting.', category: 'properties', color: 'text-yellow-400', rarity: 1, powerLevel: 2, conflictsWith: ['Channeling', 'Ritual'], unlockLevel: 1, effectType: 'modifier' },
-  'Channeling': { name: 'Channeling', description: 'Effect continues as long as concentration is maintained.', category: 'properties', color: 'text-purple-400', rarity: 3, powerLevel: 4, conflictsWith: ['Instant'], synergizesWith: ['Extended_Duration'], unlockLevel: 3, effectType: 'active' },
-  'Ritual': { name: 'Ritual', description: 'Requires time to cast but has powerful effects.', category: 'properties', color: 'text-indigo-400', rarity: 5, powerLevel: 7, conflictsWith: ['Instant'], unlockLevel: 8, effectType: 'modifier' },
-  'Persistent': { name: 'Persistent', description: 'Effect continues indefinitely until dispelled.', category: 'properties', color: 'text-cyan-600', rarity: 6, powerLevel: 6, synergizesWith: ['Extended_Duration'], unlockLevel: 10, effectType: 'passive' },
-  'Toggle': { name: 'Toggle', description: 'Can be turned on and off at will.', category: 'properties', color: 'text-blue-500', rarity: 4, powerLevel: 3, unlockLevel: 5, effectType: 'active' },
-  'Concentration': { name: 'Concentration', description: 'Requires focus; taking damage may break the effect.', category: 'properties', color: 'text-orange-500', rarity: 3, powerLevel: 5, synergizesWith: ['Channeling'], unlockLevel: 4, effectType: 'conditional' },
+  Instant: {
+    name: "Instant",
+    description: "The spell takes effect immediately.",
+    category: TagCategory.SPELL_PROPERTY,
+    color: "purple", // Was 'yellow-400'
+    rarity: 1,
+    powerLevel: 1, // Was 2
+    conflictsWith: ["Channeling", "Delayed", "Ritual"],
+    effectType: "modifier",
+    unlockLevel: 1,
+  },
+  Channeling: {
+    name: "Channeling",
+    description: "The spell requires time to cast and maintain.",
+    category: TagCategory.SPELL_PROPERTY,
+    color: "magenta", // Was 'purple-400'
+    rarity: 3,
+    powerLevel: 2, // Was 4
+    conflictsWith: ["Instant", "Delayed", "Ritual"],
+    synergizesWith: ['Extended_Duration', 'Concentration'],
+    effectType: "active", // Was 'modifier'
+    unlockLevel: 3,
+  },
+  Delayed: {
+    name: "Delayed",
+    description: "The spell's effect is triggered after a delay.",
+    category: TagCategory.TIMING,
+    color: "orange",
+    rarity: 2,
+    powerLevel: 1,
+    conflictsWith: ["Instant", "Channeling"],
+    effectType: "trigger",
+    unlockLevel: 5, // Example
+  },
+  Ritual: { name: 'Ritual', description: 'Requires time to cast but has powerful effects.', category: TagCategory.SPELL_PROPERTY, color: 'indigo', rarity: 5, powerLevel: 7, conflictsWith: ['Instant'], unlockLevel: 8, effectType: 'modifier' },
+  Persistent: { name: 'Persistent', description: 'Effect continues indefinitely until dispelled.', category: TagCategory.SPELL_PROPERTY, color: 'darkcyan', rarity: 6, powerLevel: 6, synergizesWith: ['Extended_Duration'], unlockLevel: 10, effectType: 'passive' },
+  Toggle: { name: 'Toggle', description: 'Can be turned on and off at will.', category: TagCategory.SPELL_PROPERTY, color: 'darkblue', rarity: 4, powerLevel: 3, unlockLevel: 5, effectType: 'active' },
+  Concentration: { name: 'Concentration', description: 'Requires focus; taking damage may break the effect.', category: TagCategory.SPELL_PROPERTY, color: 'darkorange', rarity: 3, powerLevel: 5, synergizesWith: ['Channeling'], unlockLevel: 4, effectType: 'conditional' },
 
   // Damage Modifiers
-  'Piercing': { name: 'Piercing', description: 'Ignores a portion of target armor/resistance.', category: 'modifiers', color: 'text-gray-500', rarity: 3, powerLevel: 4, synergizesWith: ['Projectile', 'Physical'], unlockLevel: 3, effectType: 'modifier' },
-  'Armor_Ignoring': { name: 'Armor Ignoring', description: 'Completely bypasses all armor and resistances.', category: 'modifiers', color: 'text-red-600', rarity: 7, powerLevel: 8, unlockLevel: 12, effectType: 'modifier' },
-  'True_Damage': { name: 'True Damage', description: 'Cannot be reduced by any means.', category: 'modifiers', color: 'text-white', rarity: 9, powerLevel: 9, unlockLevel: 18, effectType: 'modifier' },
-  'Percentage_Damage': { name: 'Percentage Damage', description: 'Deals damage based on target\'s maximum health.', category: 'modifiers', color: 'text-red-500', rarity: 6, powerLevel: 7, unlockLevel: 10, effectType: 'modifier' },
-  'Explosive': { name: 'Explosive', description: 'Deals area damage around the primary target.', category: 'modifiers', color: 'text-orange-600', rarity: 4, powerLevel: 5, synergizesWith: ['Fire', 'AreaOfEffect'], unlockLevel: 5, effectType: 'trigger' },
-  'Cleave': { name: 'Cleave', description: 'Attack hits multiple enemies in front of the attacker.', category: 'modifiers', color: 'text-red-300', rarity: 3, powerLevel: 4, synergizesWith: ['Physical', 'Melee'], unlockLevel: 3, effectType: 'modifier' },
-  'Critical': { name: 'Critical', description: 'Higher chance to deal critical damage.', category: 'modifiers', color: 'text-yellow-600', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
-  'Brutal': { name: 'Brutal', description: 'Ignores critical damage reduction and deals extra damage.', category: 'modifiers', color: 'text-red-700', rarity: 5, powerLevel: 6, synergizesWith: ['Critical', 'Physical'], unlockLevel: 7, effectType: 'modifier' },
-  'Overwhelming': { name: 'Overwhelming', description: 'Cannot be blocked, parried, or dodged.', category: 'modifiers', color: 'text-purple-700', rarity: 6, powerLevel: 6, unlockLevel: 9, effectType: 'modifier' },
-  'Penetrating': { name: 'Penetrating', description: 'Passes through magical shields and barriers.', category: 'modifiers', color: 'text-cyan-500', rarity: 5, powerLevel: 5, synergizesWith: ['Arcane'], unlockLevel: 7, effectType: 'modifier' },
-  'Shattering': { name: 'Shattering', description: 'Destroys armor and shields on critical hits.', category: 'modifiers', color: 'text-blue-600', rarity: 5, powerLevel: 6, synergizesWith: ['Ice', 'Critical'], unlockLevel: 8, effectType: 'trigger' },
-  'Devastating': { name: 'Devastating', description: 'Deals massive damage but requires setup.', category: 'modifiers', color: 'text-black', rarity: 8, powerLevel: 9, unlockLevel: 15, effectType: 'conditional' },
+  Critical: {
+    name: "Critical",
+    description: "Has a chance to deal bonus damage.",
+    category: TagCategory.DAMAGE_MODIFIER,
+    color: "gold",
+    rarity: 5, // Was 3
+    powerLevel: 0, // Was 4 - powerLevel might not apply directly for some modifiers
+    effectType: "trigger", // Was 'passive'
+    unlockLevel: 4,
+  },
+  Piercing: { name: 'Piercing', description: 'Ignores a portion of target armor/resistance.', category: TagCategory.DAMAGE_MODIFIER, color: 'grey', rarity: 3, powerLevel: 4, synergizesWith: ['Projectile', 'Physical'], unlockLevel: 3, effectType: 'modifier' },
+  Armor_Ignoring: { name: 'Armor_Ignoring', description: 'Completely bypasses all armor and resistances.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkred', rarity: 7, powerLevel: 8, conflictsWith: ["Piercing", "True_Damage"], unlockLevel: 12, effectType: 'modifier' },
+  True_Damage: { name: 'True_Damage', description: 'Damage that cannot be mitigated by armor or resistances.', category: TagCategory.DAMAGE_MODIFIER, color: 'lightgrey', rarity: 7, powerLevel: 9, conflictsWith: ["Piercing", "Armor_Ignoring"], unlockLevel: 18, effectType: 'modifier' },
+  Percentage_Damage: { name: 'Percentage_Damage', description: 'Deals damage equal to a percentage of the target\'s max or current health.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkpurple', rarity: 6, powerLevel: 0, unlockLevel: 10, effectType: 'modifier' },
+  Explosive: { name: 'Explosive', description: 'Deals area damage around the primary target upon impact.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkorange', rarity: 5, powerLevel: 0, synergizesWith: ['Fire', 'AreaOfEffect'], effectType: 'trigger', unlockLevel: 5 },
+  Cleave: { name: 'Cleave', description: 'Attack hits multiple enemies in front of the attacker.', category: TagCategory.DAMAGE_MODIFIER, color: 'maroon', rarity: 3, powerLevel: 4, synergizesWith: ['Physical', 'Melee'], unlockLevel: 3, effectType: 'modifier' },
+  Brutal: { name: 'Brutal', description: 'Increases base damage significantly.', category: TagCategory.DAMAGE_MODIFIER, color: 'brown', rarity: 4, powerLevel: 0, synergizesWith: ['Critical', 'Physical'], effectType: 'modifier', unlockLevel: 7 },
+  Overwhelming: { name: 'Overwhelming', description: 'Slightly increases damage and may add a minor secondary effect.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkred', rarity: 3, powerLevel: 0, effectType: 'modifier', unlockLevel: 9 },
+  Penetrating: { name: 'Penetrating', description: 'Passes through magical shields and barriers.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkcyan', rarity: 5, powerLevel: 5, synergizesWith: ['Arcane'], unlockLevel: 7, effectType: 'modifier' },
+  Shattering: { name: 'Shattering', description: 'Destroys armor and shields on critical hits.', category: TagCategory.DAMAGE_MODIFIER, color: 'darkblue', rarity: 5, powerLevel: 6, synergizesWith: ['Ice', 'Critical'], unlockLevel: 8, effectType: 'trigger' },
+  Devastating: { name: 'Devastating', description: 'Massively increases damage, potentially with a drawback or high cost.', category: TagCategory.DAMAGE_MODIFIER, color: 'black', rarity: 8, powerLevel: 0, conflictsWith: ["Brutal", "Overwhelming"], effectType: 'modifier', unlockLevel: 15 },
 
   // Healing & Support
-  'Healing': { name: 'Healing', description: 'Restores health to target.', category: 'support', color: 'text-green-300', rarity: 1, powerLevel: 2, synergizesWith: ['Light', 'Nature'], unlockLevel: 1, effectType: 'active' },
-  'Regeneration': { name: 'Regeneration', description: 'Gradually restores health over time.', category: 'support', color: 'text-green-400', rarity: 2, powerLevel: 3, synergizesWith: ['Healing', 'Extended_Duration'], unlockLevel: 2, effectType: 'passive' },
-  'Restoration': { name: 'Restoration', description: 'Removes debuffs and restores to full health.', category: 'support', color: 'text-cyan-300', rarity: 5, powerLevel: 6, synergizesWith: ['Cleanse'], unlockLevel: 8, effectType: 'active' },
-  'Revival': { name: 'Revival', description: 'Can resurrect fallen allies.', category: 'support', color: 'text-yellow-300', rarity: 9, powerLevel: 10, unlockLevel: 20, effectType: 'active' },
-  'Shield': { name: 'Shield', description: 'Creates a barrier that absorbs incoming damage.', category: 'support', color: 'text-blue-500', rarity: 2, powerLevel: 3, synergizesWith: ['Barrier'], unlockLevel: 2, effectType: 'active' },
-  'Barrier': { name: 'Barrier', description: 'Advanced shield that can have special properties.', category: 'support', color: 'text-cyan-500', rarity: 4, powerLevel: 5, synergizesWith: ['Shield'], unlockLevel: 6, effectType: 'active' },
-  'Absorption': { name: 'Absorption', description: 'Converts incoming damage into beneficial effects.', category: 'support', color: 'text-purple-500', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'passive' },
-  'Cleanse': { name: 'Cleanse', description: 'Removes negative status effects.', category: 'support', color: 'text-white', rarity: 3, powerLevel: 3, synergizesWith: ['Light', 'Purify'], unlockLevel: 3, effectType: 'active' },
-  'Purify': { name: 'Purify', description: 'Removes all debuffs and prevents new ones temporarily.', category: 'support', color: 'text-yellow-100', rarity: 5, powerLevel: 5, synergizesWith: ['Cleanse', 'Light'], unlockLevel: 7, effectType: 'active' },
-  'Blessing': { name: 'Blessing', description: 'Provides long-term beneficial effects.', category: 'support', color: 'text-gold', rarity: 4, powerLevel: 4, synergizesWith: ['Light'], unlockLevel: 5, effectType: 'passive' },
-  'Enhancement': { name: 'Enhancement', description: 'Improves target abilities and effectiveness.', category: 'support', color: 'text-emerald-400', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
-  'Empowerment': { name: 'Empowerment', description: 'Dramatically increases target power temporarily.', category: 'support', color: 'text-orange-400', rarity: 5, powerLevel: 6, unlockLevel: 8, effectType: 'active' },
-
-  // Add more comprehensive definitions for all other tags...
-  // (Continuing with the same pattern for all remaining tags)
+  Healing: {
+    name: "Healing",
+    description: "Restores health to the target.",
+    category: TagCategory.SPELL_PROPERTY, // Or a dedicated HEALING category
+    color: "lightgreen",
+    rarity: 2,
+    powerLevel: 3,
+    conflictsWith: ["Fire", "Ice", "Lightning", "Physical", "Poison", "Dark"],
+    synergizesWith: ['Light', 'Nature', 'Restoration'],
+    effectType: "active",
+    unlockLevel: 1,
+  },
+  Regeneration: { name: 'Regeneration', description: 'Gradually restores health over time.', category: TagCategory.STATUS_BUFF, color: 'green', rarity: 2, powerLevel: 3, synergizesWith: ['Healing', 'Extended_Duration'], unlockLevel: 2, effectType: 'passive' },
+  Restoration: { name: 'Restoration', description: 'Significantly increases the amount of healing done.', category: TagCategory.SPELL_PROPERTY, color: 'palegreen', rarity: 4, powerLevel: 0, synergizesWith: ["Healing", "Cleanse"], effectType: 'modifier', unlockLevel: 8 },
+  Revival: { name: 'Revival', description: 'Can resurrect fallen allies.', category: TagCategory.SPELL_PROPERTY, color: 'yellow', rarity: 9, powerLevel: 10, unlockLevel: 20, effectType: 'active' },
+  Shield: { name: 'Shield', description: 'Provides a temporary barrier that absorbs damage.', category: TagCategory.STATUS_BUFF, color: 'cyan', rarity: 3, powerLevel: 0, synergizesWith: ['Barrier'], effectType: 'trigger', unlockLevel: 2 },
+  Barrier: { name: 'Barrier', description: 'Advanced shield that can have special properties.', category: TagCategory.STATUS_BUFF, color: 'darkcyan', rarity: 4, powerLevel: 5, synergizesWith: ['Shield'], unlockLevel: 6, effectType: 'active' },
+  Absorption: { name: 'Absorption', description: 'Converts incoming damage into beneficial effects.', category: TagCategory.DEFENSIVE, color: 'purple', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'passive' },
+  Cleanse: { name: 'Cleanse', description: 'Removes negative status effects.', category: TagCategory.SPELL_PROPERTY, color: 'white', rarity: 3, powerLevel: 3, synergizesWith: ['Light', 'Purify', 'Restoration'], unlockLevel: 3, effectType: 'active' },
+  Purify: { name: 'Purify', description: 'Removes all debuffs and prevents new ones temporarily.', category: TagCategory.SPELL_PROPERTY, color: 'lightyellow', rarity: 5, powerLevel: 5, synergizesWith: ['Cleanse', 'Light'], unlockLevel: 7, effectType: 'active' },
+  Blessing: { name: 'Blessing', description: 'Provides long-term beneficial effects.', category: TagCategory.STATUS_BUFF, color: 'gold', rarity: 4, powerLevel: 4, synergizesWith: ['Light'], unlockLevel: 5, effectType: 'passive' },
+  Enhancement: { name: 'Enhancement', description: 'Improves target abilities and effectiveness.', category: TagCategory.STATUS_BUFF, color: 'emerald', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
+  Empowerment: { name: 'Empowerment', description: 'Dramatically increases target power temporarily.', category: TagCategory.STATUS_BUFF, color: 'darkorange', rarity: 5, powerLevel: 6, unlockLevel: 8, effectType: 'active' },
   
   // Crowd Control
-  'Stun': { name: 'Stun', description: 'Prevents target from taking any actions.', category: 'control', color: 'text-gray-400', rarity: 3, powerLevel: 5, unlockLevel: 3, effectType: 'active' },
-  'Root': { name: 'Root', description: 'Prevents movement but allows other actions.', category: 'control', color: 'text-green-600', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
-  'Silence': { name: 'Silence', description: 'Prevents casting spells or using magical abilities.', category: 'control', color: 'text-blue-600', rarity: 3, powerLevel: 4, unlockLevel: 3, effectType: 'active' },
-  'Disarm': { name: 'Disarm', description: 'Prevents weapon attacks and equipment use.', category: 'control', color: 'text-red-400', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'active' },
-  'Blind': { name: 'Blind', description: 'Greatly reduces accuracy and perception.', category: 'control', color: 'text-gray-600', rarity: 3, powerLevel: 3, unlockLevel: 3, effectType: 'active' },
-  'Charm': { name: 'Charm', description: 'Forces target to fight for the caster temporarily.', category: 'control', color: 'text-pink-500', rarity: 5, powerLevel: 6, synergizesWith: ['Psychic'], unlockLevel: 7, effectType: 'active' },
-  'Fear': { name: 'Fear', description: 'Causes target to flee or cower in terror.', category: 'control', color: 'text-purple-800', rarity: 4, powerLevel: 4, synergizesWith: ['Dark'], unlockLevel: 5, effectType: 'active' },
-  'Taunt': { name: 'Taunt', description: 'Forces enemies to attack the caster.', category: 'control', color: 'text-orange-500', rarity: 3, powerLevel: 3, unlockLevel: 4, effectType: 'active' },
-  'Sleep': { name: 'Sleep', description: 'Target cannot act but takes increased damage when hit.', category: 'control', color: 'text-indigo-600', rarity: 4, powerLevel: 4, unlockLevel: 5, effectType: 'active' },
-  'Slow': { name: 'Slow', description: 'Reduces movement and action speed.', category: 'control', color: 'text-blue-500', rarity: 2, powerLevel: 2, synergizesWith: ['Ice'], unlockLevel: 2, effectType: 'active' },
+  Stun: { name: 'Stun', description: 'Target is unable to act for a duration.', category: TagCategory.CROWD_CONTROL, color: 'gold', rarity: 5, powerLevel: 0, conflictsWith: ["Freeze", "Sleep", "Taunt"], effectType: 'trigger', unlockLevel: 3 },
+  Root: { name: 'Root', description: 'Target is unable to move for a duration.', category: TagCategory.CROWD_CONTROL, color: 'brown', rarity: 3, powerLevel: 0, effectType: 'trigger', unlockLevel: 2 },
+  Silence: { name: 'Silence', description: 'Target is unable to cast spells for a duration.', category: TagCategory.CROWD_CONTROL, color: 'purple', rarity: 4, powerLevel: 0, effectType: 'trigger', unlockLevel: 3 },
+  Disarm: { name: 'Disarm', description: 'Prevents weapon attacks and equipment use.', category: TagCategory.CROWD_CONTROL, color: 'darkred', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'active' },
+  Blind: { name: 'Blind', description: 'Greatly reduces accuracy and perception.', category: TagCategory.CROWD_CONTROL, color: 'darkgrey', rarity: 3, powerLevel: 3, unlockLevel: 3, effectType: 'active' },
+  Charm: { name: 'Charm', description: 'Causes the target to temporarily become an ally or be unable to attack the caster.', category: TagCategory.CROWD_CONTROL, color: 'pink', rarity: 5, powerLevel: 0, conflictsWith: ["Taunt", "Fear"], synergizesWith: ['Psychic'], effectType: 'trigger', unlockLevel: 7 },
+  Fear: { name: 'Fear', description: 'Causes the target to flee in terror.', category: TagCategory.CROWD_CONTROL, color: 'darkpurple', rarity: 4, powerLevel: 0, conflictsWith: ["Taunt", "Charm"], synergizesWith: ['Dark'], effectType: 'trigger', unlockLevel: 5 },
+  Taunt: { name: 'Taunt', description: 'Forces the target to attack the caster.', category: TagCategory.CROWD_CONTROL, color: 'darkred', rarity: 3, powerLevel: 0, conflictsWith: ["Stun", "Sleep", "Fear", "Charm"], effectType: 'trigger', unlockLevel: 4 },
+  Sleep: { name: 'Sleep', description: 'Target is put to sleep and unable to act until damaged.', category: TagCategory.CROWD_CONTROL, color: 'lavender', rarity: 4, powerLevel: 0, conflictsWith: ["Stun", "Freeze", "Taunt"], effectType: 'trigger', unlockLevel: 5 },
+  Slow: { name: 'Slow', description: 'Reduces target\'s movement speed and possibly attack speed.', category: TagCategory.CROWD_CONTROL, color: 'lightblue', rarity: 2, powerLevel: 0, synergizesWith: ['Ice', 'Freezing'], effectType: 'trigger', unlockLevel: 2 },
+  Freeze: { name: "Freeze", description: "Target is encased in ice and unable to act.", category: TagCategory.CROWD_CONTROL, color: "powderblue", rarity: 5, powerLevel: 0, conflictsWith: ["Stun", "Sleep", "Burning"], synergizesWith: ["Ice"], effectType: "trigger", unlockLevel: 5 }, // Added Burning conflict
 
-  // More categories would continue here...
-  // For brevity, I'll define key tags from each category
-  
-  // Vampiric & Leeching (crucial for RPG/MOBA feel)
-  'Lifesteal': { name: 'Lifesteal', description: 'Heals caster for percentage of damage dealt.', category: 'vampiric', color: 'text-red-500', rarity: 4, powerLevel: 5, synergizesWith: ['Dark', 'Vampiric'], unlockLevel: 6, effectType: 'passive' },
-  'Vampiric': { name: 'Vampiric', description: 'Enhanced lifesteal with additional benefits.', category: 'vampiric', color: 'text-red-700', rarity: 6, powerLevel: 6, synergizesWith: ['Lifesteal', 'Soul_Drain'], unlockLevel: 9, effectType: 'passive' },
-  'Mana_Burn': { name: 'Mana Burn', description: 'Destroys target mana and deals damage per mana destroyed.', category: 'vampiric', color: 'text-blue-700', rarity: 5, powerLevel: 5, synergizesWith: ['Arcane'], unlockLevel: 7, effectType: 'active' },
+  // Status Effects (Buffs) - Many already defined in root constants, ensuring consistency
+  Haste: { name: 'Haste', description: 'Increases caster\'s speed or action frequency.', category: TagCategory.STATUS_BUFF, color: 'greenyellow', rarity: 4, powerLevel: 0, effectType: 'trigger', unlockLevel: 4 },
+  Strength: { name: 'Strength', description: 'Increases physical power or related stats.', category: TagCategory.STATUS_BUFF, color: 'red', rarity: 3, powerLevel: 0, effectType: 'trigger', unlockLevel: 2 },
+  Intelligence: { name: 'Intelligence', description: 'Increases magical power or related stats.', category: TagCategory.STATUS_BUFF, color: 'blue', rarity: 3, powerLevel: 0, effectType: 'trigger', unlockLevel: 2 },
+  Agility: { name: 'Agility', description: 'Increases speed, dodge chance, and critical hits.', category: TagCategory.STATUS_BUFF, color: 'green', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
+  Fortitude: { name: 'Fortitude', description: 'Increases health, defense, and status resistance.', category: TagCategory.STATUS_BUFF, color: 'grey', rarity: 3, powerLevel: 4, unlockLevel: 3, effectType: 'active' },
+  Resilience: { name: 'Resilience', description: 'Reduces incoming damage and effect durations.', category: TagCategory.STATUS_BUFF, color: 'cyan', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'passive' },
+  Accuracy: { name: 'Accuracy', description: 'Increases hit chance and critical strike chance.', category: TagCategory.STATUS_BUFF, color: 'yellow', rarity: 2, powerLevel: 3, unlockLevel: 3, effectType: 'passive' },
+  Evasion: { name: 'Evasion', description: 'Increases dodge chance and movement speed.', category: TagCategory.STATUS_BUFF, color: 'lightblue', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
+  Stealth: { name: 'Stealth', description: 'Reduces detection chance, broken by attacking.', category: TagCategory.STATUS_BUFF, color: 'darkgrey', rarity: 4, powerLevel: 4, synergizesWith: ['Invisibility'], unlockLevel: 6, effectType: 'active' },
+  Invisibility: { name: 'Invisibility', description: 'Caster becomes unseen by enemies.', category: TagCategory.STATUS_BUFF, color: 'lightgray', rarity: 6, powerLevel: 0, effectType: 'trigger', unlockLevel: 10 },
+  Camouflage: { name: 'Camouflage', description: 'Blends with environment, hard to detect when still.', category: TagCategory.STATUS_BUFF, color: 'darkgreen', rarity: 3, powerLevel: 3, synergizesWith: ['Stealth'], unlockLevel: 5, effectType: 'conditional' },
+  Phase: { name: 'Phase', description: 'Partially exists in another dimension, reduces damage.', category: TagCategory.STATUS_BUFF, color: 'darkpurple', rarity: 7, powerLevel: 7, unlockLevel: 12, effectType: 'active' },
+  Flying: { name: 'Flying', description: 'Moves through air, immune to ground effects.', category: TagCategory.STATUS_BUFF, color: 'skyblue', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'active' },
+  Floating: { name: 'Floating', description: 'Hovers above ground, immune to some attacks.', category: TagCategory.STATUS_BUFF, color: 'powderblue', rarity: 3, powerLevel: 4, synergizesWith: ['Flying'], unlockLevel: 4, effectType: 'active' },
+  Blink: { name: 'Blink', description: 'Short-range teleportation ability.', category: TagCategory.STATUS_BUFF, color: 'violet', rarity: 4, powerLevel: 4, synergizesWith: ['Teleport'], unlockLevel: 6, effectType: 'active' },
+  Teleport: { name: 'Teleport', description: 'Instantly moves to target location.', category: TagCategory.SPECIAL_MECHANIC, color: 'indigo', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'active' },
+  Dash: { name: 'Dash', description: 'Rapid movement in target direction.', category: TagCategory.STATUS_BUFF, color: 'orange', rarity: 2, powerLevel: 3, unlockLevel: 3, effectType: 'active' },
+  Charge: { name: 'Charge', description: 'Rushing attack that deals extra damage.', category: TagCategory.STATUS_BUFF, color: 'darkred', rarity: 3, powerLevel: 4, synergizesWith: ['Physical'], unlockLevel: 4, effectType: 'active' },
 
-  // Scaling & Progression (key for combo system)
-  'Scaling': { name: 'Scaling', description: 'Effect becomes stronger based on specific conditions.', category: 'scaling', color: 'text-green-500', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
-  'Stacking': { name: 'Stacking', description: 'Effect increases each time it\'s applied.', category: 'scaling', color: 'text-yellow-500', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'passive' },
-  'Combo': { name: 'Combo', description: 'Stronger when used in sequence with other spells.', category: 'scaling', color: 'text-orange-500', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'conditional' },
-  'Chain': { name: 'Chain', description: 'Effect jumps between multiple targets.', category: 'scaling', color: 'text-cyan-400', rarity: 4, powerLevel: 5, synergizesWith: ['Lightning'], unlockLevel: 6, effectType: 'modifier' },
-  'Synergy': { name: 'Synergy', description: 'Enhanced effects when combined with specific other tags.', category: 'scaling', color: 'text-rainbow', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'conditional' },
+  // Status Effects (Debuffs)
+  Weakness: { name: 'Weakness', description: 'Reduces damage dealt and physical capabilities.', category: TagCategory.STATUS_DEBUFF, color: 'salmon', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
+  Vulnerability: { name: 'Vulnerability', description: 'Increases damage taken from all sources.', category: TagCategory.STATUS_DEBUFF, color: 'orchid', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'active' },
+  Curse: { name: 'Curse', description: 'Long-lasting negative effect that\'s hard to remove.', category: TagCategory.STATUS_DEBUFF, color: 'black', rarity: 5, powerLevel: 6, synergizesWith: ['Dark'], unlockLevel: 7, effectType: 'passive' },
+  Hex: { name: 'Hex', description: 'Magical curse that spreads to nearby enemies.', category: TagCategory.STATUS_DEBUFF, color: 'indigo', rarity: 6, powerLevel: 6, synergizesWith: ['Curse'], unlockLevel: 9, effectType: 'passive' },
+  Mark: { name: 'Mark', description: 'Target takes increased damage from marked source.', category: TagCategory.STATUS_DEBUFF, color: 'crimson', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
+  Exposed: { name: 'Exposed', description: 'Reduces all resistances and defenses.', category: TagCategory.STATUS_DEBUFF, color: 'sienna', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'active' },
+  Fragile: { name: 'Fragile', description: 'Next attack deals critical damage.', category: TagCategory.STATUS_DEBUFF, color: 'khaki', rarity: 3, powerLevel: 4, synergizesWith: ['Critical'], unlockLevel: 5, effectType: 'conditional' },
+  Confusion: { name: 'Confusion', description: 'May attack random targets including allies.', category: TagCategory.STATUS_DEBUFF, color: 'magenta', rarity: 4, powerLevel: 4, synergizesWith: ['Psychic'], unlockLevel: 6, effectType: 'active' },
+  Madness: { name: 'Madness', description: 'Severe confusion with unpredictable effects.', category: TagCategory.STATUS_DEBUFF, color: 'firebrick', rarity: 6, powerLevel: 6, synergizesWith: ['Confusion'], unlockLevel: 10, effectType: 'active' },
+  Fatigue: { name: 'Fatigue', description: 'Reduces action speed and increases ability costs.', category: TagCategory.STATUS_DEBUFF, color: 'dimgrey', rarity: 2, powerLevel: 3, unlockLevel: 3, effectType: 'active' },
+  Exhaustion: { name: 'Exhaustion', description: 'Severe fatigue that prevents some actions.', category: TagCategory.STATUS_DEBUFF, color: 'darkslategrey', rarity: 4, powerLevel: 5, synergizesWith: ['Fatigue'], unlockLevel: 6, effectType: 'active' },
+  Drain: { name: 'Drain', description: 'Gradually reduces resources over time.', category: TagCategory.STATUS_DEBUFF, color: 'royalblue', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
+  Sap: { name: 'Sap', description: 'Reduces maximum resource pools temporarily.', category: TagCategory.STATUS_DEBUFF, color: 'teal', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'active' },
+
+  // Damage Over Time
+  Burning: { name: 'Burning', description: 'Applies a fire-based damage over time effect.', category: TagCategory.DAMAGE_OVER_TIME, color: 'orangered', rarity: 3, powerLevel: 0, synergizesWith: ['Fire'], effectType: 'trigger', unlockLevel: 2 },
+  Bleeding: { name: 'Bleeding', description: 'Applies a physical damage over time effect.', category: TagCategory.DAMAGE_OVER_TIME, color: 'darkred', rarity: 3, powerLevel: 0, synergizesWith: ['Physical'], effectType: 'trigger', unlockLevel: 2 },
+  Freezing: { name: "Freezing", description: "Applies an ice-based damage over time and/or slowing effect.", category: TagCategory.DAMAGE_OVER_TIME, color: "skyblue", rarity: 3, powerLevel: 0, synergizesWith: ["Ice", "Slow"], conflictsWith: ["Freeze"], effectType: "trigger", unlockLevel: 3 },
+  Shocking: { name: 'Shocking', description: 'Applies a lightning-based damage over time or minor disruption effect.', category: TagCategory.DAMAGE_OVER_TIME, color: 'yellow', rarity: 3, powerLevel: 0, synergizesWith: ['Lightning', "Chain"], effectType: 'trigger', unlockLevel: 4 },
+  Corroding: { name: 'Corroding', description: 'Acid damage that reduces armor over time.', category: TagCategory.DAMAGE_OVER_TIME, color: 'olive', rarity: 4, powerLevel: 5, synergizesWith: ['Poison'], unlockLevel: 5, effectType: 'passive' },
+  Dissolving: { name: 'Dissolving', description: 'Breaks down target at molecular level.', category: TagCategory.DAMAGE_OVER_TIME, color: 'limegreen', rarity: 6, powerLevel: 6, synergizesWith: ['Corroding'], unlockLevel: 9, effectType: 'passive' },
+  Withering: { name: 'Withering', description: 'Life force drain that reduces maximum health.', category: TagCategory.DAMAGE_OVER_TIME, color: 'saddlebrown', rarity: 5, powerLevel: 6, synergizesWith: ['Dark'], unlockLevel: 7, effectType: 'passive' },
+  Decaying: { name: 'Decaying', description: 'Spreads death and weakness to nearby enemies.', category: TagCategory.DAMAGE_OVER_TIME, color: 'peru', rarity: 6, powerLevel: 6, synergizesWith: ['Withering'], unlockLevel: 10, effectType: 'passive' },
+  Rotting: { name: 'Rotting', description: 'Causes target to deteriorate and become brittle.', category: TagCategory.DAMAGE_OVER_TIME, color: 'darkolivegreen', rarity: 5, powerLevel: 5, synergizesWith: ['Poison'], unlockLevel: 8, effectType: 'passive' },
+  Consuming: { name: 'Consuming', description: 'Devours target from within, growing stronger.', category: TagCategory.DAMAGE_OVER_TIME, color: 'rebeccapurple', rarity: 7, powerLevel: 7, synergizesWith: ['Stacking'], unlockLevel: 12, effectType: 'passive' },
+  Draining: { name: 'Draining', description: 'Transfers life force from target to caster.', category: TagCategory.DAMAGE_OVER_TIME, color: 'indianred', rarity: 5, powerLevel: 6, synergizesWith: ['Lifesteal'], unlockLevel: 8, effectType: 'passive' },
+
+  // Vampiric & Leeching
+  Lifesteal: { name: 'Lifesteal', description: 'Heals the caster for a portion of the damage dealt.', category: TagCategory.VAMPIRIC, color: 'crimson', rarity: 4, powerLevel: 0, effectType: 'passive', unlockLevel: 6 },
+  Vampiric: { name: 'Vampiric', description: 'Significantly heals the caster based on damage dealt.', category: TagCategory.VAMPIRIC, color: 'darkred', rarity: 6, powerLevel: 0, conflictsWith: ['Lifesteal'], synergizesWith: ['Dark', 'Soul_Drain'], effectType: 'passive', unlockLevel: 9 },
+  Mana_Burn: { name: 'Mana_Burn', description: 'Destroys a portion of the target\'s mana.', category: TagCategory.VAMPIRIC, color: 'indigo', rarity: 5, powerLevel: 0, synergizesWith: ['Arcane'], effectType: 'active', unlockLevel: 7 },
+  Soul_Drain: { name: 'Soul_Drain', description: 'Permanently steals essence and experience.', category: TagCategory.VAMPIRIC, color: 'darkviolet', rarity: 7, powerLevel: 7, synergizesWith: ['Vampiric'], unlockLevel: 12, effectType: 'active' },
+  Energy_Leech: { name: 'Energy_Leech', description: 'Steals energy/stamina from target.', category: TagCategory.VAMPIRIC, color: 'goldenrod', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'active' },
+  Essence_Steal: { name: 'Essence_Steal', description: 'Steals magical essence and mana.', category: TagCategory.VAMPIRIC, color: 'mediumpurple', rarity: 5, powerLevel: 5, synergizesWith: ['Mana_Burn'], unlockLevel: 7, effectType: 'active' },
+  Stat_Steal: { name: 'Stat_Steal', description: 'Temporarily steals target\'s attributes.', category: TagCategory.VAMPIRIC, color: 'chocolate', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'active' },
+  Ability_Steal: { name: 'Ability_Steal', description: 'Copies and uses target\'s abilities.', category: TagCategory.VAMPIRIC, color: 'deepskyblue', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'active' },
+  Experience_Steal: { name: 'Experience_Steal', description: 'Steals experience points from target.', category: TagCategory.VAMPIRIC, color: 'darkgoldenrod', rarity: 9, powerLevel: 8, unlockLevel: 18, effectType: 'active' },
 
   // Defensive Mechanics
-  'Block': { name: 'Block', description: 'Chance to completely negate incoming attacks.', category: 'defensive', color: 'text-gray-500', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'passive' },
-  'Counter': { name: 'Counter', description: 'Automatically retaliates when attacked.', category: 'defensive', color: 'text-red-400', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'trigger' },
-  'Reflect': { name: 'Reflect', description: 'Returns damage back to the attacker.', category: 'defensive', color: 'text-silver', rarity: 5, powerLevel: 5, unlockLevel: 7, effectType: 'passive' },
-
-  // Special Mechanics (advanced interactions)
-  'Invisibility': { name: 'Invisibility', description: 'Cannot be targeted by most attacks.', category: 'special', color: 'text-transparent', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'active' },
-  'Teleport': { name: 'Teleport', description: 'Instantly moves to target location.', category: 'special', color: 'text-purple-600', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'active' },
-  'Time_Manipulation': { name: 'Time Manipulation', description: 'Affects the flow of time in combat.', category: 'special', color: 'text-blue-800', rarity: 9, powerLevel: 9, unlockLevel: 18, effectType: 'active' },
-
-  // Rarity Tags
-  'Common': { name: 'Common', description: 'Basic effect, easily obtainable.', category: 'rarity', color: 'text-gray-400', rarity: 1, powerLevel: 1, unlockLevel: 1, effectType: 'modifier' },
-  'Rare': { name: 'Rare', description: 'Uncommon effect with enhanced properties.', category: 'rarity', color: 'text-blue-400', rarity: 4, powerLevel: 4, unlockLevel: 5, effectType: 'modifier' },
-  'Epic': { name: 'Epic', description: 'Powerful effect with unique mechanics.', category: 'rarity', color: 'text-purple-400', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'modifier' },
-  'Legendary': { name: 'Legendary', description: 'Extremely rare and powerful effect.', category: 'rarity', color: 'text-orange-400', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'modifier' },
-  'Mythic': { name: 'Mythic', description: 'Nearly impossible to obtain, game-changing power.', category: 'rarity', color: 'text-red-400', rarity: 10, powerLevel: 10, unlockLevel: 20, effectType: 'modifier' },
-
-  // Status Effects (Buffs) - Complete Category
-  'Haste': { name: 'Haste', description: 'Increases action speed and reduces cooldowns.', category: 'buffs', color: 'text-yellow-300', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'active' },
-  'Strength': { name: 'Strength', description: 'Increases physical damage and carrying capacity.', category: 'buffs', color: 'text-red-300', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
-  'Intelligence': { name: 'Intelligence', description: 'Increases magical damage and mana pool.', category: 'buffs', color: 'text-blue-300', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
-  'Agility': { name: 'Agility', description: 'Increases speed, dodge chance, and critical hits.', category: 'buffs', color: 'text-green-300', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
-  'Fortitude': { name: 'Fortitude', description: 'Increases health, defense, and status resistance.', category: 'buffs', color: 'text-gray-300', rarity: 3, powerLevel: 4, unlockLevel: 3, effectType: 'active' },
-  'Resilience': { name: 'Resilience', description: 'Reduces incoming damage and effect durations.', category: 'buffs', color: 'text-cyan-300', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'passive' },
-  'Accuracy': { name: 'Accuracy', description: 'Increases hit chance and critical strike chance.', category: 'buffs', color: 'text-yellow-400', rarity: 2, powerLevel: 3, unlockLevel: 3, effectType: 'passive' },
-  'Evasion': { name: 'Evasion', description: 'Increases dodge chance and movement speed.', category: 'buffs', color: 'text-blue-300', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
-  'Stealth': { name: 'Stealth', description: 'Reduces detection chance, broken by attacking.', category: 'buffs', color: 'text-gray-500', rarity: 4, powerLevel: 4, synergizesWith: ['Invisibility'], unlockLevel: 6, effectType: 'active' },
-  'Camouflage': { name: 'Camouflage', description: 'Blends with environment, hard to detect when still.', category: 'buffs', color: 'text-green-600', rarity: 3, powerLevel: 3, synergizesWith: ['Stealth'], unlockLevel: 5, effectType: 'conditional' },
-  'Phase': { name: 'Phase', description: 'Partially exists in another dimension, reduces damage.', category: 'buffs', color: 'text-purple-300', rarity: 7, powerLevel: 7, unlockLevel: 12, effectType: 'active' },
-  'Flying': { name: 'Flying', description: 'Moves through air, immune to ground effects.', category: 'buffs', color: 'text-sky-400', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'active' },
-  'Floating': { name: 'Floating', description: 'Hovers above ground, immune to some attacks.', category: 'buffs', color: 'text-cyan-400', rarity: 3, powerLevel: 4, synergizesWith: ['Flying'], unlockLevel: 4, effectType: 'active' },
-  'Blink': { name: 'Blink', description: 'Short-range teleportation ability.', category: 'buffs', color: 'text-purple-400', rarity: 4, powerLevel: 4, synergizesWith: ['Teleport'], unlockLevel: 6, effectType: 'active' },
-  'Dash': { name: 'Dash', description: 'Rapid movement in target direction.', category: 'buffs', color: 'text-orange-300', rarity: 2, powerLevel: 3, unlockLevel: 3, effectType: 'active' },
-  'Charge': { name: 'Charge', description: 'Rushing attack that deals extra damage.', category: 'buffs', color: 'text-red-400', rarity: 3, powerLevel: 4, synergizesWith: ['Physical'], unlockLevel: 4, effectType: 'active' },
-
-  // Status Effects (Debuffs) - Complete Category
-  'Weakness': { name: 'Weakness', description: 'Reduces damage dealt and physical capabilities.', category: 'debuffs', color: 'text-red-600', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'active' },
-  'Vulnerability': { name: 'Vulnerability', description: 'Increases damage taken from all sources.', category: 'debuffs', color: 'text-purple-600', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'active' },
-  'Curse': { name: 'Curse', description: 'Long-lasting negative effect that\'s hard to remove.', category: 'debuffs', color: 'text-black', rarity: 5, powerLevel: 6, synergizesWith: ['Dark'], unlockLevel: 7, effectType: 'passive' },
-  'Hex': { name: 'Hex', description: 'Magical curse that spreads to nearby enemies.', category: 'debuffs', color: 'text-purple-800', rarity: 6, powerLevel: 6, synergizesWith: ['Curse'], unlockLevel: 9, effectType: 'passive' },
-  'Mark': { name: 'Mark', description: 'Target takes increased damage from marked source.', category: 'debuffs', color: 'text-red-500', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
-  'Exposed': { name: 'Exposed', description: 'Reduces all resistances and defenses.', category: 'debuffs', color: 'text-orange-600', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'active' },
-  'Fragile': { name: 'Fragile', description: 'Next attack deals critical damage.', category: 'debuffs', color: 'text-yellow-600', rarity: 3, powerLevel: 4, synergizesWith: ['Critical'], unlockLevel: 5, effectType: 'conditional' },
-  'Confusion': { name: 'Confusion', description: 'May attack random targets including allies.', category: 'debuffs', color: 'text-pink-600', rarity: 4, powerLevel: 4, synergizesWith: ['Psychic'], unlockLevel: 6, effectType: 'active' },
-  'Madness': { name: 'Madness', description: 'Severe confusion with unpredictable effects.', category: 'debuffs', color: 'text-red-800', rarity: 6, powerLevel: 6, synergizesWith: ['Confusion'], unlockLevel: 10, effectType: 'active' },
-  'Fatigue': { name: 'Fatigue', description: 'Reduces action speed and increases ability costs.', category: 'debuffs', color: 'text-gray-600', rarity: 2, powerLevel: 3, unlockLevel: 3, effectType: 'active' },
-  'Exhaustion': { name: 'Exhaustion', description: 'Severe fatigue that prevents some actions.', category: 'debuffs', color: 'text-gray-700', rarity: 4, powerLevel: 5, synergizesWith: ['Fatigue'], unlockLevel: 6, effectType: 'active' },
-  'Drain': { name: 'Drain', description: 'Gradually reduces resources over time.', category: 'debuffs', color: 'text-blue-600', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'passive' },
-  'Sap': { name: 'Sap', description: 'Reduces maximum resource pools temporarily.', category: 'debuffs', color: 'text-cyan-600', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'active' },
-
-  // Damage Over Time - Complete Category
-  'Burning': { name: 'Burning', description: 'Fire damage over time, spreads to nearby enemies.', category: 'dot', color: 'text-red-500', rarity: 2, powerLevel: 3, synergizesWith: ['Fire'], unlockLevel: 2, effectType: 'passive' },
-  'Bleeding': { name: 'Bleeding', description: 'Physical damage over time, worsens with movement.', category: 'dot', color: 'text-red-600', rarity: 2, powerLevel: 3, synergizesWith: ['Physical'], unlockLevel: 2, effectType: 'passive' },
-  'Freezing': { name: 'Freezing', description: 'Cold damage over time, slows target.', category: 'dot', color: 'text-blue-600', rarity: 3, powerLevel: 4, synergizesWith: ['Ice', 'Slow'], unlockLevel: 3, effectType: 'passive' },
-  'Shocking': { name: 'Shocking', description: 'Electric damage over time, may chain to others.', category: 'dot', color: 'text-yellow-600', rarity: 3, powerLevel: 4, synergizesWith: ['Lightning', 'Chain'], unlockLevel: 4, effectType: 'passive' },
-  'Corroding': { name: 'Corroding', description: 'Acid damage that reduces armor over time.', category: 'dot', color: 'text-green-600', rarity: 4, powerLevel: 5, synergizesWith: ['Poison'], unlockLevel: 5, effectType: 'passive' },
-  'Dissolving': { name: 'Dissolving', description: 'Breaks down target at molecular level.', category: 'dot', color: 'text-green-700', rarity: 6, powerLevel: 6, synergizesWith: ['Corroding'], unlockLevel: 9, effectType: 'passive' },
-  'Withering': { name: 'Withering', description: 'Life force drain that reduces maximum health.', category: 'dot', color: 'text-gray-800', rarity: 5, powerLevel: 6, synergizesWith: ['Dark'], unlockLevel: 7, effectType: 'passive' },
-  'Decaying': { name: 'Decaying', description: 'Spreads death and weakness to nearby enemies.', category: 'dot', color: 'text-brown-800', rarity: 6, powerLevel: 6, synergizesWith: ['Withering'], unlockLevel: 10, effectType: 'passive' },
-  'Rotting': { name: 'Rotting', description: 'Causes target to deteriorate and become brittle.', category: 'dot', color: 'text-green-800', rarity: 5, powerLevel: 5, synergizesWith: ['Poison'], unlockLevel: 8, effectType: 'passive' },
-  'Consuming': { name: 'Consuming', description: 'Devours target from within, growing stronger.', category: 'dot', color: 'text-purple-900', rarity: 7, powerLevel: 7, synergizesWith: ['Stacking'], unlockLevel: 12, effectType: 'passive' },
-  'Draining': { name: 'Draining', description: 'Transfers life force from target to caster.', category: 'dot', color: 'text-red-700', rarity: 5, powerLevel: 6, synergizesWith: ['Lifesteal'], unlockLevel: 8, effectType: 'passive' },
-
-  // More Vampiric & Leeching Effects
-  'Soul_Drain': { name: 'Soul Drain', description: 'Permanently steals essence and experience.', category: 'vampiric', color: 'text-purple-700', rarity: 7, powerLevel: 7, synergizesWith: ['Vampiric'], unlockLevel: 12, effectType: 'active' },
-  'Energy_Leech': { name: 'Energy Leech', description: 'Steals energy/stamina from target.', category: 'vampiric', color: 'text-yellow-700', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'active' },
-  'Essence_Steal': { name: 'Essence Steal', description: 'Steals magical essence and mana.', category: 'vampiric', color: 'text-purple-600', rarity: 5, powerLevel: 5, synergizesWith: ['Mana_Burn'], unlockLevel: 7, effectType: 'active' },
-  'Stat_Steal': { name: 'Stat Steal', description: 'Temporarily steals target\'s attributes.', category: 'vampiric', color: 'text-orange-700', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'active' },
-  'Ability_Steal': { name: 'Ability Steal', description: 'Copies and uses target\'s abilities.', category: 'vampiric', color: 'text-cyan-700', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'active' },
-  'Experience_Steal': { name: 'Experience Steal', description: 'Steals experience points from target.', category: 'vampiric', color: 'text-gold-700', rarity: 9, powerLevel: 8, unlockLevel: 18, effectType: 'active' },
-
-  // More Defensive Mechanics
-  'Parry': { name: 'Parry', description: 'Deflects attacks and creates counterattack opportunity.', category: 'defensive', color: 'text-blue-500', rarity: 3, powerLevel: 4, synergizesWith: ['Counter'], unlockLevel: 4, effectType: 'trigger' },
-  'Dodge': { name: 'Dodge', description: 'Completely avoids attacks through agility.', category: 'defensive', color: 'text-green-500', rarity: 2, powerLevel: 3, synergizesWith: ['Evasion'], unlockLevel: 3, effectType: 'passive' },
-  'Deflect': { name: 'Deflect', description: 'Redirects attacks to random targets.', category: 'defensive', color: 'text-yellow-500', rarity: 4, powerLevel: 4, unlockLevel: 5, effectType: 'trigger' },
-  'Retaliate': { name: 'Retaliate', description: 'Automatically counterattacks when hit.', category: 'defensive', color: 'text-red-500', rarity: 4, powerLevel: 5, synergizesWith: ['Counter'], unlockLevel: 6, effectType: 'trigger' },
-  'Immune': { name: 'Immune', description: 'Complete immunity to specific damage types.', category: 'defensive', color: 'text-white', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'passive' },
-  'Resist': { name: 'Resist', description: 'Reduces damage from specific sources.', category: 'defensive', color: 'text-gray-400', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'passive' },
-  'Absorb': { name: 'Absorb', description: 'Converts damage into beneficial effects.', category: 'defensive', color: 'text-cyan-400', rarity: 5, powerLevel: 5, synergizesWith: ['Absorption'], unlockLevel: 7, effectType: 'passive' },
-  'Nullify': { name: 'Nullify', description: 'Completely negates magical effects.', category: 'defensive', color: 'text-indigo-400', rarity: 7, powerLevel: 7, unlockLevel: 12, effectType: 'trigger' },
-  'Redirect': { name: 'Redirect', description: 'Forces attacks to hit different targets.', category: 'defensive', color: 'text-purple-400', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'trigger' },
+  Block: { name: 'Block', description: 'Chance to completely negate incoming attacks.', category: TagCategory.DEFENSIVE, color: 'slategray', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'passive' },
+  Parry: { name: 'Parry', description: 'Deflects attacks and creates counterattack opportunity.', category: TagCategory.DEFENSIVE, color: 'steelblue', rarity: 3, powerLevel: 4, synergizesWith: ['Counter'], unlockLevel: 4, effectType: 'trigger' },
+  Dodge: { name: 'Dodge', description: 'Completely avoids attacks through agility.', category: TagCategory.DEFENSIVE, color: 'mediumseagreen', rarity: 2, powerLevel: 3, synergizesWith: ['Evasion'], unlockLevel: 3, effectType: 'passive' },
+  Deflect: { name: 'Deflect', description: 'Redirects attacks to random targets.', category: TagCategory.DEFENSIVE, color: 'gold', rarity: 4, powerLevel: 4, unlockLevel: 5, effectType: 'trigger' },
+  Counter: { name: 'Counter', description: 'Automatically retaliates when attacked.', category: TagCategory.DEFENSIVE, color: 'tomato', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'trigger' },
+  Retaliate: { name: 'Retaliate', description: 'Automatically counterattacks when hit.', category: TagCategory.DEFENSIVE, color: 'orangered', rarity: 4, powerLevel: 5, synergizesWith: ['Counter'], unlockLevel: 6, effectType: 'trigger' },
+  Reflect: { name: 'Reflect', description: 'Returns damage back to the attacker.', category: TagCategory.DEFENSIVE, color: 'lightgray', rarity: 5, powerLevel: 5, unlockLevel: 7, effectType: 'passive' },
+  DamageReflection: { name: 'DamageReflection', description: 'Reflects a percentage of incoming damage.', category: TagCategory.DEFENSIVE, color: 'silver', rarity: 5, powerLevel: 0, effectType: 'passive', unlockLevel: 7 },
+  Immune: { name: 'Immune', description: 'Complete immunity to specific damage types.', category: TagCategory.DEFENSIVE, color: 'whitesmoke', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'passive' },
+  Resist: { name: 'Resist', description: 'Reduces damage from specific sources.', category: TagCategory.DEFENSIVE, color: 'darkgray', rarity: 2, powerLevel: 3, unlockLevel: 2, effectType: 'passive' },
+  Absorb: { name: 'Absorb', description: 'Converts damage into beneficial effects.', category: TagCategory.DEFENSIVE, color: 'dodgerblue', rarity: 5, powerLevel: 5, synergizesWith: ['Absorption'], unlockLevel: 7, effectType: 'passive' },
+  Nullify: { name: 'Nullify', description: 'Completely negates magical effects.', category: TagCategory.DEFENSIVE, color: 'darkslateblue', rarity: 7, powerLevel: 7, unlockLevel: 12, effectType: 'trigger' },
+  Redirect: { name: 'Redirect', description: 'Forces attacks to hit different targets.', category: TagCategory.DEFENSIVE, color: 'mediumorchid', rarity: 5, powerLevel: 5, unlockLevel: 8, effectType: 'trigger' },
 
   // Resource Mechanics
-  'Free_Cast': { name: 'Free Cast', description: 'Ability doesn\'t consume resources when used.', category: 'resource', color: 'text-green-400', rarity: 5, powerLevel: 4, unlockLevel: 8, effectType: 'modifier' },
-  'Reduced_Cost': { name: 'Reduced Cost', description: 'Decreases resource costs of abilities.', category: 'resource', color: 'text-blue-400', rarity: 3, powerLevel: 3, unlockLevel: 4, effectType: 'modifier' },
-  'Cost_Refund': { name: 'Cost Refund', description: 'Returns resources when conditions are met.', category: 'resource', color: 'text-cyan-400', rarity: 4, powerLevel: 4, unlockLevel: 6, effectType: 'conditional' },
-  'Resource_Generation': { name: 'Resource Generation', description: 'Generates additional resources over time.', category: 'resource', color: 'text-yellow-400', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'passive' },
-  'Overcharge': { name: 'Overcharge', description: 'Spend extra resources for enhanced effects.', category: 'resource', color: 'text-orange-400', rarity: 5, powerLevel: 6, unlockLevel: 7, effectType: 'modifier' },
-  'Sacrifice': { name: 'Sacrifice', description: 'Trade health or other resources for power.', category: 'resource', color: 'text-red-800', rarity: 6, powerLevel: 7, unlockLevel: 9, effectType: 'modifier' },
-  'Channel_Health': { name: 'Channel Health', description: 'Use health instead of mana for abilities.', category: 'resource', color: 'text-red-600', rarity: 5, powerLevel: 6, synergizesWith: ['Sacrifice'], unlockLevel: 8, effectType: 'modifier' },
-  'Blood_Magic': { name: 'Blood Magic', description: 'Enhanced power at the cost of life force.', category: 'resource', color: 'text-red-900', rarity: 7, powerLevel: 8, synergizesWith: ['Channel_Health'], unlockLevel: 12, effectType: 'modifier' },
-  'Soul_Power': { name: 'Soul Power', description: 'Uses spiritual energy for devastating effects.', category: 'resource', color: 'text-purple-900', rarity: 8, powerLevel: 9, unlockLevel: 15, effectType: 'modifier' },
+  Free_Cast: { name: 'Free_Cast', description: 'Has a chance to cost no mana.', category: TagCategory.RESOURCE, color: 'gold', rarity: 6, powerLevel: 0, effectType: 'trigger', unlockLevel: 8 },
+  Reduced_Cost: { name: 'Reduced_Cost', description: 'Reduces the mana cost of the spell.', category: TagCategory.RESOURCE, color: 'lightblue', rarity: 3, powerLevel: 0, effectType: 'modifier', unlockLevel: 4 },
+  Cost_Refund: { name: 'Cost_Refund', description: 'Returns resources when conditions are met.', category: TagCategory.RESOURCE, color: 'turquoise', rarity: 4, powerLevel: 4, unlockLevel: 6, effectType: 'conditional' },
+  Resource_Generation: { name: 'Resource_Generation', description: 'Generates additional resources over time.', category: TagCategory.RESOURCE, color: 'yellowgreen', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'passive' },
+  Overcharge: { name: 'Overcharge', description: 'Spend extra resources for enhanced effects.', category: TagCategory.RESOURCE, color: 'coral', rarity: 5, powerLevel: 6, unlockLevel: 7, effectType: 'modifier' },
+  Sacrifice: { name: 'Sacrifice', description: 'Trade health or other resources for power.', category: TagCategory.RESOURCE, color: 'maroon', rarity: 6, powerLevel: 7, unlockLevel: 9, effectType: 'modifier' },
+  Channel_Health: { name: 'Channel_Health', description: 'Use health instead of mana for abilities.', category: TagCategory.RESOURCE, color: 'firebrick', rarity: 5, powerLevel: 6, synergizesWith: ['Sacrifice'], unlockLevel: 8, effectType: 'modifier' },
+  Blood_Magic: { name: 'Blood_Magic', description: 'Consumes health instead of mana, or in addition to it.', category: TagCategory.RESOURCE, color: 'darkred', rarity: 5, powerLevel: 0, synergizesWith: ['Channel_Health'], effectType: 'modifier', unlockLevel: 12 },
+  Soul_Power: { name: 'Soul_Power', description: 'Uses spiritual energy for devastating effects.', category: TagCategory.RESOURCE, color: 'darkmagenta', rarity: 8, powerLevel: 9, unlockLevel: 15, effectType: 'modifier' },
 
-  // More Scaling & Progression
-  'Ramping': { name: 'Ramping', description: 'Becomes stronger the longer combat continues.', category: 'scaling', color: 'text-red-500', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'passive' },
-  'Escalating': { name: 'Escalating', description: 'Each use increases the power of the next.', category: 'scaling', color: 'text-orange-500', rarity: 5, powerLevel: 5, synergizesWith: ['Stacking'], unlockLevel: 7, effectType: 'passive' },
-  'Crescendo': { name: 'Crescendo', description: 'Builds to a powerful climactic effect.', category: 'scaling', color: 'text-yellow-500', rarity: 6, powerLevel: 6, unlockLevel: 9, effectType: 'conditional' },
-  'Momentum': { name: 'Momentum', description: 'Gains power from consecutive actions.', category: 'scaling', color: 'text-blue-500', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'passive' },
-  'Sequence': { name: 'Sequence', description: 'Must be used in specific order for full effect.', category: 'scaling', color: 'text-purple-500', rarity: 5, powerLevel: 6, synergizesWith: ['Combo'], unlockLevel: 8, effectType: 'conditional' },
-  'Resonance': { name: 'Resonance', description: 'Amplifies effects of similar spells nearby.', category: 'scaling', color: 'text-cyan-500', rarity: 6, powerLevel: 6, synergizesWith: ['Synergy'], unlockLevel: 10, effectType: 'passive' },
+  // Scaling & Progression
+  Scaling: { name: 'Scaling', description: 'The spell\'s effectiveness increases with player level or other stats.', category: TagCategory.SCALING, color: 'violet', rarity: 2, powerLevel: 0, effectType: 'passive', unlockLevel: 4 },
+  Stacking: { name: 'Stacking', description: 'Effect increases each time it\'s applied.', category: TagCategory.SCALING, color: 'goldenrod', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'passive' },
+  Ramping: { name: 'Ramping', description: 'Becomes stronger the longer combat continues.', category: TagCategory.SCALING, color: 'tomato', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'passive' },
+  Escalating: { name: 'Escalating', description: 'Each use increases the power of the next.', category: TagCategory.SCALING, color: 'sandybrown', rarity: 5, powerLevel: 5, synergizesWith: ['Stacking'], unlockLevel: 7, effectType: 'passive' },
+  Crescendo: { name: 'Crescendo', description: 'Builds to a powerful climactic effect.', category: TagCategory.SCALING, color: 'yellow', rarity: 6, powerLevel: 6, unlockLevel: 9, effectType: 'conditional' },
+  Momentum: { name: 'Momentum', description: 'Gains power from consecutive actions.', category: TagCategory.SCALING, color: 'deepskyblue', rarity: 4, powerLevel: 5, unlockLevel: 6, effectType: 'passive' },
+  Combo: { name: 'Combo', description: 'This spell can trigger or benefit from a combo sequence.', category: TagCategory.SCALING, color: 'orange', rarity: 3, powerLevel: 0, effectType: 'conditional', unlockLevel: 8 },
+  Chain: { name: 'Chain', description: 'The spell jumps to additional targets after hitting the primary one.', category: TagCategory.TARGETING, color: 'yellowgreen', rarity: 4, powerLevel: 0, synergizesWith: ['Lightning', 'MultiTarget'], effectType: 'modifier', unlockLevel: 6 },
+  Sequence: { name: 'Sequence', description: 'Must be used in specific order for full effect.', category: TagCategory.SCALING, color: 'mediumpurple', rarity: 5, powerLevel: 6, synergizesWith: ['Combo'], unlockLevel: 8, effectType: 'conditional' },
+  Synergy: { name: 'Synergy', description: 'Enhanced effects when combined with specific other tags.', category: TagCategory.SCALING, color: 'springgreen', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'conditional' },
+  Resonance: { name: 'Resonance', description: 'Amplifies effects of similar spells nearby.', category: TagCategory.SCALING, color: 'paleturquoise', rarity: 6, powerLevel: 6, synergizesWith: ['Synergy'], unlockLevel: 10, effectType: 'passive' },
 
   // Timing & Duration
-  'Extended_Duration': { name: 'Extended Duration', description: 'Effects last significantly longer.', category: 'timing', color: 'text-green-400', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'modifier' },
-  'Shortened_Duration': { name: 'Shortened Duration', description: 'Brief but intense effects.', category: 'timing', color: 'text-red-400', rarity: 2, powerLevel: 5, conflictsWith: ['Extended_Duration'], unlockLevel: 3, effectType: 'modifier' },
-  'Delayed': { name: 'Delayed', description: 'Effect triggers after a time delay.', category: 'timing', color: 'text-orange-400', rarity: 4, powerLevel: 5, unlockLevel: 5, effectType: 'conditional' },
-  'Triggered': { name: 'Triggered', description: 'Activates when specific conditions are met.', category: 'timing', color: 'text-purple-400', rarity: 5, powerLevel: 5, unlockLevel: 7, effectType: 'conditional' },
-  'Conditional': { name: 'Conditional', description: 'Enhanced effects under specific circumstances.', category: 'timing', color: 'text-blue-400', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'conditional' },
-  'Repeating': { name: 'Repeating', description: 'Effect triggers multiple times automatically.', category: 'timing', color: 'text-yellow-400', rarity: 5, powerLevel: 6, unlockLevel: 8, effectType: 'passive' },
-  'Echoing': { name: 'Echoing', description: 'Creates delayed copies of the original effect.', category: 'timing', color: 'text-cyan-400', rarity: 6, powerLevel: 6, synergizesWith: ['Delayed'], unlockLevel: 9, effectType: 'trigger' },
-  'Lingering': { name: 'Lingering', description: 'Leaves behind persistent aftereffects.', category: 'timing', color: 'text-green-500', rarity: 4, powerLevel: 4, synergizesWith: ['Persistent'], unlockLevel: 6, effectType: 'passive' },
-  'Fading': { name: 'Fading', description: 'Effect gradually decreases in strength.', category: 'timing', color: 'text-gray-500', rarity: 3, powerLevel: 3, conflictsWith: ['Persistent'], unlockLevel: 4, effectType: 'modifier' },
-  'Burst': { name: 'Burst', description: 'Intense effect that ends quickly.', category: 'timing', color: 'text-orange-600', rarity: 3, powerLevel: 6, synergizesWith: ['Shortened_Duration'], unlockLevel: 5, effectType: 'modifier' },
+  Extended_Duration: { name: 'Extended_Duration', description: 'Increases the duration of spell effects or status effects.', category: TagCategory.TIMING, color: 'khaki', rarity: 3, powerLevel: 0, conflictsWith: ['Shortened_Duration'], effectType: 'modifier', unlockLevel: 4 },
+  Shortened_Duration: { name: 'Shortened_Duration', description: 'Decreases the duration of spell effects or status effects.', category: TagCategory.TIMING, color: 'lightcoral', rarity: 2, powerLevel: 0, conflictsWith: ['Extended_Duration'], effectType: 'modifier', unlockLevel: 3 },
+  Triggered: { name: 'Triggered', description: 'Activates when specific conditions are met.', category: TagCategory.TIMING, color: 'darkviolet', rarity: 5, powerLevel: 5, unlockLevel: 7, effectType: 'conditional' },
+  Conditional: { name: 'Conditional', description: 'Enhanced effects under specific circumstances.', category: TagCategory.TIMING, color: 'royalblue', rarity: 3, powerLevel: 4, unlockLevel: 4, effectType: 'conditional' },
+  Repeating: { name: 'Repeating', description: 'Effect triggers multiple times automatically.', category: TagCategory.TIMING, color: 'gold', rarity: 5, powerLevel: 6, unlockLevel: 8, effectType: 'passive' },
+  Echoing: { name: 'Echoing', description: 'The spell repeats its effect a second time with reduced potency.', category: TagCategory.TIMING, color: 'teal', rarity: 5, powerLevel: 0, synergizesWith: ['Delayed'], effectType: 'trigger', unlockLevel: 9 },
+  Lingering: { name: 'Lingering', description: 'Leaves behind persistent aftereffects.', category: TagCategory.TIMING, color: 'seagreen', rarity: 4, powerLevel: 4, synergizesWith: ['Persistent'], unlockLevel: 6, effectType: 'passive' },
+  Fading: { name: 'Fading', description: 'Effect gradually decreases in strength.', category: TagCategory.TIMING, color: 'lightslategrey', rarity: 3, powerLevel: 3, conflictsWith: ['Persistent'], unlockLevel: 4, effectType: 'modifier' },
+  Burst: { name: 'Burst', description: 'Intense effect that ends quickly.', category: TagCategory.TIMING, color: 'orangered', rarity: 3, powerLevel: 6, synergizesWith: ['Shortened_Duration'], unlockLevel: 5, effectType: 'modifier' },
+
+  // Placeholder for tags found in App.tsx that might not be fully defined yet
+  // or are covered by other tags.
+  // This ensures the `TagName` type remains valid.
+  // These should be reviewed and properly defined or merged.
+  DefensiveBuff: { name: "DefensiveBuff", description: "Generic defensive buff.", category: TagCategory.STATUS_BUFF, color: "lightblue", rarity: 1, powerLevel: 0, effectType: "trigger", unlockLevel: 1 },
+  OffensiveBuff: { name: "OffensiveBuff", description: "Generic offensive buff.", category: TagCategory.STATUS_BUFF, color: "lightcoral", rarity: 1, powerLevel: 0, effectType: "trigger", unlockLevel: 1 },
+  Utility: { name: "Utility", description: "Provides a utility effect.", category: TagCategory.SPELL_PROPERTY, color: "lightyellow", rarity: 1, powerLevel: 0, effectType: "active", unlockLevel: 1 },
+  Movement: { name: "Movement", description: "Affects movement.", category: TagCategory.STATUS_BUFF, color: "lightgreen", rarity: 1, powerLevel: 0, effectType: "active", unlockLevel: 1 },
+  Debuff: { name: "Debuff", description: "Applies a generic debuff.", category: TagCategory.STATUS_DEBUFF, color: "grey", rarity: 1, powerLevel: 0, effectType: "trigger", unlockLevel: 1 },
+  Control: { name: "Control", description: "Provides a control effect.", category: TagCategory.CROWD_CONTROL, color: "purple", rarity: 1, powerLevel: 0, effectType: "trigger", unlockLevel: 1 },
+  Summoning: { name: "Summoning", description: "Summons a creature or object.", category: TagCategory.ENVIRONMENTAL, color: "darkgrey", rarity: 1, powerLevel: 0, effectType: "active", unlockLevel: 1 },
+  Transformation: { name: "Transformation", description: "Transforms the caster or target.", category: TagCategory.SPECIAL_MECHANIC, color: "brown", rarity: 1, powerLevel: 0, effectType: "active", unlockLevel: 1 },
+  MetaMagic: { name: "MetaMagic", description: "Alters how spells function.", category: TagCategory.META_MECHANIC, color: "gold", rarity: 1, powerLevel: 0, effectType: "modifier", unlockLevel: 1 },
+  LootChest: { name: "LootChest", description: "Indicates a loot chest item.", category: TagCategory.META_MECHANIC, color: "saddlebrown", rarity: 0, powerLevel: 0, effectType: "passive", unlockLevel: 0 },
+  // Elements as Tags (already defined above, e.g. Fire, Ice)
+  // Ensure all TagName values from types.ts are represented if they are distinct categories
+  // For example, if 'ElementName' includes items not in 'Damage Types'
+  PhysicalNeutral: { name: "PhysicalNeutral", description: "Neutral physical interaction.", category: TagCategory.DAMAGE_TYPE, color: "grey", rarity: 0, powerLevel: 0, effectType: "passive", unlockLevel: 0},
+  PoisonSource: { name: "PoisonSource", description: "Source of poison.", category: TagCategory.DAMAGE_TYPE, color: "green", rarity: 0, powerLevel: 0, effectType: "passive", unlockLevel: 0},
+  HealingSource: { name: "HealingSource", description: "Source of healing.", category: TagCategory.SPELL_PROPERTY, color: "lightgreen", rarity: 0, powerLevel: 0, effectType: "passive", unlockLevel: 0},
+
+  // Rarity & Power category tags from src/types.ts
+  Common: { name: 'Common', description: 'Basic effect, easily obtainable.', category: TagCategory.RARITY, color: 'grey', rarity: 1, powerLevel: 1, unlockLevel: 1, effectType: 'modifier' },
+  Uncommon: { name: 'Uncommon', description: 'Slightly better than common.', category: TagCategory.RARITY, color: 'green', rarity: 2, powerLevel: 2, unlockLevel: 2, effectType: 'modifier' },
+  Rare: { name: 'Rare', description: 'Uncommon effect with enhanced properties.', category: TagCategory.RARITY, color: 'blue', rarity: 4, powerLevel: 4, unlockLevel: 5, effectType: 'modifier' },
+  Epic: { name: 'Epic', description: 'Powerful effect with unique mechanics.', category: TagCategory.RARITY, color: 'purple', rarity: 6, powerLevel: 6, unlockLevel: 10, effectType: 'modifier' },
+  Legendary: { name: 'Legendary', description: 'Extremely rare and powerful effect.', category: TagCategory.RARITY, color: 'orange', rarity: 8, powerLevel: 8, unlockLevel: 15, effectType: 'modifier' },
+  Mythic: { name: 'Mythic', description: 'Nearly impossible to obtain, game-changing power.', category: TagCategory.RARITY, color: 'red', rarity: 10, powerLevel: 10, unlockLevel: 20, effectType: 'modifier' },
+  Divine: { name: 'Divine', description: 'Power of the gods.', category: TagCategory.RARITY, color: 'gold', rarity: 12, powerLevel: 12, unlockLevel: 25, effectType: 'modifier' },
+  Forbidden: { name: 'Forbidden', description: 'Dangerous and forbidden magic.', category: TagCategory.RARITY, color: 'black', rarity: 9, powerLevel: 9, unlockLevel: 18, effectType: 'modifier' },
+  Ancient: { name: 'Ancient', description: 'Magic from a bygone era.', category: TagCategory.RARITY, color: 'brown', rarity: 7, powerLevel: 7, unlockLevel: 14, effectType: 'modifier' },
+  Primordial: { name: 'Primordial', description: 'Raw, untamed magical energy.', category: TagCategory.RARITY, color: 'darkgreen', rarity: 11, powerLevel: 11, unlockLevel: 22, effectType: 'modifier' },
+  Cosmic: { name: 'Cosmic', description: 'Power drawn from the cosmos itself.', category: TagCategory.RARITY, color: 'darkblue', rarity: 13, powerLevel: 13, unlockLevel: 30, effectType: 'modifier' },
 };

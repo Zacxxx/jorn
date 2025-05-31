@@ -2,7 +2,8 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { 
     GEMINI_MODEL_TEXT, AVAILABLE_SPELL_ICONS, DEFAULT_TRAIT_ICON, DEFAULT_QUEST_ICON, 
     AVAILABLE_STATUS_EFFECTS, STATUS_EFFECT_ICONS, AVAILABLE_RESOURCE_TYPES_FOR_AI, AVAILABLE_ITEM_ICONS, 
-    CONSUMABLE_EFFECT_TYPES, AVAILABLE_EQUIPMENT_SLOTS, EXAMPLE_SPELL_COMPONENTS, ENEMY_DIFFICULTY_XP_REWARD
+    CONSUMABLE_EFFECT_TYPES, AVAILABLE_EQUIPMENT_SLOTS, EXAMPLE_SPELL_COMPONENTS, ENEMY_DIFFICULTY_XP_REWARD,
+    TAG_DEFINITIONS // Import TAG_DEFINITIONS
 } from '../constants';
 import { 
     GeneratedSpellData, GeneratedEnemyData, SpellIconName, GeneratedTraitData, GeneratedQuestData, 
@@ -12,8 +13,21 @@ import {
     LootDrop 
 } from '../types';
 import { ALL_ELEMENTS } from "../src/components/gameplay/elements/element-list";
-import { ALL_TAG_NAMES } from "../src/components/gameplay/tags"; 
+import { ALL_TAG_NAMES } from "../src/components/gameplay/tags"; // This provides a flat list of TagName strings
 import { getScalingFactorFromRarity } from "../utils";
+
+// Helper function to generate tag conflict string for AI prompts
+function generateTagConflictString(): string {
+  let conflictStrings: string[] = [];
+  for (const tagName in TAG_DEFINITIONS) {
+    const tagDef = TAG_DEFINITIONS[tagName as TagName];
+    if (tagDef.conflictsWith && tagDef.conflictsWith.length > 0) {
+      conflictStrings.push(`${tagDef.name} conflicts with: ${tagDef.conflictsWith.join(', ')}.`);
+    }
+  }
+  return conflictStrings.join(' ');
+}
+const TAG_CONFLICT_DATA_STRING = generateTagConflictString();
 
 
 if (!process.env.API_KEY) {
@@ -175,6 +189,10 @@ ${JSON.stringify(chosenComponentsDetails, null, 2)}
 Player has invested the following resources into crafting:
 ${investedResources && investedResources.length > 0 ? JSON.stringify(investedResources.map(rc => ({ itemId: rc.itemId, quantity: rc.quantity, type: rc.type })), null, 2) : "No specific resources invested by player upfront."}
 
+Available Tags: ${ALL_TAG_NAMES.join(', ')}.
+Tag Conflict Data: ${TAG_CONFLICT_DATA_STRING}
+CRITICAL INSTRUCTION: Avoid selecting multiple tags for the spell if they are listed as conflicting with each other in the provided Tag Conflict Data. For example, do not put both 'Fire' and 'Ice' on the same spell if they conflict. Prioritize the tag that appears first in the component list or player prompt if a choice must be made.
+
 Your task is to finalize this spell. Generate a JSON object with:
 - name: (string) Creative spell name. Adapt if player provided.
 - description: (string) Flavorful spell description. Adapt if player provided. Max 150 chars.
@@ -185,7 +203,7 @@ Your task is to finalize this spell. Generate a JSON object with:
 - scalesWith: ('Body' | 'Mind' | null) Derived from components.
 - statusEffectInflict: (object | null) Derived status effect. Status Name from: ${AVAILABLE_STATUS_EFFECTS.join(', ')}. Chance: 10-100%. Duration: 1-5 turns. Magnitude: 1-25.
 - resourceCost: (array of ResourceCost objects | null) Final additional resources for crafting. Use itemId from master list. ResourceType from: ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}. Quantity: 1-5. Max 3 types.
-- tags: (array of strings, max 5) Functional tags. Choose from: ${ALL_TAG_NAMES.join(', ')}. If scalesWith is set, include 'Scaling' tag.
+- tags: (array of strings, max 5) Functional tags from the Available Tags list. Adhere to the CRITICAL INSTRUCTION regarding tag conflicts. If scalesWith is set, include 'Scaling' tag.
 - rarity: (integer, 0-10) Estimate rarity based on power, complexity, component rarity.
 - epCost: (integer, optional) EP cost (0-50).
 - duration: (integer, optional, 1-5 turns) For spells with lasting effects like buffs/debuffs.
@@ -224,11 +242,16 @@ async function editSpellImplementation(originalSpell: Spell, refinementPrompt: s
   const systemInstruction = `You are a spell refinement assistant. Modify an existing spell.
 Original spell: ${JSON.stringify(originalSpell, null, 2)}
 User's request: "${refinementPrompt}"
-Generate a new JSON object. Fields are same as generateSpellFromDesign.
+
+Available Tags: ${ALL_TAG_NAMES.join(', ')}.
+Tag Conflict Data: ${TAG_CONFLICT_DATA_STRING}
+CRITICAL INSTRUCTION: Avoid selecting multiple tags for the spell if they are listed as conflicting with each other in the provided Tag Conflict Data. For example, do not put both 'Fire' and 'Ice' on the same spell if they conflict. When modifying tags, ensure the resulting set of tags does not violate these conflicts.
+
+Generate a new JSON object. Fields are same as generateSpellFromDesign (name, description, iconName, manaCost, damage, damageType, scalesWith, statusEffectInflict, resourceCost, tags, rarity, epCost, duration).
 DamageType must be one of: ${ALL_ELEMENTS.join(', ')}.
 Adjust manaCost (1-100) and damage (0-100) based on changes.
 Resource costs might also change (1-5 quantity, max 3 types, provide itemId from master list, type from ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}).
-Update rarity (0-10) and tags (array of strings from ${ALL_TAG_NAMES.join(', ')}) based on changes. If scalesWith is set or changed, include 'Scaling' tag.
+Update rarity (0-10) and tags (array of strings from Available Tags list, max 5) based on changes. Adhere to CRITICAL INSTRUCTION on tag conflicts. If scalesWith is set or changed, include 'Scaling' tag.
 Ensure valid JSON. Spell level is ${originalSpell.level}. Return ONLY the valid JSON object.`;
 
   try {
