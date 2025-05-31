@@ -16,6 +16,7 @@ interface HomeScreenViewProps {
   onOpenCraftingHub: () => void;
   onOpenHomestead: () => void;
   onOpenNPCs: () => void;
+  onNavigateToMultiplayer: () => void; // Add this line
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
@@ -29,6 +30,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenCraftingHub,
   onOpenHomestead,
   onOpenNPCs,
+  onNavigateToMultiplayer, // Add this line
 }) => {
   const currentLocation = getLocation(player.currentLocationId);
   const locationName = currentLocation?.name || 'Unknown Location';
@@ -333,13 +335,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
               {/* Multiplayer Button */}
               <ActionButton 
-                onClick={() => console.log('Multiplayer clicked')} 
+                onClick={onNavigateToMultiplayer} // Updated onClick
                 variant="primary" 
                 size="sm" 
                 icon={<UserIcon />} 
                 className="w-full text-xs mt-2"
               >
-                Multiplayer
+                View Full Multiplayer {/* Updated text */}
               </ActionButton>
             </div>
 
