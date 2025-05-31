@@ -1421,8 +1421,26 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     if (effectiveSpellTags.includes('Slow') && Math.random() < 0.65) { // If not applied by Freezing
       applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 35, chance: 100 }, spell.id);
     }
-     if (effectiveSpellTags.includes('Freeze') && Math.random() < 0.3) { // Hard CC Freeze
+    if (effectiveSpellTags.includes('Freeze') && Math.random() < 0.3) { // Hard CC Freeze applied by 'Freeze' tag
       applyStatusEffect(targetId, { name: 'Freeze', duration: Math.min(2, duration), magnitude: 0, chance: 100 }, spell.id);
+    }
+
+    // Chance for 'Ice' tag (usually a damage type tag) to also apply 'Freeze' (hard CC)
+    // This is separate from the 'Freezing' DoT/Slow tag.
+    if (effectiveSpellTags.includes('Ice') && targetId !== 'player') { // Don't freeze self with an Ice damage spell
+      const freezeApplyChanceFromIceTag = 25; // 25% chance
+      if (Math.random() * 100 < freezeApplyChanceFromIceTag) {
+        // Check if target is already Frozen by the 'Freeze' tag to avoid double application or immediate overwrite by this one if durations differ.
+        // However, applyStatusEffect handles stacking/duration updates, so direct application is fine.
+        // We ensure 'Freeze' is a valid StatusEffectName (it is, and has an icon).
+        console.warn(`Synergy: 'Ice' tag applying 'Freeze' CC to ${targetId}`);
+        applyStatusEffect(targetId, {
+          name: 'Freeze',
+          duration: 1, // Standard duration for this hard CC from Ice tag synergy
+          magnitude: undefined, // Freeze CC typically doesn't have a magnitude
+          chance: 100 // The probabilistic check was already done by freezeApplyChanceFromIceTag
+        }, spell.id);
+      }
     }
     
     if (targetId === 'player') {
