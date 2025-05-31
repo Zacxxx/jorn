@@ -100,7 +100,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-amber-500/20 to-amber-600/20',
       borderColor: 'border-amber-500/30',
       iconColor: 'text-amber-400',
-      backgroundImage: '/assets/activity-card/camp.gif'
+      backgroundImage: '/assets/activity-card/camp.svg',
+      gifBackgroundImage: '/assets/activity-card/camp.gif'
     },
     {
       id: 'research',
@@ -114,7 +115,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-blue-500/20 to-blue-600/20',
       borderColor: 'border-blue-500/30',
       iconColor: 'text-blue-400',
-      backgroundImage: '/assets/activity-card/research.svg'
+      backgroundImage: '/assets/activity-card/research.svg',
+      gifBackgroundImage: '/assets/activity-card/research.gif'
     },
     {
       id: 'crafting',
@@ -128,7 +130,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-orange-500/20 to-orange-600/20',
       borderColor: 'border-orange-500/30',
       iconColor: 'text-orange-400',
-      backgroundImage: '/assets/activity-card/crafting.svg'
+      backgroundImage: '/assets/activity-card/crafting.svg',
+      gifBackgroundImage: '/assets/activity-card/crafting.gif'
     },
     {
       id: 'npcs',
@@ -142,7 +145,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-purple-500/20 to-purple-600/20',
       borderColor: 'border-purple-500/30',
       iconColor: 'text-purple-400',
-      backgroundImage: '/assets/activity-card/npcs.svg'
+      backgroundImage: '/assets/activity-card/npcs.svg',
+      gifBackgroundImage: '/assets/activity-card/npcs.gif'
     },
     {
       id: 'quests',
@@ -170,7 +174,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-emerald-500/20 to-emerald-600/20',
       borderColor: 'border-emerald-500/30',
       iconColor: 'text-emerald-400',
-      backgroundImage: '/assets/activity-card/trading.svg'
+      backgroundImage: '/assets/activity-card/trading.svg',
+      gifBackgroundImage: '/assets/activity-card/market.gif'
     }
   ];
 
@@ -623,6 +628,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                           borderColor={activity.borderColor}
                           iconColor={activity.iconColor}
                           backgroundImage={activity.backgroundImage}
+                          gifBackgroundImage={activity.gifBackgroundImage}
                         />
                       </div>
                     );
