@@ -1,8 +1,8 @@
 import React from 'react';
-import { Ability, Player } from '../../../types';
-import AbilityBookDisplay from '../../AbilityBookDisplay'; // Adjusted import path
-// import ActionButton from '../../../ui/ActionButton'; // Not used in this snippet, but could be for "Craft Ability"
-// import { StarIcon } from '../../IconComponents'; // Not used in this snippet
+import { Ability, Player } from '../../types'; // Corrected path
+import AbilityBookDisplay from '../AbilityBookDisplay'; // Corrected path
+// import ActionButton from '../../ui/ActionButton'; // Corrected path if used & global
+// import { StarIcon } from '../IconComponents'; // Corrected path if used
 
 interface AbilitiesTabProps {
   player: Player;

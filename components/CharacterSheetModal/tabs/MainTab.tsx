@@ -1,32 +1,14 @@
 import React from 'react';
-import { Player, PlayerEffectiveStats, SpellIconName } from '../../../types';
-import ActionButton from '../../../ui/ActionButton';
-import { GetSpellIcon } from '../../IconComponents';
+import { Player, PlayerEffectiveStats, SpellIconName, Talent } from '../../types'; // Corrected path, Added Talent
+import ActionButton from '../../ui/ActionButton'; // Corrected path for global UI
+import { GetSpellIcon } from '../IconComponents'; // Corrected path
 import VitalStatisticsDisplay from '../ui/VitalStatisticsDisplay';
 import AttributesDisplay from '../ui/AttributesDisplay';
 import TalentTree from './main/talents/TalentTree';
 import TalentDetailView from './main/talents/TalentDetailView';
-import CreateTalentModal from './main/talents/CreateTalentModal'; // Import CreateTalentModal
+// CreateTalentModal and ResearchUnlocksModal are not directly used or rendered by MainTab
 
-// TODO: Replace 'any' with actual Talent and Research types once defined
-interface Talent {
-  id: string;
-  name: string;
-  tier: number;
-  connections: string[];
-  type: 'passive' | 'active';
-  description: string;
-  effects: string[];
-  requirements: any;
-}
-
-interface ResearchUnlock {
-    id: string;
-    name: string;
-    description: string;
-    cost: { points: number; gold: number };
-    // Add other relevant fields
-}
+// Local Talent and ResearchUnlock interfaces removed, Talent should be imported from global types.
 
 interface MainTabSectionItemProps {
     icon: SpellIconName;

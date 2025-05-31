@@ -1,8 +1,7 @@
 import React from 'react';
-import Modal from '../../../../ui/Modal'; // Adjusted path
-import ActionButton from '../../../../ui/ActionButton'; // Adjusted path
-// Assuming Talent type might be needed if form interacts with it, though not directly in this snippet
-// import { Talent } from '../../../../types';
+import Modal from '../../../../../ui/Modal'; // Corrected path for global UI
+import ActionButton from '../../../../../ui/ActionButton'; // Corrected path for global UI
+// import { Talent } from '../../../../../types'; // Corrected path if Talent type is needed
 
 interface CreateTalentModalProps {
   isOpen: boolean;
