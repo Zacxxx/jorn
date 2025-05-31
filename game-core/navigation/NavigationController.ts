@@ -196,6 +196,14 @@ export const navigateToParameters = (context: NavigationContext): void => {
 };
 
 /**
+ * Navigate to Multiplayer View
+ * @param context - Navigation context
+ */
+export const navigateToMultiplayer = (context: NavigationContext): void => {
+  context.setGameState('MULTIPLAYER_VIEW');
+};
+
+/**
  * Navigate to home (main menu)
  * @param context - Navigation context
  */
@@ -408,6 +416,7 @@ export const NavigationControllerUtils = {
   navigateToEncyclopedia,
   navigateToHomestead,
   navigateToParameters,
+  navigateToMultiplayer, // Add this line
   navigateToHome,
   openHelpWiki,
   closeHelpWiki,

@@ -18,6 +18,7 @@ import {
 import { HomesteadProject } from '../src/types';
 
 // Import all view components
+import MultiplayerView from '../src/components/MultiplayerView';
 import HomeScreenView from '../src/components/HomeScreenView';
 import CampView from '../src/CampView';
 import HomesteadView from '../src/components/HomesteadView';
@@ -90,7 +91,7 @@ export interface ViewRouterProps {
   onAccessSettlement: () => void;
   onOpenCraftingHub: () => void;
   onOpenNPCs: () => void;
-  onOpenMultiplayer: () => void;
+  onNavigateToMultiplayer: () => void; // Add this line
   onNavigateHome: () => void;
   onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
   onStartHomesteadProject: (project: Omit<HomesteadProject, 'id' | 'startTime'>) => void;
@@ -170,7 +171,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
     onAccessSettlement,
     onOpenCraftingHub,
     onOpenNPCs,
-    onOpenMultiplayer,
+    onNavigateToMultiplayer, // Add this line
     onNavigateHome,
     onRestComplete,
     onStartHomesteadProject,
@@ -227,6 +228,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
       return (
         <HomeScreenView 
           player={player} 
+          effectiveStats={effectivePlayerStats}
           onFindEnemy={onFindEnemy} 
           isLoading={isLoading} 
           onExploreMap={onExploreMap} 
@@ -236,7 +238,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onAccessSettlement={onAccessSettlement} 
           onOpenCraftingHub={onOpenCraftingHub} 
           onOpenNPCs={onOpenNPCs} 
-          onOpenMultiplayer={onOpenMultiplayer}
+          onNavigateToMultiplayer={onNavigateToMultiplayer} // Add this line
         />
       );
 
@@ -476,6 +478,11 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onFindEnemy={onFindEnemy} 
           isLoading={isLoading}
         />
+      );
+
+    case 'MULTIPLAYER_VIEW': // Add this new case
+      return (
+        <MultiplayerView />
       );
       
     // Deprecated states, should ideally not be reached if navigation is correct
