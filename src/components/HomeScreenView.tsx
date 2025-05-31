@@ -95,17 +95,17 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   ];
 
   return (
-    <div className="h-[calc(100vh-8rem)] w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 overflow-hidden">
+    <div className="min-h-[calc(100vh-12rem)] h-[calc(100vh-12rem)] w-full max-w-none mx-0 -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 overflow-hidden">
       {/* Main Content Container */}
-      <div className="h-full py-2 sm:py-3 lg:py-4">
+      <div className="h-full py-3 sm:py-4 md:py-6 lg:py-8">
         
         {/* Desktop Layout - Two Column Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 sm:gap-3 lg:gap-4 h-full">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 h-full max-w-7xl mx-auto">
           
           {/* Left Column - Location & Exploration */}
-          <div className="flex flex-col space-y-2 sm:space-y-3 lg:space-y-4 h-full">
+          <div className="flex flex-col space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 h-full">
             {/* Current Location Section - Enhanced and Optimized */}
-            <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-green-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
+            <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-green-700/60 p-3 sm:p-4 md:p-5 lg:p-6 flex-shrink-0">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
@@ -218,15 +218,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Explore World Section - Enhanced */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-lg flex items-center justify-center">
-                  <MapIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-blue-400" />
-                </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-blue-300">Explore World</h3>
-              </div>
-              
-              <div className="h-full overflow-y-auto space-y-2 sm:space-y-3">
+            <div className="flex-1 min-h-0">
+              <div className="h-full overflow-y-auto space-y-3 sm:space-y-4 md:space-y-5">
                 {/* Homestead Section - Enhanced Card */}
                 <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-lg p-2 sm:p-3 border border-amber-500/30 hover:border-amber-500/50 transition-all duration-200">
                   <div className="flex items-center space-x-2 mb-2">
@@ -266,10 +259,10 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Right Column - Combat & Activities */}
-          <div className="flex flex-col space-y-2 sm:space-y-3 lg:space-y-4 h-full">
+          <div className="flex flex-col space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8 h-full">
             {/* Combat Section - Enhanced */}
-            <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-red-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3">
+            <div className="bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl sm:shadow-2xl border border-red-700/60 p-3 sm:p-4 md:p-5 lg:p-6 flex-shrink-0">
+              <div className="flex items-center space-x-2 mb-3 sm:mb-4 md:mb-5">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-lg flex items-center justify-center">
                   <SkullIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-red-400" />
                 </div>
@@ -301,16 +294,9 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Activities Section - Enhanced with Detailed Cards */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0">
-              <div className="flex items-center space-x-2 mb-2 sm:mb-3">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
-                  <FlaskIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
-                </div>
-                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Activities</h3>
-              </div>
-              
+            <div className="flex-1 min-h-0">
               {/* Enhanced Activity Cards Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 h-full overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-5 h-full overflow-y-auto">
                 {activityCards.map((activity) => (
                   <div
                     key={activity.id}
@@ -396,10 +382,10 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
         </div>
 
         {/* Mobile Layout - Additional Actions for smaller screens */}
-        <div className="xl:hidden mt-2 sm:mt-3">
-          <div className="bg-slate-800/50 backdrop-blur-md rounded-lg border border-slate-700/60 p-2">
-            <div className="text-xs text-slate-400 text-center mb-2">Additional Features</div>
-            <div className="grid grid-cols-2 gap-2">
+        <div className="xl:hidden mt-3 sm:mt-4 md:mt-6">
+          <div className="bg-slate-800/50 backdrop-blur-md rounded-lg border border-slate-700/60 p-3 sm:p-4">
+            <div className="text-xs text-slate-400 text-center mb-3">Additional Features</div>
+            <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-700/30 rounded-lg p-2 text-center">
                 <div className="text-xs text-slate-400">Coming Soon</div>
                 <div className="text-xs text-slate-500">Feature 1</div>
