@@ -38,6 +38,7 @@ import CombatView from '../src/components/CombatView';
 import ConfirmationView from '../src/components/ConfirmationView';
 import GameOverView from '../src/components/GameOverView';
 import LoadingSpinner from '../src/components/LoadingSpinner';
+import MultiplayerView from '../src/components/MultiplayerView';
 
 /**
  * View Router Component
@@ -89,6 +90,7 @@ export interface ViewRouterProps {
   onAccessSettlement: () => void;
   onOpenCraftingHub: () => void;
   onOpenNPCs: () => void;
+  onOpenMultiplayer: () => void;
   onNavigateHome: () => void;
   onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
   onStartHomesteadProject: (project: Omit<HomesteadProject, 'id' | 'startTime'>) => void;
@@ -168,6 +170,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
     onAccessSettlement,
     onOpenCraftingHub,
     onOpenNPCs,
+    onOpenMultiplayer,
     onNavigateHome,
     onRestComplete,
     onStartHomesteadProject,
@@ -233,6 +236,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onAccessSettlement={onAccessSettlement} 
           onOpenCraftingHub={onOpenCraftingHub} 
           onOpenNPCs={onOpenNPCs} 
+          onOpenMultiplayer={onOpenMultiplayer}
         />
       );
 
@@ -492,6 +496,14 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onReturnHome={onNavigateHome} 
           onOpenTheorizeLab={onOpenTheorizeComponentLab} 
           onShowMessage={(t,m) => showMessageModal(t,m,'info')} 
+        />
+      );
+
+    case 'MULTIPLAYER_VIEW': 
+      return (
+        <MultiplayerView 
+          player={player} 
+          onBack={onNavigateHome} 
         />
       );
 

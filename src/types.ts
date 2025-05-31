@@ -164,7 +164,7 @@ export type GameState =
   | 'SPELL_EDIT_CONFIRMATION' | 'ITEM_CRAFTING' | 'ITEM_CRAFT_CONFIRMATION' | 'SELECTING_POTION'
   | 'CHARACTER_SHEET' | 'SELECTING_ABILITY' | 'CRAFTING_HUB' | 'EXPLORING_MAP' | 'CAMP'
   | 'SETTLEMENT_VIEW' | 'SHOP_VIEW' | 'TAVERN_VIEW' | 'NPC_DIALOGUE' | 'HOMESTEAD_VIEW'
-  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP' | 'NPCS_VIEW';
+  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP' | 'NPCS_VIEW' | 'MULTIPLAYER_VIEW';
 export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia';
 export type InventoryFilterType = 'All' | ItemType;
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';

@@ -30,6 +30,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   const isCampCard = id === 'camp';
   const [isHovered, setIsHovered] = React.useState(false);
 
+  // Enhanced card animation classes
+  const cardBaseClasses = "backdrop-blur-md rounded-xl shadow-xl border transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:shadow-2xl";
+  const cardHoverClasses = "hover:border-opacity-80 hover:-translate-y-1";
+
   // Debug logging for camp card
   React.useEffect(() => {
     if (isCampCard) {
@@ -39,25 +43,25 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
 
   return (
     <div
-      className={`relative bg-gradient-to-br ${color} backdrop-blur-sm rounded-md border ${borderColor} p-1.5 transition-all duration-300 hover:shadow-lg cursor-pointer group overflow-hidden h-fit`}
+      className={`relative bg-gradient-to-br ${color} ${cardBaseClasses} ${cardHoverClasses} ${borderColor} p-1.5 cursor-pointer group overflow-hidden h-fit`}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Background Illustration */}
-      <div className={`absolute inset-0 ${isCampCard ? 'opacity-70' : 'opacity-0 group-hover:opacity-10'} transition-opacity duration-300`}>
-        <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-md overflow-hidden`}>
+      {/* Enhanced Background Illustration with Ambient Effects */}
+      <div className={`absolute inset-0 ${isCampCard ? 'opacity-70' : 'opacity-0 group-hover:opacity-15'} transition-all duration-500`}>
+        <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-xl overflow-hidden`}>
           {isCampCard ? (
-            // Special handling for camp card with gif
+            // Special handling for camp card with gif and enhanced effects
             <div className="relative w-full h-full">
               <img 
                 src={backgroundImage} 
                 alt={`${title} background`}
                 className={`w-full h-full object-cover transition-all duration-500 ${
-                  isHovered ? 'opacity-90 scale-105' : 'opacity-60 scale-100'
+                  isHovered ? 'opacity-90 scale-110 rotate-1' : 'opacity-60 scale-100'
                 }`}
                 style={{
-                  filter: isHovered ? 'brightness(1.1) contrast(1.1)' : 'brightness(0.8) contrast(0.9)',
+                  filter: isHovered ? 'brightness(1.2) contrast(1.2) saturate(1.1)' : 'brightness(0.8) contrast(0.9)',
                 }}
                 onLoad={() => console.log('Camp gif loaded successfully!')}
                 onError={(e) => {
@@ -66,35 +70,47 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                   target.style.display = 'none';
                 }}
               />
-              {/* Overlay for better text readability */}
-              <div className={`absolute inset-0 bg-gradient-to-t from-amber-900/40 via-transparent to-amber-900/20 transition-opacity duration-300 ${
-                isHovered ? 'opacity-60' : 'opacity-80'
+              {/* Enhanced overlay with gradient animation */}
+              <div className={`absolute inset-0 bg-gradient-to-t from-amber-900/50 via-transparent to-amber-900/30 transition-all duration-500 ${
+                isHovered ? 'opacity-50' : 'opacity-80'
+              }`} />
+              {/* Ambient glow effect */}
+              <div className={`absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 transition-opacity duration-500 ${
+                isHovered ? 'opacity-100' : 'opacity-0'
               }`} />
             </div>
           ) : (
-            // Regular image handling for other cards
-            <img 
-              src={backgroundImage} 
-              alt={`${title} background`}
-              className="w-full h-full object-cover opacity-60"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const fallback = target.nextElementSibling as HTMLElement;
-                if (fallback) fallback.style.display = 'block';
-              }}
-            />
+            // Enhanced image handling for other cards
+            <div className="relative w-full h-full">
+              <img 
+                src={backgroundImage} 
+                alt={`${title} background`}
+                className={`w-full h-full object-cover transition-all duration-500 ${
+                  isHovered ? 'opacity-80 scale-105' : 'opacity-60 scale-100'
+                }`}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'block';
+                }}
+              />
+              {/* Ambient background effect */}
+              <div className={`absolute inset-0 opacity-5 bg-gradient-to-br ${color.replace('/20', '/30')} transition-opacity duration-500 ${
+                isHovered ? 'opacity-10' : 'opacity-5'
+              }`} />
+            </div>
           )}
           
-          {/* Fallback icon illustration */}
+          {/* Enhanced Fallback icon illustration */}
           <div className="hidden w-full h-full">
             <div className="absolute top-0.5 right-0.5 w-6 h-6 opacity-30">
-              <div className={`w-full h-full ${iconColor} scale-[1.5] transform rotate-12`}>
+              <div className={`w-full h-full ${iconColor} scale-[1.5] transform rotate-12 transition-transform duration-300 hover:rotate-45`}>
                 {icon}
               </div>
             </div>
             <div className="absolute bottom-0.5 left-0.5 w-4 h-4 opacity-20">
-              <div className={`w-full h-full ${iconColor} scale-[1.5] transform -rotate-12`}>
+              <div className={`w-full h-full ${iconColor} scale-[1.5] transform -rotate-12 transition-transform duration-300 hover:-rotate-45`}>
                 {icon}
               </div>
             </div>
@@ -102,21 +118,21 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         </div>
       </div>
 
-      {/* Content */}
+      {/* Enhanced Content with Better Typography */}
       <div className={`relative z-10 ${isCampCard && isHovered ? 'drop-shadow-lg' : ''}`}>
         <div className="flex items-center space-x-1.5 mb-0.5">
-          <div className={`w-3.5 h-3.5 bg-gradient-to-br ${color} border ${borderColor} rounded-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200 ${
+          <div className={`w-3.5 h-3.5 bg-gradient-to-br ${color} border ${borderColor} rounded-sm flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-125 group-hover:rotate-12 ${
             isCampCard && isHovered ? 'shadow-lg shadow-amber-500/30' : ''
           }`}>
-            <div className={`w-2 h-2 ${iconColor} flex items-center justify-center`}>
+            <div className={`w-2 h-2 ${iconColor} flex items-center justify-center transition-all duration-300`}>
               {icon}
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`text-xs font-semibold transition-colors truncate leading-none ${
+            <h4 className={`text-xs font-semibold transition-all duration-300 truncate leading-none ${
               isCampCard && isHovered 
                 ? 'text-white drop-shadow-md' 
-                : 'text-slate-100 group-hover:text-white'
+                : 'text-slate-100 group-hover:text-white group-hover:scale-105'
             }`}>
               <span className="hidden sm:inline">{title}</span>
               <span className="sm:hidden">{shortTitle}</span>
@@ -124,33 +140,33 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           </div>
         </div>
         
-        {/* Compact Benefits - Single Line */}
+        {/* Enhanced Compact Benefits - Single Line with Better Animations */}
         <div className="flex items-center space-x-2 mb-0.5">
           {benefits.slice(0, 2).map((benefit, index) => (
-            <div key={index} className={`flex items-center text-xs transition-colors ${
+            <div key={index} className={`flex items-center text-xs transition-all duration-300 ${
               isCampCard && isHovered 
                 ? 'text-slate-200 drop-shadow-sm' 
-                : 'text-slate-400 group-hover:text-slate-300'
+                : 'text-slate-400 group-hover:text-slate-300 group-hover:scale-105'
             }`}>
-              <div className={`w-0.5 h-0.5 rounded-full ${iconColor} mr-1 opacity-60 flex-shrink-0`}></div>
+              <div className={`w-0.5 h-0.5 rounded-full ${iconColor} mr-1 opacity-60 flex-shrink-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-150`}></div>
               <span className="truncate text-xs">{benefit}</span>
             </div>
           ))}
         </div>
         
-        {/* Compact Action Footer */}
+        {/* Enhanced Compact Action Footer with Better Interactions */}
         <div className="flex items-center justify-between border-t border-slate-600/20 pt-0.5">
-          <div className={`text-xs ${iconColor} font-medium transition-all duration-200 ${
+          <div className={`text-xs ${iconColor} font-medium transition-all duration-300 ${
             isCampCard && isHovered 
-              ? 'brightness-125 drop-shadow-sm' 
-              : 'group-hover:brightness-110'
+              ? 'brightness-125 drop-shadow-sm scale-105' 
+              : 'group-hover:brightness-110 group-hover:scale-105'
           }`}>
             Access
           </div>
-          <div className={`text-xs ${iconColor} transition-opacity duration-200 ${
+          <div className={`text-xs ${iconColor} transition-all duration-300 ${
             isCampCard && isHovered 
-              ? 'opacity-100 drop-shadow-sm' 
-              : 'opacity-60 group-hover:opacity-100'
+              ? 'opacity-100 drop-shadow-sm scale-110 translate-x-1' 
+              : 'opacity-60 group-hover:opacity-100 group-hover:scale-110 group-hover:translate-x-1'
           }`}>
             →
           </div>

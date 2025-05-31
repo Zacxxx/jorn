@@ -236,6 +236,10 @@ export const App: React.FC = () => {
     NavigationController.navigateToNPCs(context);
   }, [createNavigationContext]);
 
+  const handleOpenMultiplayer = useCallback(() => {
+    gameState.setGameState('MULTIPLAYER_VIEW' as any);
+  }, [gameState]);
+
   // Rest and homestead handlers
   const handleRestComplete = useCallback((restType: 'short' | 'long', duration?: number, activity?: string) => {
     const context = createNavigationContext();
@@ -579,6 +583,7 @@ export const App: React.FC = () => {
     onOpenHomestead: handleOpenHomestead,
     onAccessSettlement: handleAccessSettlement,
     onOpenNPCs: handleOpenNPCs,
+    onOpenMultiplayer: handleOpenMultiplayer,
     onRestComplete: handleRestComplete,
     onStartHomesteadProject: handleStartHomesteadProject,
     onCompleteHomesteadProject: handleCompleteHomesteadProject,
