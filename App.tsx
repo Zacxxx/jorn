@@ -1478,7 +1478,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     }
   };
 
-  const handleSpecialSpellMechanics = (spell: Spell, targets: Enemy[], effectiveSpellTags: TagName[]) => {
+  function handleSpecialSpellMechanics(spell: Spell, targets: Enemy[], effectiveSpellTags: TagName[]) {
     // Delayed effects
     if (effectiveSpellTags.includes('Delayed')) {
       setTimeout(() => {
@@ -1488,7 +1488,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
           if (currentEnemyTarget && currentEnemyTarget.hp > 0) {
             // Re-fetch effective tags for the delayed application? Or use original ones?
             // For simplicity, using original effectiveSpellTags for the delayed part.
-            applySpellToEnemy(spell, currentEnemyTarget, 0.5, effectiveSpellTags); // Reduced power for delayed
+            applySpellToEnemy(spell, currentEnemyTarget, 0.5, effectiveSpellTags, false); // Reduced power for delayed
              if (currentEnemyTarget.hp <= 0) handleEnemyDefeat(currentEnemyTarget);
           }
         });
@@ -1502,7 +1502,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
         targets.forEach(enemy => {
           const currentEnemyTarget = currentEnemies.find(e => e.id === enemy.id);
           if (currentEnemyTarget && currentEnemyTarget.hp > 0) {
-            applySpellToEnemy(spell, currentEnemyTarget, 0.3, effectiveSpellTags); // Reduced power for echo
+            applySpellToEnemy(spell, currentEnemyTarget, 0.3, effectiveSpellTags, false); // Reduced power for echo
             if (currentEnemyTarget.hp <= 0) handleEnemyDefeat(currentEnemyTarget);
           }
         });
@@ -1515,7 +1515,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       const additionalChainTargets = currentEnemies.filter(e => e.id !== mainTarget.id && e.hp > 0).sort(() => 0.5 - Math.random()).slice(0, 2); // Hit up to 2 more random living enemies
       additionalChainTargets.forEach(chainTarget => {
         addLog('System', `${spell.name} chains to ${chainTarget.name}!`, 'magic');
-        applySpellToEnemy(spell, chainTarget, 0.6, effectiveSpellTags); // Reduced power for chain
+        applySpellToEnemy(spell, chainTarget, 0.6, effectiveSpellTags, false); // Reduced power for chain
         if (chainTarget.hp <= 0) handleEnemyDefeat(chainTarget);
       });
     }
@@ -1526,7 +1526,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       // setPlayer(prev => ({ ...prev, lastActionType: 'combo-spell' })); // Assuming lastActionType is a player prop
       addLog('System', `${spell.name} is a combo-initiating spell!`, 'info');
     }
-  };
+  }
 
   const handleUseAbility = (abilityId: string, targetId: string | null) => {
     const ability = player.abilities.find(a => a.id === abilityId);
@@ -1825,68 +1825,50 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   }, [isPlayerTurn, turn, player.hp, currentEnemies.length, processPlayerTurnStartEffects]); 
 
 
-  const applyStatusEffect = (targetId: 'player' | string, effect: SpellStatusEffect, sourceId: string) => {
-    // Validate effect name before creating ActiveStatusEffect
-    if (!AVAILABLE_STATUS_EFFECTS.includes(effect.name)) {
-      console.warn(`Invalid status effect name: ${effect.name}. Skipping application.`);
-      addLog('System', `Invalid status effect attempted. Spell may be corrupted.`, 'error');
-      return;
-    }
-    
-    const iconName = STATUS_EFFECT_ICONS[effect.name];
-    if (!iconName) {
-      console.warn(`No icon found for status effect: ${effect.name}`);
-    }
-
-    const newEffect: ActiveStatusEffect = {
-      id: `effect-${Date.now()}-${Math.random()}`,
-      name: effect.name,
-      duration: effect.duration || (effect.name === 'Silenced' ? DEFAULT_SILENCE_DURATION : effect.name === 'Rooted' ? DEFAULT_ROOT_DURATION : 1),
-      magnitude: effect.magnitude,
-      sourceSpellId: sourceId,
-      inflictedTurn: turn,
-      iconName: iconName || 'Default'
-    };
-
-    if (Math.random() * 100 > effect.chance) {
-      addLog('System', `${effect.name} failed to apply to ${targetId === 'player' ? 'Player' : currentEnemies.find(e=>e.id===targetId)?.name}.`, 'status');
-      return;
-    }
-
+  function applyStatusEffect(targetId: 'player' | string, effect: SpellStatusEffect, sourceId: string) {
     if (targetId === 'player') {
       setPlayer(prev => {
-        const existingEffectIndex = prev.activeStatusEffects.findIndex(ae => ae.name === newEffect.name);
-        if (existingEffectIndex > -1) {
-          const updatedEffects = [...prev.activeStatusEffects];
-          updatedEffects[existingEffectIndex] = { ...newEffect, duration: Math.max(updatedEffects[existingEffectIndex].duration, newEffect.duration) }; 
-          if(newEffect.magnitude && (!updatedEffects[existingEffectIndex].magnitude || newEffect.magnitude > updatedEffects[existingEffectIndex].magnitude!)) { 
-            updatedEffects[existingEffectIndex].magnitude = newEffect.magnitude;
-          }
-          return { ...prev, activeStatusEffects: updatedEffects };
+        const existingEffect = prev.activeStatusEffects.find(eff => eff.name === effect.name && eff.sourceId === sourceId);
+        if (existingEffect) {
+          return {
+            ...prev,
+            activeStatusEffects: prev.activeStatusEffects.map(eff => 
+              eff.name === effect.name && eff.sourceId === sourceId 
+                ? { ...eff, duration: effect.duration, magnitude: Math.max(eff.magnitude || 0, effect.magnitude || 0) }
+                : eff
+            )
+          };
+        } else {
+          return {
+            ...prev,
+            activeStatusEffects: [...prev.activeStatusEffects, { ...effect, sourceId }]
+          };
         }
-        return { ...prev, activeStatusEffects: [...prev.activeStatusEffects, newEffect] };
       });
-      addLog('Player', `is afflicted with ${newEffect.name}.`, 'status');
     } else {
       setCurrentEnemies(prevEnemies => prevEnemies.map(enemy => {
         if (enemy.id === targetId) {
-          const existingEffectIndex = enemy.activeStatusEffects.findIndex(ae => ae.name === newEffect.name);
-          let updatedEnemyEffects = [...enemy.activeStatusEffects];
-          if (existingEffectIndex > -1) {
-            updatedEnemyEffects[existingEffectIndex] = { ...newEffect, duration: Math.max(updatedEnemyEffects[existingEffectIndex].duration, newEffect.duration) };
-            if(newEffect.magnitude && (!updatedEnemyEffects[existingEffectIndex].magnitude || newEffect.magnitude > updatedEnemyEffects[existingEffectIndex].magnitude!)) {
-                updatedEnemyEffects[existingEffectIndex].magnitude = newEffect.magnitude;
-            }
+          const existingEffect = enemy.activeStatusEffects?.find(eff => eff.name === effect.name && eff.sourceId === sourceId);
+          if (existingEffect) {
+            return {
+              ...enemy,
+              activeStatusEffects: enemy.activeStatusEffects?.map(eff => 
+                eff.name === effect.name && eff.sourceId === sourceId 
+                  ? { ...eff, duration: effect.duration, magnitude: Math.max(eff.magnitude || 0, effect.magnitude || 0) }
+                  : eff
+              ) || []
+            };
           } else {
-            updatedEnemyEffects.push(newEffect);
+            return {
+              ...enemy,
+              activeStatusEffects: [...(enemy.activeStatusEffects || []), { ...effect, sourceId }]
+            };
           }
-          return { ...enemy, activeStatusEffects: updatedEnemyEffects };
         }
         return enemy;
       }));
-      addLog('Enemy', `${currentEnemies.find(e=>e.id===targetId)?.name} is afflicted with ${newEffect.name}.`, 'status');
     }
-  };
+  }
 
   const awardCombatRewards = (defeatedEnemy: Enemy) => {
     const difficultyKey = defeatedEnemy.level < 3 ? 'easy' : defeatedEnemy.level < 7 ? 'medium' : defeatedEnemy.level < 10 ? 'hard' : 'boss';
@@ -1958,19 +1940,16 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     }));
   };
 
-  const handleEnemyDefeat = (enemy: Enemy) => {
-    addLog('System', `${enemy.name} has been defeated!`, 'info');
+  function handleEnemyDefeat(enemy: Enemy) {
+    addLog('System', `${enemy.name} is defeated!`, 'victory');
     awardCombatRewards(enemy);
-    const remainingEnemies = currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
-    if (remainingEnemies.length === 0) {
+    setCurrentEnemies(prevEnemies => prevEnemies.filter(e => e.id !== enemy.id));
+    
+    if (currentEnemies.filter(e => e.id !== enemy.id).length === 0) {
       setModalContent({ title: "Victory!", message: "All enemies defeated!", type: 'success' });
       setGameState('GAME_OVER_VICTORY');
-    } else {
-      if (targetEnemyId === enemy.id) {
-        setTargetEnemyId(remainingEnemies[0].id);
-      }
     }
-  };
+  }
 
   const handleLevelUp = useCallback(() => {
     const newLevel = player.level + 1;
@@ -2406,3 +2385,5 @@ export const App: React.FC<{}> = (): React.ReactElement => {
     </>
   );
 };
+
+}

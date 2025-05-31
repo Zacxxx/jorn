@@ -218,7 +218,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Explore World Section - Enhanced */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0">
               <div className="flex items-center space-x-2 mb-2 sm:mb-3">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-lg flex items-center justify-center">
                   <MapIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-blue-400" />
@@ -226,39 +226,100 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                 <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-blue-300">Explore World</h3>
               </div>
               
-              {/* Homestead Section - Enhanced Card */}
-              <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-lg p-2 sm:p-3 border border-amber-500/30 hover:border-amber-500/50 transition-all duration-200">
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
-                    <HomeIcon className="w-4 h-4 text-amber-400" />
+              <div className="h-full overflow-y-auto space-y-2 sm:space-y-3">
+                {/* Homestead Section - Enhanced Card */}
+                <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-lg p-2 sm:p-3 border border-amber-500/30 hover:border-amber-500/50 transition-all duration-200">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
+                      <HomeIcon className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <h4 className="text-sm sm:text-base lg:text-lg font-medium text-amber-300">Homestead</h4>
                   </div>
-                  <h4 className="text-sm sm:text-base lg:text-lg font-medium text-amber-300">Homestead</h4>
+                  <p className="text-xs text-slate-300 mb-2 line-clamp-2">Your personal base of operations where you can craft, store items, and develop your properties.</p>
+                  <div className="grid grid-cols-3 gap-1 mb-3 text-xs">
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Garden</div>
+                      <div className="text-amber-300 font-medium">Lv.1</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Workshop</div>
+                      <div className="text-amber-300 font-medium">Lv.1</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Storage</div>
+                      <div className="text-amber-300 font-medium">Lv.1</div>
+                    </div>
+                  </div>
+                  <ActionButton 
+                    onClick={onOpenHomestead} 
+                    variant="secondary" 
+                    size="sm"
+                    className="w-full text-xs opacity-60"
+                    disabled={true}
+                  >
+                    <span className="hidden sm:inline">Visit Homestead (Coming Soon)</span>
+                    <span className="sm:hidden">Homestead (Soon)</span>
+                  </ActionButton>
                 </div>
-                <p className="text-xs text-slate-300 mb-2 line-clamp-2">Your personal base of operations where you can craft, store items, and develop your properties.</p>
-                <div className="grid grid-cols-3 gap-1 mb-3 text-xs">
-                  <div className="bg-slate-800/30 rounded p-1 text-center">
-                    <div className="text-slate-400">Garden</div>
-                    <div className="text-amber-300 font-medium">Lv.1</div>
+
+                {/* World Map Section - New Addition for Symmetry */}
+                <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 rounded-lg p-2 sm:p-3 border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-200">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
+                      <MapIcon className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <h4 className="text-sm sm:text-base lg:text-lg font-medium text-emerald-300">World Map</h4>
                   </div>
-                  <div className="bg-slate-800/30 rounded p-1 text-center">
-                    <div className="text-slate-400">Workshop</div>
-                    <div className="text-amber-300 font-medium">Lv.1</div>
+                  <p className="text-xs text-slate-300 mb-2 line-clamp-2">Explore the vast world, discover new locations, and plan your adventures across different regions.</p>
+                  <div className="grid grid-cols-2 gap-1 mb-3 text-xs">
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Discovered</div>
+                      <div className="text-emerald-300 font-medium">3 Locations</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Available</div>
+                      <div className="text-emerald-300 font-medium">Fast Travel</div>
+                    </div>
                   </div>
-                  <div className="bg-slate-800/30 rounded p-1 text-center">
-                    <div className="text-slate-400">Storage</div>
-                    <div className="text-amber-300 font-medium">Lv.1</div>
+                  <ActionButton 
+                    onClick={onExploreMap} 
+                    variant="success" 
+                    size="sm"
+                    className="w-full text-xs"
+                    icon={<MapIcon />}
+                  >
+                    <span className="hidden sm:inline">Open World Map</span>
+                    <span className="sm:hidden">World Map</span>
+                  </ActionButton>
+                </div>
+
+                {/* Quick Stats Section - New Addition */}
+                <div className="bg-gradient-to-br from-slate-500/10 to-slate-600/10 rounded-lg p-2 sm:p-3 border border-slate-500/30">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-slate-500/20 to-slate-600/20 border border-slate-500/30 rounded-lg flex items-center justify-center">
+                      <UserIcon className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <h4 className="text-sm sm:text-base lg:text-lg font-medium text-slate-300">Quick Stats</h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-xs">
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Level</div>
+                      <div className="text-slate-200 font-medium">{player.level}</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Spells</div>
+                      <div className="text-slate-200 font-medium">{player.spells.length}</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Gold</div>
+                      <div className="text-yellow-300 font-medium">{player.gold}</div>
+                    </div>
+                    <div className="bg-slate-800/30 rounded p-1 text-center">
+                      <div className="text-slate-400">Essence</div>
+                      <div className="text-purple-300 font-medium">{player.essence}</div>
+                    </div>
                   </div>
                 </div>
-                <ActionButton 
-                  onClick={onOpenHomestead} 
-                  variant="secondary" 
-                  size="sm"
-                  className="w-full text-xs opacity-60"
-                  disabled={true}
-                >
-                  <span className="hidden sm:inline">Visit Homestead (Coming Soon)</span>
-                  <span className="sm:hidden">Homestead (Soon)</span>
-                </ActionButton>
               </div>
             </div>
           </div>
@@ -299,9 +360,16 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
 
             {/* Activities Section - Enhanced with Detailed Cards */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-shrink-0">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl border border-slate-700/60 p-2 sm:p-3 lg:p-4 flex-1 min-h-0">
+              <div className="flex items-center space-x-2 mb-2 sm:mb-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
+                  <FlaskIcon className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-purple-400" />
+                </div>
+                <h3 className="text-sm sm:text-lg lg:text-xl font-semibold text-purple-300">Activities</h3>
+              </div>
+              
               {/* Enhanced Activity Cards Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 max-h-80 overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 h-full overflow-y-auto">
                 {activityCards.map((activity) => (
                   <div
                     key={activity.id}
