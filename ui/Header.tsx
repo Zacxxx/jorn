@@ -8,9 +8,10 @@ interface HeaderProps {
   onOpenCharacterSheet: () => void;
   onNavigateHome: () => void;
   onOpenMobileMenu?: () => void; 
+  onOpenGameMenu: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigateHome, onOpenMobileMenu }) => {
+const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigateHome, onOpenMobileMenu, onOpenGameMenu }) => {
   const xpPercentage = player.xpToNextLevel > 0 ? (player.xp / player.xpToNextLevel) * 100 : 0;
 
   return (
@@ -58,6 +59,17 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
           >
             <span className="hidden sm:inline header-action-button-text-responsive">Character</span>
             <span className="sm:hidden header-action-button-text-responsive">Hero</span>
+          </ActionButton>
+          <ActionButton
+            onClick={onOpenGameMenu}
+            size="sm"
+            variant="secondary"
+            icon={<Bars3Icon className="w-4 h-4 md:w-5 md:h-5" />}
+            className="!px-2 !py-1 sm:!px-2.5 sm:!py-1.5 md:!px-3 md:!py-2 shadow-sky-500/30 hover:shadow-sky-500/50"
+            title="Open Game Menu"
+          >
+            <span className="hidden sm:inline header-action-button-text-responsive">Menu</span>
+            <span className="sm:hidden header-action-button-text-responsive">Menu</span>
           </ActionButton>
           {/* Mobile Menu Button */}
           {onOpenMobileMenu && (

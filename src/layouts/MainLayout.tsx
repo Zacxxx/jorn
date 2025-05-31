@@ -1,6 +1,5 @@
 import React from 'react';
 import Header from '../..//ui/Header';
-import Footer from '../../ui/Footer';
 import { Player } from '../../types'; // Assuming types.ts is in the root
 
 interface MainLayoutProps {
@@ -16,7 +15,6 @@ interface MainLayoutProps {
   onOpenQuestsPage: () => void;
   onOpenEncyclopedia: () => void;
   onOpenGameMenu: () => void;
-  useLegacyFooter?: boolean;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({
@@ -32,7 +30,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   onOpenQuestsPage,
   onOpenEncyclopedia,
   onOpenGameMenu,
-  useLegacyFooter = false,
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col" style={{fontFamily: "'Inter', sans-serif"}}>
@@ -41,20 +38,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         onOpenCharacterSheet={onOpenCharacterSheet}
         onNavigateHome={onNavigateHome}
         onOpenMobileMenu={onOpenMobileMenu}
+        onOpenGameMenu={onOpenGameMenu}
       />
       <main className="flex-grow container mx-auto p-3 sm:p-4 md:p-6 max-w-6xl">
         {children}
       </main>
-      <Footer
-        onOpenSpellbook={onOpenSpellbook}
-        onOpenCraftingHub={onOpenCraftingHub}
-        onOpenInventory={onOpenInventory}
-        onOpenTraitsPage={onOpenTraitsPage}
-        onOpenQuestsPage={onOpenQuestsPage}
-        onOpenEncyclopedia={onOpenEncyclopedia}
-        onOpenGameMenu={onOpenGameMenu}
-        useLegacyLayout={useLegacyFooter}
-      />
     </div>
   );
 };
