@@ -42,6 +42,7 @@ import SettlementView from './src/components/SettlementView';
 import ShopView from './src/components/ShopView';
 import RecipeDiscoveryView from './src/components/RecipeDiscoveryView';
 import CraftingWorkshopView from './src/components/CraftingWorkshopView';
+import NPCsView from './src/components/NPCsView';
 import WorldMapModal from './src/components/WorldMapModal';
 import ExplorationJournalModal from './src/components/ExplorationJournalModal';
 
@@ -330,6 +331,8 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const handleExploreMap = () => setGameState('EXPLORING_MAP');
   
   const handleOpenCamp = () => setGameState('CAMP');
+
+  const handleOpenNPCs = () => setGameState('NPCS_VIEW');
 
   const handleRestComplete = (restType: 'short' | 'long', duration?: number, activity?: string) => {
     const hpGain = restType === 'short' 
@@ -2146,13 +2149,14 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       return <div className="flex justify-center items-center h-64"><LoadingSpinner text="Loading..." size="lg"/></div>;
     }
     switch (gameState) {
-      case 'HOME': return <HomeScreenView player={player} onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onOpenHomestead={handleOpenHomestead} onAccessSettlement={handleAccessSettlement} onOpenCraftingHub={handleOpenCraftingHub} />;
+      case 'HOME': return <HomeScreenView player={player} onFindEnemy={handleFindEnemy} isLoading={isLoading} onExploreMap={handleExploreMap} onOpenResearchArchives={handleOpenResearchArchives} onOpenCamp={handleOpenCamp} onOpenHomestead={handleOpenHomestead} onAccessSettlement={handleAccessSettlement} onOpenCraftingHub={handleOpenCraftingHub} onOpenNPCs={handleOpenNPCs} />;
       case 'CAMP': return <CampView player={player} effectiveStats={effectivePlayerStats} onReturnHome={handleNavigateHome} onRestComplete={handleRestComplete} />;
       case 'HOMESTEAD_VIEW': return <HomesteadView player={player} onReturnHome={handleNavigateHome} onStartProject={handleStartHomesteadProject} onCompleteProject={handleCompleteHomesteadProject} onUpgradeProperty={handleUpgradeHomesteadProperty} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SETTLEMENT_VIEW': return <SettlementView player={player} onReturnHome={handleNavigateHome} onOpenShop={handleOpenShop} onOpenTavern={handleOpenTavern} onTalkToNPC={handleTalkToNPC} onExplorePointOfInterest={handleExplorePointOfInterest} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SHOP_VIEW': return <ShopView player={player} shopId={currentShopId || ''} onReturnToSettlement={() => setGameState('SETTLEMENT_VIEW')} onPurchaseItem={handlePurchaseItem} onPurchaseService={handlePurchaseService} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'TAVERN_VIEW': return <div>Tavern View - Coming Soon</div>;
       case 'NPC_DIALOGUE': return <div>NPC Dialogue - Coming Soon</div>;
+      case 'NPCS_VIEW': return <NPCsView player={player} onReturnHome={handleNavigateHome} onTalkToNPC={handleTalkToNPC} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'RECIPE_DISCOVERY': return <RecipeDiscoveryView player={player} onReturnHome={handleNavigateHome} onDiscoverRecipe={handleDiscoverRecipe} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'CRAFTING_WORKSHOP': return <CraftingWorkshopView player={player} onReturnHome={handleNavigateHome} onCraftItem={handleCraftItem} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;

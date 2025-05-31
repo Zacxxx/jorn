@@ -312,7 +312,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({
             </ActionButton>
         )}
       </div>
-      )}
     </div>
   );
 };
@@ -436,6 +435,7 @@ const InventoryGridSlot: React.FC<InventoryGridSlotProps> = ({ item, onClick, on
             <span className="text-[0.5rem] xs:text-[0.55rem] sm:text-[0.6rem] text-slate-200 text-center whitespace-normal w-full px-0.5 leading-tight">{displayItem.name}</span>
             {quantity && quantity > 0 && (
                 <span className="absolute bottom-0 right-0 text-[0.5rem] xs:text-[0.55rem] sm:text-[0.6rem] font-bold text-white bg-sky-600 px-1 py-0.5 rounded-tl-md rounded-br-sm shadow">
+                    {quantity}
                 </span>
             )}
         </button>

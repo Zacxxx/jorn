@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player } from '../types';
 import ActionButton from '../../ui/ActionButton';
-import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon } from './IconComponents';
+import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon } from './IconComponents';
 import { getLocation } from '../services/locationService';
 
 interface HomeScreenViewProps {
@@ -14,6 +14,7 @@ interface HomeScreenViewProps {
   onAccessSettlement: () => void;
   onOpenCraftingHub: () => void;
   onOpenHomestead: () => void;
+  onOpenNPCs: () => void;
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
@@ -26,6 +27,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onAccessSettlement,
   onOpenCraftingHub,
   onOpenHomestead,
+  onOpenNPCs,
 }) => {
   const currentLocation = getLocation(player.currentLocationId);
   const locationName = currentLocation?.name || 'Unknown Location';
@@ -40,11 +42,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
         <p className="text-slate-300 mb-6 max-w-xl mx-auto">Your adventure continues in the world of Jorn. Choose your next action wisely.</p>
       </div>
 
-      {/* Current Location Section */}
-      <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
+      {/* Current Location Section - Enhanced */}
+      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <MapIcon className="w-6 h-6 text-green-400" />
+            <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
+              <MapIcon className="w-6 h-6 text-green-400" />
+            </div>
             <h3 className="text-xl font-semibold text-green-300">Current Location</h3>
           </div>
           <ActionButton 
@@ -53,17 +57,45 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             size="sm"
             icon={<MapIcon />}
           >
-            Map
+            Open Map
           </ActionButton>
         </div>
-        <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-          <h4 className="text-lg font-medium text-slate-100 mb-2">{locationName}</h4>
-          <p className="text-sm text-slate-300 mb-3">{locationDescription}</p>
-          <div className="flex items-center space-x-4 text-xs text-slate-400">
-            <span>Type: {currentLocation?.type || 'Unknown'}</span>
-            <span>Danger Level: {currentLocation?.dangerLevel || 'Unknown'}</span>
+        
+        <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-lg p-5 border border-slate-600/50 shadow-inner">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h4 className="text-xl font-bold text-slate-100 mb-2">{locationName}</h4>
+              <p className="text-sm text-slate-300 mb-3 leading-relaxed">{locationDescription}</p>
+            </div>
+            {isInSettlement && (
+              <div className="flex-shrink-0 ml-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-lg flex items-center justify-center">
+                  <BuildingIcon className="w-6 h-6 text-purple-400" />
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-600/30">
+              <span className="text-slate-400">Type</span>
+              <div className="text-slate-200 font-medium capitalize">{currentLocation?.type || 'Unknown'}</div>
+            </div>
+            <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-600/30">
+              <span className="text-slate-400">Danger</span>
+              <div className="text-slate-200 font-medium">Level {currentLocation?.dangerLevel || '?'}</div>
+            </div>
             {isInSettlement && currentLocation?.settlement && (
-              <span>Population: {currentLocation.settlement.population.toLocaleString()}</span>
+              <>
+                <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-600/30">
+                  <span className="text-slate-400">Population</span>
+                  <div className="text-slate-200 font-medium">{currentLocation.settlement.population.toLocaleString()}</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-600/30">
+                  <span className="text-slate-400">NPCs</span>
+                  <div className="text-slate-200 font-medium">{currentLocation.settlement.npcs.length} available</div>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -233,6 +265,16 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           className="h-full !py-4"
         >
           Crafting Hub
+        </ActionButton>
+        <ActionButton 
+          onClick={onOpenNPCs} 
+          variant="info" 
+          size="lg" 
+          isLoading={isLoading} 
+          icon={<UserIcon />} 
+          className="h-full !py-4"
+        >
+          NPCs
         </ActionButton>
       </div>
     </div>
