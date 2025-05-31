@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, Spell, Enemy, CombatActionLog, GameState, GeneratedSpellData, Trait, Quest, ResourceCost, ActiveStatusEffect, StatusEffectName, SpellStatusEffect, ItemType, Consumable, Equipment, GameItem, GeneratedConsumableData, GeneratedEquipmentData, DetailedEquipmentSlot, PlayerEffectiveStats, Ability, CharacterSheetTab, SpellIconName, SpellComponent, LootChestItem, UniqueConsumable, MasterConsumableItem, TagName } from './types';
-import { Homestead, HomesteadProject } from './src/types';
-import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS, AVAILABLE_STATUS_EFFECTS } from './constants';
+// Ensure TagDefinition is imported from the correct path if it's in src/types.ts
+import { Homestead, HomesteadProject, TagDefinition } from './src/types';
+import { INITIAL_PLAYER_STATS, STARTER_SPELL, ENEMY_DIFFICULTY_XP_REWARD, MAX_SPELLS_PER_LEVEL_BASE, PREPARED_SPELLS_PER_LEVEL_BASE, PREPARED_ABILITIES_PER_LEVEL_BASE, FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL, DEFAULT_QUEST_ICON, DEFAULT_TRAIT_ICON, INITIAL_PLAYER_INVENTORY, RESOURCE_ICONS, STATUS_EFFECT_ICONS, PLAYER_BASE_SPEED_FROM_REFLEX, INITIAL_PLAYER_EP, PLAYER_EP_REGEN_PER_TURN, STARTER_ABILITIES, PLAYER_BASE_BODY, PLAYER_BASE_MIND, PLAYER_BASE_REFLEX, HP_PER_BODY, HP_PER_LEVEL, BASE_HP, MP_PER_MIND, MP_PER_LEVEL, BASE_MP, EP_PER_REFLEX, EP_PER_LEVEL, BASE_EP, SPEED_PER_REFLEX, PHYSICAL_POWER_PER_BODY, MAGIC_POWER_PER_MIND, DEFENSE_PER_BODY, DEFENSE_PER_REFLEX, INITIAL_PLAYER_NAME, DEFENDING_DEFENSE_BONUS_PERCENTAGE, INITIAL_PLAYER_GOLD, INITIAL_PLAYER_ESSENCE, DEFAULT_SILENCE_DURATION, DEFAULT_ROOT_DURATION, AVAILABLE_SPELL_ICONS, AVAILABLE_STATUS_EFFECTS, TAG_DEFINITIONS } from './constants';
 import { generateSpell, editSpell, generateEnemy, generateTrait, generateMainQuestStory, generateConsumable, generateEquipment, generateSpellFromDesign, generateSpellComponentFromResearch, generateLootFromChest, discoverRecipeFromPrompt } from './services/geminiService';
 import { loadMasterItems, MASTER_ITEM_DEFINITIONS } from './services/itemService';
 import { createInitialHomestead, generateProjectId, canAffordResourceCost, consumeResources, addProjectRewards, getUpgradeCosts, applyPropertyUpgrade } from './src/services/homesteadService';
@@ -45,9 +46,92 @@ import ExplorationJournalModal from './src/components/ExplorationJournalModal';
 import NPCsView from './src/components/NPCsView';
 
 
-const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
+const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21';
+
+// Create a Tag Precedence List
+// This list defines the order of precedence for conflicting tags.
+// Tags appearing earlier in this list take precedence over later tags.
+const tagPrecedenceList: TagName[] = Object.keys(TAG_DEFINITIONS) as TagName[];
 
 export const App: React.FC<{}> = (): React.ReactElement => {
+
+  // Develop getEffectiveTags(spellTags: TagName[]): TagName[] function
+  const getEffectiveTags = useCallback((spellTags: TagName[] | undefined): TagName[] => {
+    if (!spellTags || spellTags.length === 0) {
+      return [];
+    }
+
+    const effectiveTags: TagName[] = [];
+    const tagsToRemove = new Set<TagName>();
+
+    // Initial pass to gather all tags and identify potential conflicts
+    for (const tagName of spellTags) {
+      if (tagsToRemove.has(tagName)) {
+        continue; // Already marked for removal by a higher precedence tag
+      }
+
+      const tagDef = TAG_DEFINITIONS[tagName];
+      if (!tagDef) {
+        console.warn(`Tag definition not found for: ${tagName}`);
+        effectiveTags.push(tagName); // Keep it if undefined, though this shouldn't happen
+        continue;
+      }
+
+      if (tagDef.conflictsWith && tagDef.conflictsWith.length > 0) {
+        for (const conflictingTagName of tagDef.conflictsWith) {
+          // Check if the conflicting tag is also present in the original spellTags
+          if (spellTags.includes(conflictingTagName)) {
+            const currentTagIndex = tagPrecedenceList.indexOf(tagName);
+            const conflictingTagIndex = tagPrecedenceList.indexOf(conflictingTagName);
+
+            if (currentTagIndex === -1 || conflictingTagIndex === -1) {
+              console.warn(`Tag precedence not found for: ${tagName} or ${conflictingTagName}`);
+              // Default behavior: if one is not in precedence, keep current, remove conflicting if current is "known"
+              if(currentTagIndex !== -1 && !tagsToRemove.has(tagName) && !effectiveTags.includes(tagName)) {
+                 if(!tagsToRemove.has(conflictingTagName)) tagsToRemove.add(conflictingTagName);
+              }
+              continue;
+            }
+
+            // If currentTag has higher precedence (lower index), mark conflictingTag for removal
+            if (currentTagIndex < conflictingTagIndex) {
+              if (!tagsToRemove.has(conflictingTagName)) {
+                tagsToRemove.add(conflictingTagName);
+                console.warn(`Tag Conflict: '${tagName}' (precedence ${currentTagIndex}) takes precedence over '${conflictingTagName}' (precedence ${conflictingTagIndex}). '${conflictingTagName}' will be removed.`);
+              }
+            } else if (conflictingTagIndex < currentTagIndex) { // If conflictingTag has higher precedence
+              if (!tagsToRemove.has(tagName)) {
+                tagsToRemove.add(tagName);
+                console.warn(`Tag Conflict: '${conflictingTagName}' (precedence ${conflictingTagIndex}) takes precedence over '${tagName}' (precedence ${currentTagIndex}). '${tagName}' will be removed.`);
+                // No need to check other conflicts for tagName, as it's being removed
+                break;
+              }
+            }
+            // If indices are equal, it implies a setup error or the same tag, do nothing here.
+          }
+        }
+      }
+      // If the tag survived conflict checks so far (i.e., not added to tagsToRemove)
+      if (!tagsToRemove.has(tagName) && !effectiveTags.includes(tagName)) {
+        effectiveTags.push(tagName);
+      }
+    }
+
+    // Second pass to construct the final list, excluding those marked for removal
+    const finalEffectiveTags = spellTags.filter(tag => !tagsToRemove.has(tag));
+
+    // Ensure the order from original spellTags is preserved for non-conflicting tags as much as possible,
+    // then add any tags that were pushed to effectiveTags but might have been re-ordered by the set logic.
+    // A simpler way is to filter the original list.
+    const trulyEffectiveTags = spellTags.filter(tag => !tagsToRemove.has(tag));
+
+    if (spellTags.length !== trulyEffectiveTags.length) {
+        console.warn(`Original Tags: [${spellTags.join(', ')}], Effective Tags: [${trulyEffectiveTags.join(', ')}]`);
+    }
+
+    return trulyEffectiveTags;
+  }, []); // Assuming TAG_DEFINITIONS and tagPrecedenceList are stable and defined outside.
+
   const [player, setPlayer] = useState<Player>(() => {
     const savedPlayer = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedPlayer) {
@@ -1032,7 +1116,15 @@ export const App: React.FC<{}> = (): React.ReactElement => {
 
   const playerAttack = (spell: Spell, targetId: string) => {
     const targetEnemy = currentEnemies.find(e => e.id === targetId);
-    if (!targetEnemy || player.mp < spell.manaCost) return;
+    let hasSynergyBonusAppliedThisCast = false; // Initialize synergy flag for this spell cast
+
+    // Get effective tags *before* mana cost or any other checks
+    const effectiveSpellTags = getEffectiveTags(spell.tags);
+
+    if (!targetEnemy || player.mp < spell.manaCost) { // Original mana cost check, can be refined later if tags affect cost
+        addLog('Player', `cannot cast ${spell.name} (insufficient MP or no target).`, 'error');
+        return;
+    }
 
     // Enhanced silence and control checks
     if (player.activeStatusEffects.some(eff => ['Silenced', 'Stun', 'Sleep'].includes(eff.name))) {
@@ -1041,139 +1133,168 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       return;
     }
 
-    // Calculate actual mana cost with tag modifiers
+    // Calculate actual mana cost with tag modifiers using *effectiveSpellTags*
     let actualManaCost = spell.manaCost;
-    if (spell.tags?.includes('Reduced_Cost')) {
+    if (effectiveSpellTags.includes('Reduced_Cost')) {
       actualManaCost = Math.floor(actualManaCost * 0.7);
     }
-    if (spell.tags?.includes('Free_Cast') && Math.random() < 0.3) {
+    if (effectiveSpellTags.includes('Free_Cast') && Math.random() < 0.3) {
       actualManaCost = 0;
       addLog('System', 'Free cast activated!', 'success');
     }
-    if (spell.tags?.includes('Blood_Magic')) {
-      const healthCost = Math.floor(actualManaCost * 0.5);
-      setPlayer(prev => ({ ...prev, hp: Math.max(1, prev.hp - healthCost), mp: prev.mp - Math.floor(actualManaCost * 0.5) }));
-      addLog('System', `Blood magic: ${healthCost} health sacrificed`, 'warning');
+
+    // Check MP again after cost modification
+    if (player.mp < actualManaCost && !effectiveSpellTags.includes('Blood_Magic')) {
+        addLog('Player', `cannot cast ${spell.name} (insufficient MP after modifiers).`, 'error');
+        return;
+    }
+
+    if (effectiveSpellTags.includes('Blood_Magic')) {
+      const healthCost = Math.floor(spell.manaCost * 0.5); // Base mana cost for health sacrifice
+      if (player.hp <= healthCost && actualManaCost > 0) { // If can't pay health and it's not a free cast
+         addLog('Player', `cannot cast ${spell.name} (not enough HP for Blood Magic).`, 'error');
+         return;
+      }
+      setPlayer(prev => ({ ...prev, hp: Math.max(1, prev.hp - healthCost) }));
+      if (actualManaCost > 0) { // Only reduce MP if there's still a mana component
+        setPlayer(prev => ({ ...prev, mp: prev.mp - Math.floor(actualManaCost * 0.5) }));
+      }
+      addLog('System', `Blood magic: ${healthCost} health sacrificed for ${spell.name}.`, 'warning');
     } else {
       setPlayer(prev => ({ ...prev, mp: prev.mp - actualManaCost }));
     }
 
-    addLog('Player', `casts ${spell.name} on ${targetEnemy.name}.`, 'action');
+    addLog('Player', `casts ${spell.name} on ${targetEnemy.name}. Effective Tags: [${effectiveSpellTags.join(', ')}]`, 'action');
 
-    // Determine all targets based on targeting tags
+    // Determine all targets based on targeting tags using *effectiveSpellTags*
     let targets: Enemy[] = [];
-    if (spell.tags?.includes('SingleTarget') || (!spell.tags?.some(tag => ['MultiTarget', 'AreaOfEffect', 'GlobalTarget', 'RandomTarget'].includes(tag)))) {
+    if (effectiveSpellTags.includes('SingleTarget') || (!effectiveSpellTags.some(tag => ['MultiTarget', 'AreaOfEffect', 'GlobalTarget', 'RandomTarget'].includes(tag)))) {
       targets = [targetEnemy];
-    } else if (spell.tags?.includes('MultiTarget')) {
+    } else if (effectiveSpellTags.includes('MultiTarget')) {
       targets = currentEnemies.slice(0, 3); // Hit up to 3 enemies
-    } else if (spell.tags?.includes('AreaOfEffect')) {
+    } else if (effectiveSpellTags.includes('AreaOfEffect')) {
       targets = [...currentEnemies]; // Hit all enemies
-    } else if (spell.tags?.includes('GlobalTarget')) {
+    } else if (effectiveSpellTags.includes('GlobalTarget')) {
       targets = [...currentEnemies]; // Hit all enemies globally
-    } else if (spell.tags?.includes('RandomTarget')) {
-      const count = spell.tags?.includes('Chain') ? 3 : 1;
+    } else if (effectiveSpellTags.includes('RandomTarget')) {
+      const count = effectiveSpellTags.includes('Chain') ? 3 : 1;
       targets = [...currentEnemies].sort(() => Math.random() - 0.5).slice(0, count);
     }
 
-    // Apply spell to each target
+
+    // Apply spell to each target using *effectiveSpellTags*
     targets.forEach((enemy, index) => {
-      const powerMultiplier = spell.tags?.includes('MultiTarget') ? Math.max(0.4, 1 - index * 0.2) : 1.0;
-      applySpellToEnemy(spell, enemy, powerMultiplier);
-    });
-
-    // Handle self-target effects
-    if (spell.tags?.includes('SelfTarget') || spell.damageType === 'HealingSource') {
-      applySpellToSelf(spell);
-    }
-
-    // Handle special mechanics
-    handleSpecialSpellMechanics(spell, targets);
-
-    // Check for enemy defeats
-    targets.forEach(enemy => {
-      const updatedEnemy = currentEnemies.find(e => e.id === enemy.id);
-      if (updatedEnemy && updatedEnemy.hp <= 0) {
-        handleEnemyDefeat(updatedEnemy);
+      const powerMultiplier = effectiveSpellTags.includes('MultiTarget') ? Math.max(0.4, 1 - index * 0.2) : 1.0;
+      // Pass and potentially update hasSynergyBonusAppliedThisCast
+      // For simplicity, applyTagDamageModifiers will directly use and update a shared state or rely on its single-call-per-enemy nature for now.
+      // A more robust way if multiple functions under applySpellToEnemy could grant synergy would be to pass a callback to update the flag.
+      // Let's assume for now that applyTagDamageModifiers is the sole place this specific damage synergy is checked per enemy.
+      // The flag's true purpose is one bonus *per spell cast*, not per enemy hit by an AoE.
+      // So, applyTagDamageModifiers will need to know if the bonus was *already applied for this cast*.
+      const result = applySpellToEnemy(spell, enemy, powerMultiplier, effectiveSpellTags, hasSynergyBonusAppliedThisCast);
+      if (result.synergyBonusAppliedInThisHit) {
+        hasSynergyBonusAppliedThisCast = true;
       }
     });
 
-    setIsPlayerTurn(false);
+    // Handle self-target effects using *effectiveSpellTags*
+    if (effectiveSpellTags.includes('SelfTarget') || spell.damageType === 'HealingSource') { // damageType check is intrinsic to spell, not a tag for this specific logic part
+      applySpellToSelf(spell, effectiveSpellTags);
+    }
+
+    // Handle special mechanics using *effectiveSpellTags*
+    handleSpecialSpellMechanics(spell, targets, effectiveSpellTags);
+
+    // Check for enemy defeats
+    targets.forEach(enemy => {
+      const updatedEnemy = currentEnemies.find(e => e.id === enemy.id); // Re-fetch to ensure HP is current
+      if (updatedEnemy && updatedEnemy.hp <= 0 && !currentEnemies.find(e=>e.id === updatedEnemy.id && e.hp <=0)) { // ensure defeat not already processed
+        handleEnemyDefeat(updatedEnemy);
+      }
+    });
+    const anyPlayerDefeated = player.hp <= 0; // Check if player was defeated by reflect or other mechanics
+    if (!anyPlayerDefeated) {
+       setIsPlayerTurn(false);
+    }
   };
 
-  const applySpellToEnemy = (spell: Spell, enemy: Enemy, powerMultiplier: number = 1.0) => {
-    if (spell.damage <= 0) return;
+  const applySpellToEnemy = (spell: Spell, enemy: Enemy, powerMultiplier: number = 1.0, effectiveSpellTags: TagName[], synergyAlreadyAppliedThisCast: boolean): { updatedTargetHp?: number, synergyBonusAppliedInThisHit: boolean } => {
+    let synergyBonusJustApplied = false;
+    if (spell.damage <= 0 && !effectiveSpellTags.some(tag => tag === 'Healing' || tag === 'Shield')) return { synergyBonusAppliedInThisHit: false }; // Allow non-damaging utility spells
 
     const scalingStatValue = spell.scalesWith === 'Mind' ? effectivePlayerStats.mind : spell.scalesWith === 'Body' ? effectivePlayerStats.body : 0;
     const attackerPower = spell.scalesWith === 'Body' ? effectivePlayerStats.physicalPower : effectivePlayerStats.magicPower;
     
-    // Calculate base damage with power multiplier
     let baseDamage = calculateDamage(spell.damage * powerMultiplier, attackerPower, enemy.mind, 'normal', spell.scalingFactor, scalingStatValue);
     
-    // Apply tag-based damage modifiers
-    baseDamage = applyTagDamageModifiers(baseDamage, spell.tags || [], enemy);
-    
-    // Apply elemental effectiveness
-    const effectiveness = getElementalEffectiveness(spell.tags || [], enemy);
-    baseDamage = Math.floor(baseDamage * effectiveness);
-    
-    // Apply armor/resistance
-    if (spell.tags?.includes('Armor_Ignoring') || spell.tags?.includes('True_Damage')) {
-      // Ignore all defenses
-    } else if (spell.tags?.includes('Piercing')) {
-      baseDamage = Math.max(baseDamage - enemy.mind * 0.5, baseDamage * 0.3);
-    } else {
-      const effectivenessType = enemy.weakness === spell.damageType ? 'weak' : enemy.resistance === spell.damageType ? 'resistant' : 'normal';
-      if (effectivenessType === 'weak') baseDamage *= 1.5;
-      else if (effectivenessType === 'resistant') baseDamage *= 0.5;
+    const damageModifiersResult = applyTagDamageModifiers(baseDamage, effectiveSpellTags, enemy, synergyAlreadyAppliedThisCast);
+    baseDamage = damageModifiersResult.damage;
+    if (damageModifiersResult.synergyBonusApplied) {
+        synergyBonusJustApplied = true;
     }
     
-    // Apply the damage
+    const elementalEffectiveness = getElementalEffectiveness(effectiveSpellTags, enemy);
+    baseDamage = Math.floor(baseDamage * elementalEffectiveness);
+    
+    if (effectiveSpellTags.includes('Armor_Ignoring') || effectiveSpellTags.includes('True_Damage')) {
+      // No change to baseDamage from enemy defenses
+    } else if (effectiveSpellTags.includes('Piercing')) {
+      baseDamage = Math.max(1, Math.floor(baseDamage - (enemy.mind * 0.5))); // Example: Piercing halves defense effect
+    } else {
+      const effectivenessType = enemy.weakness === spell.damageType ? 'weak' : enemy.resistance === spell.damageType ? 'resistant' : 'normal';
+      if (effectivenessType === 'weak') baseDamage = Math.floor(baseDamage * 1.5);
+      else if (effectivenessType === 'resistant') baseDamage = Math.floor(baseDamage * 0.5);
+    }
+    
     const damageResult = applyDamageAndReflection(enemy, baseDamage, player, 'Enemy', false);
     const actualDamage = damageResult.actualDamageDealt;
     
     addLog('Player', `deals ${actualDamage} ${spell.damageType} damage to ${enemy.name}.`, 'damage');
-    setCurrentEnemies(prevEnemies => prevEnemies.map(e => e.id === enemy.id ? { ...e, hp: damageResult.updatedTargetHp } : e));
+    setCurrentEnemies(prevEnemies => prevEnemies.map(e => e.id === enemy.id ? { ...e, hp: Math.max(0, damageResult.updatedTargetHp) } : e));
     
-    // Handle vampiric effects
-    if (spell.tags?.includes('Lifesteal') || spell.tags?.includes('Vampiric')) {
-      const healPercent = spell.tags?.includes('Vampiric') ? 0.5 : 0.25;
+    if (effectiveSpellTags.includes('Lifesteal') || effectiveSpellTags.includes('Vampiric')) {
+      const healPercent = effectiveSpellTags.includes('Vampiric') ? 0.5 : 0.25;
       const healAmount = Math.floor(actualDamage * healPercent);
-      setPlayer(prev => ({ ...prev, hp: Math.min(effectivePlayerStats.maxHp, prev.hp + healAmount) }));
-      addLog('Player', `heals ${healAmount} HP from lifesteal.`, 'heal');
+      if (healAmount > 0) {
+        setPlayer(prev => ({ ...prev, hp: Math.min(effectivePlayerStats.maxHp, prev.hp + healAmount) }));
+        addLog('Player', `heals ${healAmount} HP from lifesteal.`, 'heal');
+      }
     }
     
-    // Handle mana burn
-    if (spell.tags?.includes('Mana_Burn')) {
-      const manaBurned = Math.floor(actualDamage * 0.3);
+    if (effectiveSpellTags.includes('Mana_Burn')) {
+      const manaBurned = Math.floor(actualDamage * 0.3); // Example scaling
       addLog('System', `${manaBurned} mana burned from ${enemy.name}.`, 'magic');
+      // Note: Enemy mana not tracked, this is flavor or for future implementation
     }
     
-    // Apply status effects
     if (spell.statusEffectInflict) {
       applyStatusEffect(enemy.id, spell.statusEffectInflict, spell.id);
     }
-    applyTagStatusEffects(spell, enemy.id);
+    applyTagStatusEffects(spell, enemy.id, effectiveSpellTags); // Pass effectiveSpellTags
     
-    // Handle explosive damage
-    if (spell.tags?.includes('Explosive')) {
-      const explosiveDamage = Math.floor(actualDamage * 0.3);
-      currentEnemies.forEach(otherEnemy => {
-        if (otherEnemy.id !== enemy.id) {
-          setCurrentEnemies(prev => prev.map(e => e.id === otherEnemy.id ? {...e, hp: Math.max(0, e.hp - explosiveDamage)} : e));
-        }
-      });
-      addLog('System', `Explosive damage affects nearby enemies for ${explosiveDamage} damage!`, 'damage');
+    if (effectiveSpellTags.includes('Explosive')) {
+      const explosiveDamage = Math.floor(actualDamage * 0.3); // Example scaling
+      if (explosiveDamage > 0) {
+        currentEnemies.forEach(otherEnemy => {
+          if (otherEnemy.id !== enemy.id && otherEnemy.hp > 0) {
+            const explosionDmgResult = applyDamageAndReflection(otherEnemy, explosiveDamage, player, 'Enemy', false);
+            addLog('System', `Explosive damage hits ${otherEnemy.name} for ${explosionDmgResult.actualDamageDealt}!`, 'damage');
+            setCurrentEnemies(prev => prev.map(e => e.id === otherEnemy.id ? {...e, hp: Math.max(0, explosionDmgResult.updatedTargetHp)} : e));
+            if (explosionDmgResult.updatedTargetHp <= 0 && !currentEnemies.find(e=>e.id === otherEnemy.id && e.hp <=0) ) handleEnemyDefeat({...otherEnemy, hp: explosionDmgResult.updatedTargetHp});
+          }
+        });
+      }
     }
+    return { updatedTargetHp: damageResult.updatedTargetHp, synergyBonusAppliedInThisHit: synergyBonusJustApplied };
   };
 
-  const applySpellToSelf = (spell: Spell) => {
-    if (spell.damageType === 'HealingSource' || spell.tags?.includes('Healing')) {
+  const applySpellToSelf = (spell: Spell, effectiveSpellTags: TagName[]) => {
+    if (spell.damageType === 'HealingSource' || effectiveSpellTags.includes('Healing')) {
       const scalingStatValue = spell.scalesWith === 'Mind' ? effectivePlayerStats.mind : spell.scalesWith === 'Body' ? effectivePlayerStats.body : 0;
       let healAmount = calculateDamage(spell.damage, effectivePlayerStats.magicPower, 0, 'normal', spell.scalingFactor, scalingStatValue);
       
-      // Apply healing modifiers
-      if (spell.tags?.includes('Restoration')) healAmount *= 2;
-      if (spell.tags?.includes('Scaling')) healAmount += player.level * 2;
+      if (effectiveSpellTags.includes('Restoration')) healAmount = Math.floor(healAmount * 1.5); // Example Restoration boost
+      if (effectiveSpellTags.includes('Scaling')) healAmount += player.level * 2; // Example Scaling boost
       
       const actualHeal = Math.min(healAmount, effectivePlayerStats.maxHp - player.hp);
       if (actualHeal > 0) {
@@ -1182,157 +1303,195 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       }
     }
     
-    // Apply self-buffs and status effects
     if (spell.statusEffectInflict) {
       applyStatusEffect('player', spell.statusEffectInflict, spell.id);
     }
-    applyTagStatusEffects(spell, 'player');
+    applyTagStatusEffects(spell, 'player', effectiveSpellTags); // Pass effectiveSpellTags
   };
 
-  const applyTagDamageModifiers = (damage: number, tags: TagName[], enemy: Enemy): number => {
+  const applyTagDamageModifiers = (
+    damage: number,
+    effectiveTags: TagName[],
+    enemy: Enemy,
+    synergyAlreadyAppliedThisCast: boolean
+  ): { damage: number, synergyBonusApplied: boolean } => {
     let modifiedDamage = damage;
+    let synergyBonusApplied = false;
+
+    // Synergy Check (apply only once per spell cast)
+    if (!synergyAlreadyAppliedThisCast) {
+      for (const tagName of effectiveTags) {
+        const tagDef = TAG_DEFINITIONS[tagName];
+        if (tagDef?.synergizesWith) {
+          for (const synergisticPartner of tagDef.synergizesWith) {
+            if (effectiveTags.includes(synergisticPartner)) {
+              const partnerDef = TAG_DEFINITIONS[synergisticPartner];
+              modifiedDamage = Math.floor(modifiedDamage * 1.10); // 10% damage bonus for synergy
+              addLog('System', `Synergy bonus! '${tagDef.name}' and '${partnerDef.name}' increased damage by 10%.`, 'success');
+              synergyBonusApplied = true;
+              break; // Apply bonus once
+            }
+          }
+        }
+        if (synergyBonusApplied) break; // Emerge from outer loop as well
+      }
+    }
     
-    // Critical hits
-    if (tags.includes('Critical') && Math.random() < 0.3) {
-      modifiedDamage *= 2;
+    if (effectiveTags.includes('Critical') && Math.random() < 0.3) { // Example crit chance
+      modifiedDamage = Math.floor(modifiedDamage * 1.5); // Example crit bonus
       addLog('System', 'Critical hit!', 'success');
     }
     
-    // Damage type modifiers
-    if (tags.includes('True_Damage')) modifiedDamage *= 1.5;
-    if (tags.includes('Brutal')) modifiedDamage *= 1.3;
-    if (tags.includes('Devastating')) modifiedDamage *= 2.0;
-    if (tags.includes('Overwhelming')) modifiedDamage *= 1.2;
+    if (effectiveTags.includes('True_Damage')) {
+       // True_Damage often implies it bypasses positive modifiers too, or is flat.
+       // For this example, let's say it's just not reduced by enemy defenses.
+       // If it should also bypass player's own damage buffs, logic would be different.
+    }
+    if (effectiveTags.includes('Brutal')) modifiedDamage = Math.floor(modifiedDamage * 1.3);
+    if (effectiveTags.includes('Devastating')) modifiedDamage = Math.floor(modifiedDamage * 1.7); // Adjusted from 2.0
+    if (effectiveTags.includes('Overwhelming')) modifiedDamage = Math.floor(modifiedDamage * 1.15); // Adjusted from 1.2
     
-    // Percentage damage
-    if (tags.includes('Percentage_Damage')) {
-      modifiedDamage += Math.floor(enemy.maxHp * 0.1);
+    if (effectiveTags.includes('Percentage_Damage')) {
+      modifiedDamage += Math.floor(enemy.maxHp * 0.1); // Example: 10% of max HP
     }
     
-    // Scaling damage
-    if (tags.includes('Scaling')) {
-      modifiedDamage += Math.floor(player.level * 2);
+    if (effectiveTags.includes('Scaling')) {
+      modifiedDamage += player.level * 2; // Example scaling with player level
     }
     
-    return Math.floor(modifiedDamage);
+    return { damage: Math.max(1, Math.floor(modifiedDamage)), synergyBonusApplied };
   };
 
-  const getElementalEffectiveness = (tags: TagName[], enemy: Enemy): number => {
+  const getElementalEffectiveness = (effectiveTags: TagName[], enemy: Enemy): number => {
     let effectiveness = 1.0;
     
-    // Basic elemental bonuses
-    if (tags.includes('Fire')) effectiveness *= 1.1;
-    if (tags.includes('Ice')) effectiveness *= 1.1;
-    if (tags.includes('Lightning')) effectiveness *= 1.2;
-    if (tags.includes('Arcane')) effectiveness *= 1.3;
-    if (tags.includes('Psychic')) effectiveness *= 1.4;
+    // This function primarily uses the spell's intrinsic damageType, but tags can augment this.
+    // Example: A 'Fire' tag could make a Physical spell deal some fire damage or interact with fire weaknesses.
+    // For now, this function is simple and mostly relies on spell.damageType vs enemy weakness/resistance.
+    // Tags like 'Fire' could slightly boost damage if not already the spell's main type.
+
+    if (effectiveTags.includes('Fire') && enemy.weakness === 'Fire') effectiveness *= 1.2;
+    else if (effectiveTags.includes('Fire') && enemy.resistance === 'Fire') effectiveness *= 0.8;
+    if (effectiveTags.includes('Ice') && enemy.weakness === 'Ice') effectiveness *= 1.2;
+    else if (effectiveTags.includes('Ice') && enemy.resistance === 'Ice') effectiveness *= 0.8;
+    // Add more specific tag-based elemental interactions if needed.
     
-    // Enemy-specific weaknesses
-    const enemyName = enemy.name.toLowerCase();
-    if (tags.includes('Fire') && enemyName.includes('ice')) effectiveness *= 1.5;
-    if (tags.includes('Ice') && enemyName.includes('fire')) effectiveness *= 1.5;
-    if (tags.includes('Lightning') && enemyName.includes('water')) effectiveness *= 1.5;
-    if (tags.includes('Light') && enemyName.includes('undead')) effectiveness *= 2.0;
-    if (tags.includes('Nature') && enemyName.includes('construct')) effectiveness *= 0.5;
-    
+    // Generic bonuses from tags if the spell isn't already that element type
+    // (spell.damageType would be the primary factor for weakness/resistance)
+    if (effectiveTags.includes('Arcane')) effectiveness *= 1.05;
+    if (effectiveTags.includes('Psychic')) effectiveness *= 1.05;
+
     return effectiveness;
   };
 
-  const applyTagStatusEffects = (spell: Spell, targetId: string) => {
-    const tags = spell.tags || [];
-    const duration = tags.includes('Extended_Duration') ? 4 : tags.includes('Shortened_Duration') ? 1 : 2;
+  const applyTagStatusEffects = (spell: Spell, targetId: string, effectiveSpellTags: TagName[]) => {
+    const duration = effectiveSpellTags.includes('Extended_Duration') ? 4 : effectiveSpellTags.includes('Shortened_Duration') ? 1 : 2;
     
-    // Damage over time effects
-    if (tags.includes('Burning')) {
-      applyStatusEffect(targetId, { name: 'Burning', duration, magnitude: Math.floor(spell.damage * 0.2), chance: 100 }, spell.id);
+    // Ensure magnitude is always positive for DoTs if spell.damage is positive, otherwise 0.
+    const calculateDoTMagnitude = (baseMultiplier: number) => {
+      return spell.damage > 0 ? Math.max(1, Math.floor(spell.damage * baseMultiplier)) : 0;
+    };
+
+    if (effectiveSpellTags.includes('Burning')) {
+      applyStatusEffect(targetId, { name: 'BurningDoTActive', duration, magnitude: calculateDoTMagnitude(0.15), chance: 100 }, spell.id);
     }
-    if (tags.includes('Bleeding')) {
-      applyStatusEffect(targetId, { name: 'Bleeding', duration, magnitude: Math.floor(spell.damage * 0.15), chance: 100 }, spell.id);
+    if (effectiveSpellTags.includes('Bleeding')) {
+      applyStatusEffect(targetId, { name: 'BleedingDoTActive', duration, magnitude: calculateDoTMagnitude(0.10), chance: 100 }, spell.id);
     }
-    if (tags.includes('Freezing')) {
-      applyStatusEffect(targetId, { name: 'Freezing', duration, magnitude: Math.floor(spell.damage * 0.1), chance: 100 }, spell.id);
-      applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 30, chance: 100 }, spell.id);
+    if (effectiveSpellTags.includes('Freezing')) { // This is the DoT/Slow tag
+      applyStatusEffect(targetId, { name: 'FrostbittenDoTActive', duration, magnitude: calculateDoTMagnitude(0.05), chance: 100 }, spell.id);
+      applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 25, chance: 80 }, spell.id); // Freezing often implies slow
     }
-    if (tags.includes('Shocking')) {
-      applyStatusEffect(targetId, { name: 'Shocking', duration, magnitude: Math.floor(spell.damage * 0.1), chance: 100 }, spell.id);
+    if (effectiveSpellTags.includes('Shocking')) {
+      applyStatusEffect(targetId, { name: 'ShockedDoTActive', duration, magnitude: calculateDoTMagnitude(0.05), chance: 100 }, spell.id);
+      // Shocking might also have a small chance to briefly stun or interrupt
     }
     
-    // Control effects
-    if (tags.includes('Stun') && Math.random() < 0.4) {
-      applyStatusEffect(targetId, { name: 'Stun', duration: Math.min(3, duration), magnitude: 0, chance: 100 }, spell.id);
+    // Control effects from effectiveSpellTags
+    if (effectiveSpellTags.includes('Stun') && Math.random() < 0.35) {
+      applyStatusEffect(targetId, { name: 'Stun', duration: Math.min(2, duration), magnitude: 0, chance: 100 }, spell.id);
     }
-    if (tags.includes('Silence') && Math.random() < 0.5) {
+    if (effectiveSpellTags.includes('Silence') && Math.random() < 0.45) {
       applyStatusEffect(targetId, { name: 'Silenced', duration: Math.min(3, duration), magnitude: 0, chance: 100 }, spell.id);
     }
-    if (tags.includes('Root') && Math.random() < 0.6) {
+    if (effectiveSpellTags.includes('Root') && Math.random() < 0.55) {
       applyStatusEffect(targetId, { name: 'Rooted', duration, magnitude: 0, chance: 100 }, spell.id);
     }
-    if (tags.includes('Slow') && Math.random() < 0.7) {
-      applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 40, chance: 100 }, spell.id);
+    if (effectiveSpellTags.includes('Slow') && Math.random() < 0.65) { // If not applied by Freezing
+      applyStatusEffect(targetId, { name: 'Slow', duration, magnitude: 35, chance: 100 }, spell.id);
+    }
+     if (effectiveSpellTags.includes('Freeze') && Math.random() < 0.3) { // Hard CC Freeze
+      applyStatusEffect(targetId, { name: 'Freeze', duration: Math.min(2, duration), magnitude: 0, chance: 100 }, spell.id);
     }
     
-    // Self-buffs (when targeting player)
     if (targetId === 'player') {
-      if (tags.includes('Haste')) {
-        applyStatusEffect('player', { name: 'Haste', duration: duration * 2, magnitude: 30, chance: 100 }, spell.id);
+      if (effectiveSpellTags.includes('Haste')) {
+        applyStatusEffect('player', { name: 'Haste', duration: duration * 2, magnitude: 25, chance: 100 }, spell.id);
       }
-      if (tags.includes('Shield')) {
-        applyStatusEffect('player', { name: 'Shield', duration: duration * 3, magnitude: Math.floor(spell.damage), chance: 100 }, spell.id);
+      if (effectiveSpellTags.includes('Shield')) {
+        // Shield magnitude could scale with spell.damage, player.mind, or be flat
+        const shieldAmount = spell.damage > 0 ? Math.floor(spell.damage * 0.5) + effectivePlayerStats.magicPower : effectivePlayerStats.magicPower * 2;
+        applyStatusEffect('player', { name: 'Shield', duration: duration * 2, magnitude: shieldAmount, chance: 100 }, spell.id);
       }
-      if (tags.includes('Invisibility')) {
-        applyStatusEffect('player', { name: 'Invisibility', duration: duration * 2, magnitude: 0, chance: 100 }, spell.id);
+      if (effectiveSpellTags.includes('Invisibility')) {
+        applyStatusEffect('player', { name: 'Invisibility', duration: duration + 1, magnitude: 0, chance: 100 }, spell.id);
       }
-      if (tags.includes('Strength')) {
-        applyStatusEffect('player', { name: 'Strength', duration: duration * 2, magnitude: 20, chance: 100 }, spell.id);
+      if (effectiveSpellTags.includes('Strength')) {
+        applyStatusEffect('player', { name: 'StrengthenBody', duration: duration * 2, magnitude: Math.max(1, Math.floor(effectivePlayerStats.body * 0.1) + 2), chance: 100 }, spell.id);
       }
-      if (tags.includes('Intelligence')) {
-        applyStatusEffect('player', { name: 'Intelligence', duration: duration * 2, magnitude: 20, chance: 100 }, spell.id);
+      if (effectiveSpellTags.includes('Intelligence')) {
+        applyStatusEffect('player', { name: 'StrengthenMind', duration: duration * 2, magnitude: Math.max(1, Math.floor(effectivePlayerStats.mind * 0.1) + 2), chance: 100 }, spell.id);
       }
     }
   };
 
-  const handleSpecialSpellMechanics = (spell: Spell, targets: Enemy[]) => {
-    const tags = spell.tags || [];
-    
+  const handleSpecialSpellMechanics = (spell: Spell, targets: Enemy[], effectiveSpellTags: TagName[]) => {
     // Delayed effects
-    if (tags.includes('Delayed')) {
+    if (effectiveSpellTags.includes('Delayed')) {
       setTimeout(() => {
         addLog('System', `${spell.name} delayed effect triggers!`, 'magic');
         targets.forEach(enemy => {
-          const currentEnemy = currentEnemies.find(e => e.id === enemy.id);
-          if (currentEnemy && currentEnemy.hp > 0) {
-            applySpellToEnemy(spell, currentEnemy, 0.5);
+          const currentEnemyTarget = currentEnemies.find(e => e.id === enemy.id); // Re-fetch state
+          if (currentEnemyTarget && currentEnemyTarget.hp > 0) {
+            // Re-fetch effective tags for the delayed application? Or use original ones?
+            // For simplicity, using original effectiveSpellTags for the delayed part.
+            applySpellToEnemy(spell, currentEnemyTarget, 0.5, effectiveSpellTags); // Reduced power for delayed
+             if (currentEnemyTarget.hp <= 0) handleEnemyDefeat(currentEnemyTarget);
           }
         });
-      }, 3000);
+      }, 2000); // Reduced delay for snappier feel
     }
     
     // Echoing effects
-    if (tags.includes('Echoing')) {
+    if (effectiveSpellTags.includes('Echoing')) {
       setTimeout(() => {
         addLog('System', `${spell.name} echoes!`, 'magic');
         targets.forEach(enemy => {
-          const currentEnemy = currentEnemies.find(e => e.id === enemy.id);
-          if (currentEnemy && currentEnemy.hp > 0) {
-            applySpellToEnemy(spell, currentEnemy, 0.3);
+          const currentEnemyTarget = currentEnemies.find(e => e.id === enemy.id);
+          if (currentEnemyTarget && currentEnemyTarget.hp > 0) {
+            applySpellToEnemy(spell, currentEnemyTarget, 0.3, effectiveSpellTags); // Reduced power for echo
+            if (currentEnemyTarget.hp <= 0) handleEnemyDefeat(currentEnemyTarget);
           }
         });
-      }, 2000);
+      }, 1000); // Reduced delay
     }
     
     // Chain effects
-    if (tags.includes('Chain') && targets.length > 0) {
-      const additionalTargets = currentEnemies.filter(e => !targets.some(t => t.id === e.id)).slice(0, 2);
-      additionalTargets.forEach(enemy => {
-        applySpellToEnemy(spell, enemy, 0.6);
-        addLog('System', `${spell.name} chains to ${enemy.name}!`, 'magic');
+    if (effectiveSpellTags.includes('Chain') && targets.length > 0) {
+      const mainTarget = targets[0]; // Chain usually originates from a primary target
+      const additionalChainTargets = currentEnemies.filter(e => e.id !== mainTarget.id && e.hp > 0).sort(() => 0.5 - Math.random()).slice(0, 2); // Hit up to 2 more random living enemies
+      additionalChainTargets.forEach(chainTarget => {
+        addLog('System', `${spell.name} chains to ${chainTarget.name}!`, 'magic');
+        applySpellToEnemy(spell, chainTarget, 0.6, effectiveSpellTags); // Reduced power for chain
+        if (chainTarget.hp <= 0) handleEnemyDefeat(chainTarget);
       });
     }
     
     // Combo tracking
-    if (tags.includes('Combo')) {
-      // Track combo state for future spells
-      setPlayer(prev => ({ ...prev, lastActionType: 'combo-spell' }));
+    if (effectiveSpellTags.includes('Combo')) {
+      // For now, this just sets a flag. Could be expanded for specific combo points/effects.
+      // setPlayer(prev => ({ ...prev, lastActionType: 'combo-spell' })); // Assuming lastActionType is a player prop
+      addLog('System', `${spell.name} is a combo-initiating spell!`, 'info');
     }
   };
 

@@ -1,4 +1,39 @@
 // Foundational String Literal Types & Unions
+export enum TagCategory {
+  DAMAGE_TYPE = "Damage Type",
+  TARGETING = "Targeting & Range",
+  SPELL_PROPERTY = "Spell Property",
+  DAMAGE_MODIFIER = "Damage Modifier",
+  CROWD_CONTROL = "Crowd Control",
+  STATUS_BUFF = "Status Effects - Buffs",
+  STATUS_DEBUFF = "Status Effects - Debuffs",
+  DAMAGE_OVER_TIME = "Damage Over Time",
+  VAMPIRIC = "Vampiric & Leeching",
+  DEFENSIVE = "Defensive Mechanics",
+  RESOURCE = "Resource Mechanics",
+  SCALING = "Scaling & Progression",
+  TIMING = "Timing & Duration",
+  RARITY = "Rarity & Power",
+  ENVIRONMENTAL = "Environmental",
+  SPECIAL_MECHANIC = "Special Mechanics",
+  META_MECHANIC = "Meta Mechanics",
+}
+
+export interface TagDefinition {
+  name: string; // Should match TagName
+  description: string;
+  category: TagCategory;
+  color: string; // CSS color string (e.g., "red", "#FF0000")
+  rarity: number; // 0-10, affects AI generation frequency
+  powerLevel: number; // 1-10, affects mana cost scaling, etc.
+  conflictsWith?: TagName[];
+  synergizesWith?: TagName[];
+  unlockLevel?: number;
+  effectType: 'passive' | 'active' | 'trigger' | 'modifier' | 'conditional';
+  // Future: Add specific effect parameters, e.g.
+  // effectParameters?: { damageMultiplier?: number; durationChange?: number; etc. }
+}
+
 export type ElementName = 'Fire' | 'Ice' | 'Lightning' | 'Earth' | 'Air' | 'Light' | 'Dark' | 'Arcane' | 'Nature' | 'PhysicalNeutral' | 'PoisonSource' | 'HealingSource';
 export type TagName =
   // Damage Types
