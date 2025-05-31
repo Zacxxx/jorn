@@ -12,10 +12,6 @@ import { getScalingFactorFromRarity } from './utils';
 import { generateBiomeEnemy } from './src/services/biomeEnemyService';
 import { getLocation, updateLocationDiscovery } from './src/services/locationService';
 import { getEnvironmentalEffects } from './src/data/biomes';
-// World exploration imports
-import { generateBiomeEnemy } from './src/services/biomeEnemyService';
-import { getLocation, updateLocationDiscovery } from './src/services/locationService';
-import { getEnvironmentalEffects } from './src/data/biomes';
 
 import ActionButton from './ui/ActionButton';
 import Modal from './ui/Modal';
@@ -49,8 +45,6 @@ import CraftingWorkshopView from './src/components/CraftingWorkshopView';
 import WorldMapModal from './src/components/WorldMapModal';
 import ExplorationJournalModal from './src/components/ExplorationJournalModal';
 import NPCsView from './src/components/NPCsView';
-import WorldMapModal from './src/components/WorldMapModal';
-import ExplorationJournalModal from './src/components/ExplorationJournalModal';
 
 
 const LOCAL_STORAGE_KEY = 'rpgSpellCrafterPlayerV21'; 
@@ -182,11 +176,6 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   const [currentShopId, setCurrentShopId] = useState<string | null>(null);
   const [currentTavernId, setCurrentTavernId] = useState<string | null>(null);
   const [currentNPCId, setCurrentNPCId] = useState<string | null>(null);
-  
-  // New exploration state
-  const [isWorldMapOpen, setIsWorldMapOpen] = useState(false);
-  const [isExplorationJournalOpen, setIsExplorationJournalOpen] = useState(false);
-  const [isTraveling, setIsTraveling] = useState(false);
   
   // New exploration state
   const [isWorldMapOpen, setIsWorldMapOpen] = useState(false);
@@ -343,7 +332,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
   
   const handleOpenCamp = () => setGameState('CAMP');
 
-  const handleOpenNPCs = () => setGameState('NPCS_VIEW');
+  const handleOpenNPCs = () => setGameState('NPC_DIALOGUE');
 
   const handleRestComplete = (restType: 'short' | 'long', duration?: number, activity?: string) => {
     const hpGain = restType === 'short' 
@@ -2166,8 +2155,7 @@ export const App: React.FC<{}> = (): React.ReactElement => {
       case 'SETTLEMENT_VIEW': return <SettlementView player={player} onReturnHome={handleNavigateHome} onOpenShop={handleOpenShop} onOpenTavern={handleOpenTavern} onTalkToNPC={handleTalkToNPC} onExplorePointOfInterest={handleExplorePointOfInterest} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SHOP_VIEW': return <ShopView player={player} shopId={currentShopId || ''} onReturnToSettlement={() => setGameState('SETTLEMENT_VIEW')} onPurchaseItem={handlePurchaseItem} onPurchaseService={handlePurchaseService} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'TAVERN_VIEW': return <div>Tavern View - Coming Soon</div>;
-      case 'NPC_DIALOGUE': return <div>NPC Dialogue - Coming Soon</div>;
-      case 'NPCS_VIEW': return <NPCsView player={player} onReturnHome={handleNavigateHome} onTalkToNPC={handleTalkToNPC} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
+      case 'NPC_DIALOGUE': return <NPCsView player={player} onReturnHome={handleNavigateHome} onTalkToNPC={handleTalkToNPC} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'RECIPE_DISCOVERY': return <RecipeDiscoveryView player={player} onReturnHome={handleNavigateHome} onDiscoverRecipe={handleDiscoverRecipe} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'CRAFTING_WORKSHOP': return <CraftingWorkshopView player={player} onReturnHome={handleNavigateHome} onCraftItem={handleCraftItem} isLoading={isLoading} onShowMessage={(t,m) => showMessageModal(t,m,'info')} />;
       case 'SPELL_CRAFTING': return <SpellCraftingView onInitiateSpellCraft={handleOldSpellCraftInitiation} isLoading={isLoading} currentSpells={player.spells.length} maxSpells={maxRegisteredSpells} onReturnHome={handleNavigateHome} />;

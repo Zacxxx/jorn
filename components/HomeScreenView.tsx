@@ -135,7 +135,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                           return (
                             <div key={locationId} className="flex justify-between">
                               <span className="text-slate-300 truncate">{connectedLocation.name}</span>
-                              <span className="flex-shrink-0 ml-2">{travelTime}h</span>
+                              <span className="flex-shrink-0 ml-2">{String(travelTime)}h</span>
                             </div>
                           );
                         }
