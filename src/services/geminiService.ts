@@ -4,7 +4,7 @@ import {
     AVAILABLE_STATUS_EFFECTS, STATUS_EFFECT_ICONS, AVAILABLE_RESOURCE_TYPES_FOR_AI, AVAILABLE_ITEM_ICONS, 
     CONSUMABLE_EFFECT_TYPES, AVAILABLE_EQUIPMENT_SLOTS, EXAMPLE_SPELL_COMPONENTS, ENEMY_DIFFICULTY_XP_REWARD,
     TAG_DEFINITIONS
-} from '../constants';
+} from '../../constants';
 import { 
     GeneratedSpellData, GeneratedEnemyData, SpellIconName, GeneratedTraitData, GeneratedQuestData, 
     Quest, Spell, SpellStatusEffect, StatusEffectName, ResourceCost, ResourceType, 
@@ -14,7 +14,7 @@ import {
 } from '../types';
 import { ALL_ELEMENTS } from "../components/gameplay/elements/element-list"; // Corrected path
 import { ALL_TAG_NAMES } from "../components/gameplay/tags";  // Corrected path
-import { getScalingFactorFromRarity } from "../utils";
+import { getScalingFactorFromRarity } from "../../utils";
 
 
 if (!process.env.API_KEY) {

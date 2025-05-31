@@ -126,7 +126,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-yellow-500/20 to-yellow-600/20',
       borderColor: 'border-yellow-500/30',
       iconColor: 'text-yellow-400',
-      backgroundImage: '/assets/activity-card/quests.svg'
+      backgroundImage: '/assets/activity-card/quests.svg',
+      gifBackgroundImage: '/assets/activity-card/quests.gif'
     },
     {
       id: 'trading',
@@ -141,7 +142,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       borderColor: 'border-emerald-500/30',
       iconColor: 'text-emerald-400',
       backgroundImage: '/assets/activity-card/trading.svg',
-      gifBackgroundImage: '/assets/activity-card/market.gif'
+      gifBackgroundImage: '/assets/activity-card/trading.gif'
     }
   ];
 

@@ -13,6 +13,9 @@ import { SaveManagerUtils } from './game-core/persistence/SaveManager';
 import { ResourceManagerUtils } from './game-core/resources/ResourceManager';
 import { ResearchManagerUtils } from './game-core/research/ResearchManager';
 
+// Import constants
+import { MASTER_ITEM_DEFINITIONS } from './services/itemService';
+
 // Import the main app shell
 import AppShell from './game-graphics/AppShell';
 
@@ -203,9 +206,117 @@ export const App: React.FC = () => {
 
   // Navigation and exploration handlers
   const handleFindEnemy = useCallback(async () => {
-    // Use CombatEngine to find enemy
-    console.log('Finding enemy...');
-  }, []);
+    // Check if player has prepared spells/abilities or consumables
+    const preparedSpells = getPreparedSpells();
+    const preparedAbilities = getPreparedAbilities();
+    const hasConsumables = playerState.player.items.some(i => i.itemType === 'Consumable') || 
+                          Object.keys(playerState.player.inventory).some(itemId => 
+                            MASTER_ITEM_DEFINITIONS[itemId]?.itemType === 'Consumable' && 
+                            playerState.player.inventory[itemId] > 0
+                          );
+
+    if (preparedSpells.length === 0 && preparedAbilities.length === 0 && !hasConsumables) {
+      gameState.showMessageModal("Unprepared", "Prepare spells/abilities or have consumables before seeking battle.", 'info');
+      return;
+    }
+
+    gameState.setIsLoading(true);
+    gameState.setCombatLog([]);
+    gameState.setTurn(1);
+    gameState.setPlayerActionSkippedByStun(false);
+    
+    // Clear defending status
+    playerState.setPlayer(prev => ({ 
+      ...prev, 
+      activeStatusEffects: prev.activeStatusEffects.filter(eff => eff.name !== 'Defending') 
+    }));
+    
+    gameState.setCurrentActingEnemyIndex(0);
+
+    try {
+      // Import the generateEnemy function
+      const { generateEnemy } = await import('./src/services/geminiService');
+      
+      const numberOfEnemies = Math.random() < 0.6 ? 1 : 2;
+      const enemiesArray: Enemy[] = [];
+      
+      for (let i = 0; i < numberOfEnemies; i++) {
+        const enemyData = await generateEnemy(playerState.player.level);
+        const enemySpeed = enemyData.baseSpeed ?? (10 + Math.floor(enemyData.baseReflex * 0.5));
+        
+        const newEnemy: Enemy = {
+          ...enemyData,
+          id: `enemy-${Date.now()}-${i}`,
+          maxHp: enemyData.hp,
+          speed: enemySpeed,
+          activeStatusEffects: [],
+          body: enemyData.baseBody || 10,
+          mind: enemyData.baseMind || 10,
+          reflex: enemyData.baseReflex || 10,
+          goldDrop: enemyData.goldDrop || { min: 5, max: 15 },
+          essenceDrop: enemyData.essenceDrop || { min: 0, max: 1 },
+          isElite: enemyData.isElite || false,
+          droppedResources: enemyData.droppedResources || [],
+          lootTableId: enemyData.lootTableId || `default_lvl_${enemyData.level}`,
+          weakness: enemyData.weakness as any,
+          resistance: enemyData.resistance as any
+        } as Enemy;
+        
+        enemiesArray.push(newEnemy);
+
+        // Add to bestiary
+        playerState.setPlayer(prev => {
+          const existingBestiaryEntry = prev.bestiary[newEnemy.id];
+          return {
+            ...prev,
+            bestiary: {
+              ...prev.bestiary,
+              [newEnemy.id]: { 
+                id: newEnemy.id,
+                name: newEnemy.name,
+                iconName: newEnemy.iconName,
+                description: newEnemy.description,
+                vanquishedCount: existingBestiaryEntry ? existingBestiaryEntry.vanquishedCount : 0,
+                level: newEnemy.level,
+                weakness: newEnemy.weakness,
+                resistance: newEnemy.resistance,
+                specialAbilityName: newEnemy.specialAbilityName
+              }
+            }
+          };
+        });
+      }
+
+      gameState.setCurrentEnemies(enemiesArray);
+      gameState.setTargetEnemyId(enemiesArray.length > 0 ? enemiesArray[0].id : null);
+
+      gameState.addLog('System', `${enemiesArray.map(e => `${e.isElite ? 'ELITE ' : ''}${e.name} (Lvl ${e.level})`).join(' and ')} appear!`, 'info');
+
+      // Speed roll for initiative
+      const avgEnemySpeed = enemiesArray.reduce((sum, e) => sum + e.speed, 0) / enemiesArray.length;
+      const playerSpeedRoll = effectivePlayerStats.speed + Math.floor(Math.random() * 6) + 1;
+      const enemySpeedRoll = avgEnemySpeed + Math.floor(Math.random() * 6) + 1;
+
+      gameState.addLog('System', `Player speed roll: ${playerSpeedRoll} (Effective: ${effectivePlayerStats.speed})`, 'speed');
+      gameState.addLog('System', `Enemies average speed roll: ${enemySpeedRoll.toFixed(1)} (Avg Base: ${avgEnemySpeed.toFixed(1)})`, 'speed');
+
+      gameState.setGameState('IN_COMBAT');
+
+      if (playerSpeedRoll >= enemySpeedRoll) {
+        gameState.addLog('System', `Player acts first!`, 'speed');
+        gameState.setIsPlayerTurn(true);
+      } else {
+        gameState.addLog('System', `Enemies act first!`, 'speed');
+        gameState.setIsPlayerTurn(false); 
+      }
+    } catch (error) {
+      console.error("Enemy generation error:", error);
+      gameState.showMessageModal("Encounter Failed", error instanceof Error ? error.message : "Could not find an enemy.", 'error');
+      gameState.setGameState('HOME');
+    } finally {
+      gameState.setIsLoading(false);
+    }
+  }, [playerState, gameState, effectivePlayerStats, getPreparedSpells, getPreparedAbilities]);
 
   const handleExploreMap = useCallback(() => {
     const context = createNavigationContext();
