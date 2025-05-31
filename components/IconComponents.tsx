@@ -406,6 +406,12 @@ export const HomeIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   </svg>
 );
 
+export const BuildingIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.75m-.75 3h.75m-.75 3h.75m-3.75-16.5h3.75V21h-3.75V3z" />
+  </svg>
+);
+
 export const TagIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.633 1.076 2.634 1.076s1.934-.377 2.634-1.076l4.318-4.318c.699-.699 1.076-1.633 1.076-2.634s-.377-1.934-1.076-2.634L13.245 3.659A2.25 2.25 0 0011.654 3H9.568zM7.5 7.5h.008v.008H7.5V7.5z" />
@@ -477,6 +483,7 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
     case 'DownloadIcon': return <DownloadIcon className={className} />;
     case 'ChestIcon': return <ChestIcon className={className} />;
     case 'HomeIcon': return <HomeIcon className={className} />;
+    case 'BuildingIcon': return <BuildingIcon className={className} />;
     case 'TagIcon': return <TagIcon className={className} />;
     case 'Default':
     default:
