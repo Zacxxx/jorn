@@ -72,14 +72,22 @@ export const App: React.FC = () => {
   }, [createNavigationContext]);
 
   const handleOpenCharacterSheet = useCallback((tab?: CharacterSheetTab) => {
+    if (gameState.gameState === 'IN_COMBAT') {
+      gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+      return;
+    }
     const context = createNavigationContext();
     NavigationController.navigateToCharacterSheet(context, tab || 'Main');
-  }, [createNavigationContext]);
+  }, [createNavigationContext, gameState]);
 
   const handleOpenCraftingHub = useCallback(() => {
+    if (gameState.gameState === 'IN_COMBAT') {
+      gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+      return;
+    }
     const context = createNavigationContext();
     NavigationController.navigateToCraftingHub(context);
-  }, [createNavigationContext]);
+  }, [createNavigationContext, gameState]);
 
   // Equipment handlers using our extracted ItemManagement
   const handleEquipItem = useCallback((itemId: string, slot: DetailedEquipmentSlot) => {
@@ -180,13 +188,13 @@ export const App: React.FC = () => {
 
   // Create utility functions for ViewRouter
   const getPreparedSpells = useCallback(() => {
-    return playerState.player.spells.filter(spell => 
+    return playerState.player.spells.filter(spell =>
       playerState.player.preparedSpellIds.includes(spell.id)
     );
   }, [playerState.player.spells, playerState.player.preparedSpellIds]);
 
   const getPreparedAbilities = useCallback(() => {
-    return playerState.player.abilities.filter(ability => 
+    return playerState.player.abilities.filter(ability =>
       playerState.player.preparedAbilityIds.includes(ability.id)
     );
   }, [playerState.player.abilities, playerState.player.preparedAbilityIds]);
@@ -209,9 +217,9 @@ export const App: React.FC = () => {
     // Check if player has prepared spells/abilities or consumables
     const preparedSpells = getPreparedSpells();
     const preparedAbilities = getPreparedAbilities();
-    const hasConsumables = playerState.player.items.some(i => i.itemType === 'Consumable') || 
-                          Object.keys(playerState.player.inventory).some(itemId => 
-                            MASTER_ITEM_DEFINITIONS[itemId]?.itemType === 'Consumable' && 
+    const hasConsumables = playerState.player.items.some(i => i.itemType === 'Consumable') ||
+                          Object.keys(playerState.player.inventory).some(itemId =>
+                            MASTER_ITEM_DEFINITIONS[itemId]?.itemType === 'Consumable' &&
                             playerState.player.inventory[itemId] > 0
                           );
 
@@ -224,26 +232,26 @@ export const App: React.FC = () => {
     gameState.setCombatLog([]);
     gameState.setTurn(1);
     gameState.setPlayerActionSkippedByStun(false);
-    
+
     // Clear defending status
-    playerState.setPlayer(prev => ({ 
-      ...prev, 
-      activeStatusEffects: prev.activeStatusEffects.filter(eff => eff.name !== 'Defending') 
+    playerState.setPlayer(prev => ({
+      ...prev,
+      activeStatusEffects: prev.activeStatusEffects.filter(eff => eff.name !== 'Defending')
     }));
-    
+
     gameState.setCurrentActingEnemyIndex(0);
 
     try {
       // Import the generateEnemy function
       const { generateEnemy } = await import('./src/services/geminiService');
-      
+
       const numberOfEnemies = Math.random() < 0.6 ? 1 : 2;
       const enemiesArray: Enemy[] = [];
-      
+
       for (let i = 0; i < numberOfEnemies; i++) {
         const enemyData = await generateEnemy(playerState.player.level);
         const enemySpeed = enemyData.baseSpeed ?? (10 + Math.floor(enemyData.baseReflex * 0.5));
-        
+
         const newEnemy: Enemy = {
           ...enemyData,
           id: `enemy-${Date.now()}-${i}`,
@@ -261,7 +269,7 @@ export const App: React.FC = () => {
           weakness: enemyData.weakness as any,
           resistance: enemyData.resistance as any
         } as Enemy;
-        
+
         enemiesArray.push(newEnemy);
 
         // Add to bestiary
@@ -271,7 +279,7 @@ export const App: React.FC = () => {
             ...prev,
             bestiary: {
               ...prev.bestiary,
-              [newEnemy.id]: { 
+              [newEnemy.id]: {
                 id: newEnemy.id,
                 name: newEnemy.name,
                 iconName: newEnemy.iconName,
@@ -307,7 +315,7 @@ export const App: React.FC = () => {
         gameState.setIsPlayerTurn(true);
       } else {
         gameState.addLog('System', `Enemies act first!`, 'speed');
-        gameState.setIsPlayerTurn(false); 
+        gameState.setIsPlayerTurn(false);
       }
     } catch (error) {
       console.error("Enemy generation error:", error);
@@ -324,9 +332,13 @@ export const App: React.FC = () => {
   }, [createNavigationContext]);
 
   const handleOpenResearchArchives = useCallback(() => {
+    if (gameState.gameState === 'IN_COMBAT') {
+      gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+      return;
+    }
     const context = createNavigationContext();
     NavigationController.navigateToResearchArchives(context);
-  }, [createNavigationContext]);
+  }, [createNavigationContext, gameState]);
 
   const handleOpenCamp = useCallback(() => {
     const context = createNavigationContext();
@@ -415,14 +427,22 @@ export const App: React.FC = () => {
   }, []);
 
   const handleOpenSpellDesignStudio = useCallback((initialPrompt?: string) => {
+    if (gameState.gameState === 'IN_COMBAT') {
+      gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+      return;
+    }
     const context = createNavigationContext();
     NavigationController.navigateToSpellDesignStudio(context, initialPrompt);
-  }, [createNavigationContext]);
+  }, [createNavigationContext, gameState]);
 
   const handleOpenTheorizeComponentLab = useCallback(() => {
+    if (gameState.gameState === 'IN_COMBAT') {
+      gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+      return;
+    }
     const context = createNavigationContext();
     NavigationController.navigateToTheorizeComponentLab(context);
-  }, [createNavigationContext]);
+  }, [createNavigationContext, gameState]);
 
   const handleAICreateComponent = useCallback(async (prompt: string, goldInvested: number, essenceInvested: number) => {
     const context = {
@@ -609,35 +629,43 @@ export const App: React.FC = () => {
     maxPreparedSpells,
     maxPreparedAbilities,
     pendingTraitUnlock,
-    
+
     // Modal state
     isHelpWikiOpen: gameState.isHelpWikiOpen,
     isGameMenuOpen: gameState.isGameMenuOpen,
     isMobileMenuOpen: gameState.isMobileMenuOpen,
-    
+
     // Navigation handlers
     onNavigateHome: handleNavigateHome,
     onOpenMobileMenu: () => gameState.setIsMobileMenuOpen(true),
-    onOpenCraftingHub: handleOpenCraftingHub,
-    
+    onOpenCraftingHub: handleOpenCraftingHub, // Already updated this one in the manual construction
+
     // Modal handlers
-    onOpenCharacterSheet: handleOpenCharacterSheet,
+    onOpenCharacterSheet: handleOpenCharacterSheet, // Already updated this one in the manual construction
     onCloseHelpWiki: () => gameState.setIsHelpWikiOpen(false),
     onOpenHelpWiki: () => gameState.setIsHelpWikiOpen(true),
     onCloseGameMenu: () => gameState.setIsGameMenuOpen(false),
     onOpenGameMenu: () => gameState.setIsGameMenuOpen(true),
     onCloseMobileMenu: () => gameState.setIsMobileMenuOpen(false),
     onOpenParameters: () => {
+      if (gameState.gameState === 'IN_COMBAT') {
+        gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+        return;
+      }
       const context = createNavigationContext();
       NavigationController.navigateToParameters(context);
     },
     onExportSave: handleExportSave,
     onImportSave: handleImportSave,
-    
+
     // Character sheet handlers
     onEquipItem: handleEquipItem,
     onUnequipItem: handleUnequipItem,
     onEditSpell: (spell: Spell) => {
+      if (gameState.gameState === 'IN_COMBAT') {
+        gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+        return;
+      }
       // Navigate to spell editing
       gameState.setGameState('SPELL_EDITING');
     },
@@ -647,22 +675,30 @@ export const App: React.FC = () => {
     onUnprepareAbility: handleUnprepareAbility,
     onOpenLootChest: handleOpenLootChest,
     onUseConsumable: handleUseConsumable,
-    
+
     // Modal close handlers
     onCloseModal: () => gameState.setModalContent(null),
     onCloseCharacterSheet: () => gameState.setGameState('HOME'),
-    onOpenSpellDesignStudio: () => {
+    onOpenSpellDesignStudio: () => { // This is the one that calls NavigationController.navigateToSpellDesignStudio
+      if (gameState.gameState === 'IN_COMBAT') {
+        gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+        return;
+      }
       const context = createNavigationContext();
       NavigationController.navigateToSpellDesignStudio(context);
     },
-    onOpenTraitsPage: () => {
+    onOpenTraitsPage: () => { // This one calls NavigationController.navigateToTraitsPage
+      if (gameState.gameState === 'IN_COMBAT') {
+        gameState.showMessageModal('Action Unavailable', 'Cannot perform this action during combat.', 'error');
+        return;
+      }
       const context = createNavigationContext();
       NavigationController.navigateToTraitsPage(context);
     },
-    
+
     // Utility functions
     showMessageModal: gameState.showMessageModal,
-    
+
     // All ViewRouter props
     isLoading: gameState.isLoading,
     currentEnemies: gameState.currentEnemies,
@@ -685,11 +721,11 @@ export const App: React.FC = () => {
     isTraveling: gameState.isTraveling,
     debugMode: gameState.debugMode,
     autoSave: gameState.autoSave,
-    
+
     // All the ViewRouter event handlers
     onFindEnemy: handleFindEnemy,
     onExploreMap: handleExploreMap,
-    onOpenResearchArchives: handleOpenResearchArchives,
+    onOpenResearchArchives: handleOpenResearchArchives, // Already updated this one in the manual construction
     onOpenCamp: handleOpenCamp,
     onOpenHomestead: handleOpenHomestead,
     onAccessSettlement: handleAccessSettlement,
@@ -707,7 +743,7 @@ export const App: React.FC = () => {
     onPurchaseService: handlePurchaseService,
     onDiscoverRecipe: handleDiscoverRecipe,
     onCraftItem: handleCraftItem,
-    onOpenTheorizeComponentLab: handleOpenTheorizeComponentLab,
+    onOpenTheorizeComponentLab: handleOpenTheorizeComponentLab, // Already updated this one in the manual construction
     onAICreateComponent: handleAICreateComponent,
     onInitiateItemCraft: handleInitiateItemCraft,
     onFinalizeSpellDesign: handleFinalizeSpellDesign,
@@ -730,7 +766,7 @@ export const App: React.FC = () => {
     onToggleAutoSave: handleToggleAutoSave,
     onSetGameState: handleSetGameState,
     onSetDefaultCharacterSheetTab: handleSetDefaultCharacterSheetTab,
-    
+
     // Utility functions for ViewRouter
     getPreparedSpells,
     getPreparedAbilities,
