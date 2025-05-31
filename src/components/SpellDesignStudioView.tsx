@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Player, SpellComponent, GeneratedSpellData, SpellIconName, TagName, ResourceCost, SpellComponentCategory, ElementName, ResourceType } from '../types';
-import { AVAILABLE_SPELL_ICONS } from '../../constants';
-import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
-import { MasterResourceItem } from '../../types';
-import ActionButton from '../../ui/ActionButton';
+import { AVAILABLE_SPELL_ICONS } from '../constants';
+import { MASTER_ITEM_DEFINITIONS } from '../services/itemService';
+import { MasterResourceItem } from '../types';
+import ActionButton from './ActionButton';
 import { WandIcon, TagIcon, HeroBackIcon, FlaskIcon, GoldCoinIcon, EssenceIcon, SearchIcon, FilterListIcon, SaveIcon, BookIcon } from './IconComponents';
 import SpellComponentCard from './SpellComponentCard';
 import { GetSpellIcon } from './IconComponents';

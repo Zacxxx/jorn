@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Player, SpellComponent, ResourceType, GeneratedSpellComponentData } from '../types';
-import ActionButton from '../../ui/ActionButton';
+import ActionButton from './ActionButton';
 import { GetSpellIcon, FlaskIcon, GoldCoinIcon, AtomIcon, CheckmarkCircleIcon, EssenceIcon, SearchIcon, WandIcon } from './IconComponents';
-import SpellComponentCard from './SpellComponentCard'; // Corrected import
-import { RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST } from '../../constants';
-import { getRarityColorClass } from '../../utils'; 
-import LoadingSpinner from '../../ui/LoadingSpinner';
-import { generateSpellComponentFromResearch } from '../../services/geminiService';
+import SpellComponentCard from './SpellComponentCard';
+import { RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST } from '../constants';
+import { getRarityColorClass } from '../utils'; 
+import LoadingSpinner from './LoadingSpinner';
+import { generateSpellComponentFromResearch } from '../services/geminiService';
 
 interface ResearchLabViewProps {
   player: Player;

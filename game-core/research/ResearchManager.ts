@@ -1,5 +1,5 @@
 import { Player, SpellComponent } from '../../types';
-import { createSpellComponentFromPrompt } from '../../src/utils/aiUtils';
+import { generateSpellComponentFromResearch } from '../../services/geminiService';
 
 /**
  * Research Manager Module
@@ -82,14 +82,15 @@ export const createAIComponent = async (
 
   try {
     // Create component using AI
-    const newComponent = await createSpellComponentFromPrompt(
+    const generatedComponentData = await generateSpellComponentFromResearch(
       prompt,
-      context.player.level,
       goldInvested,
-      essenceInvested
+      essenceInvested,
+      context.player.level,
+      context.player.discoveredComponents.length
     );
 
-    if (!newComponent) {
+    if (!generatedComponentData) {
       context.setIsLoading(false);
       return {
         success: false,
@@ -97,6 +98,12 @@ export const createAIComponent = async (
         type: 'error'
       };
     }
+
+    // Convert GeneratedSpellComponentData to SpellComponent by adding required fields
+    const newComponent: SpellComponent = {
+      ...generatedComponentData,
+      id: `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
 
     // Deduct resources and add component
     context.setPlayer(prev => ({

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ItemType } from '../types';
-import Modal from '../../ui/Modal';
-import ItemCraftingForm from '../../components/ItemCraftingForm';
-import ActionButton from '../../ui/ActionButton';
+import Modal from './Modal';
+import ItemCraftingForm from './ItemCraftingForm';
+import ActionButton from './ActionButton';
 import { PotionGenericIcon, GearIcon, WandIcon, FlaskIcon, BookIcon, SearchIcon } from './IconComponents';
 
 interface CraftingHubModalProps {

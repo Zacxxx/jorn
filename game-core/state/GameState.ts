@@ -102,6 +102,10 @@ export interface GameStateManager {
   setDebugMode: (value: boolean) => void;
   autoSave: boolean;
   setAutoSave: (value: boolean) => void;
+  
+  // Utility methods
+  addLog: (actor: 'Player' | 'Enemy' | 'System', message: string, type: 'action' | 'damage' | 'heal' | 'status' | 'error' | 'info' | 'success' | 'warning' | 'resource' | 'speed') => void;
+  showMessageModal: (title: string, message: string, type?: 'info' | 'error' | 'success') => void;
 }
 
 /**
@@ -240,5 +244,21 @@ export const useGameState = (): GameStateManager => {
     setDebugMode,
     autoSave,
     setAutoSave,
+    
+    // Utility methods
+    addLog: (actor: 'Player' | 'Enemy' | 'System', message: string, type: 'action' | 'damage' | 'heal' | 'status' | 'error' | 'info' | 'success' | 'warning' | 'resource' | 'speed') => {
+      const newLogEntry: CombatActionLog = {
+        id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        actor,
+        message,
+        type,
+        timestamp: Date.now()
+      };
+      setCombatLog(prev => [...prev, newLogEntry]);
+    },
+    
+    showMessageModal: (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
+      setModalContent({ title, message, type });
+    },
   };
 }; 

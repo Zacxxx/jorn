@@ -1,6 +1,6 @@
 import React from 'react';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { Player } from '../../types'; // Assuming types.ts is in the root
 
 interface MainLayoutProps {

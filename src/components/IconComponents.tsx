@@ -369,30 +369,47 @@ export const EssenceIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
 
 export const MapIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m0 0L12.75 12M9 15l3.75-3M15 12l-3.75 3m3.75-3L12 9.75m3 2.25L12 9.75m0 0L9 12m3-2.25L6.75 12m3-2.25L6 9.75M12 9.75L9 12M12 3v2.25m6.75 1.5H21m0 0v2.25m0 0h-2.25m0 0V12m2.25 0h-2.25m2.25 0V15m0 0h-2.25m0 0v2.25m-2.25-2.25H15m0 0V15m0 0h-2.25m0 0l-2.25 2.25M12 21v-2.25m-6.75-1.5H3m0 0V15m0 0h2.25m0 0V12H3m0 0h2.25m-2.25 0V9m0 0h2.25m0 0L7.5 6.75M12 3l2.25 2.25M12 3L9.75 5.25m2.25-2.25L12 5.25m0 0L9.75 3M12 21l2.25-2.25m-2.25 2.25L9.75 18.75m2.25 2.25L12 18.75m0 0L9.75 21" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75h.008v.008H9V6.75zm.75 0h.008v.008H9.75V6.75zm1.5 0h.008v.008H11.25V6.75zm1.5 0h.008v.008H12.75V6.75zm1.5 0h.008v.008H14.25V6.75zm-7.5 3h.008v.008H6.75V9.75zm.75 0h.008v.008H7.5V9.75zm1.5 0h.008v.008H9V9.75zm6 0h.008v.008H15V9.75zm.75 0h.008v.008H15.75V9.75zm1.5 0h.008v.008H17.25V9.75zM9 12.75h.008v.008H9v-.008zm.75 0h.008v.008H9.75v-.008zm1.5 0h.008v.008H11.25v-.008zm1.5 0h.008v.008H12.75v-.008zm1.5 0h.008v.008H14.25v-.008zM9 15.75h.008v.008H9v-.008zm.75 0h.008v.008H9.75v-.008zm1.5 0h.008v.008H11.25v-.008zm1.5 0h.008v.008H12.75v-.008zm1.5 0h.008v.008H14.25v-.008z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
   </svg>
 );
 
-export const UploadIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+export const TentIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l9 18H3l9-18z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v6m0 0l-3 6m3-6l3 6" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18" />
   </svg>
 );
 
-export const DownloadIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+export const HomeIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
   </svg>
 );
 
-export const ChestIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+export const BuildingIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 7.5h3M12 3.375A3.375 3.375 0 0115.375 0h-6.75A3.375 3.375 0 0112 3.375z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 7.5h16.5M12 12.75V15" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.75m-.75 3h.75m-.75 3h.75m-3.75-16.5h3.75V21h-3.75V3z" />
   </svg>
 );
 
+export const TagIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.633 1.076 2.634 1.076s1.934-.377 2.634-1.076l4.318-4.318c.699-.699 1.076-1.633 1.076-2.634s-.377-1.934-1.076-2.634L13.245 3.659A2.25 2.25 0 0011.654 3H9.568zM7.5 7.5h.008v.008H7.5V7.5z" />
+  </svg>
+);
+
+export const LayoutIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+  </svg>
+);
+
+export const ToggleIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 12h9.75m-9.75 6h9.75M3.75 6H7.5m3 6H7.5m3 6H7.5m-3.75 0h.008v.008H3.75v-.008zm0-6h.008v.008H3.75v-.008zm0-6h.008v.008H3.75v-.008z" />
+  </svg>
+);
 
 export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: string }> = ({ iconName, className }) => {
   switch (iconName) {
@@ -454,41 +471,20 @@ export const GetSpellIcon: React.FC<{ iconName?: SpellIconName, className?: stri
     case 'GoldCoinIcon': return <GoldCoinIcon className={className} />;
     case 'EssenceIcon': return <EssenceIcon className={className} />;
     case 'MapIcon': return <MapIcon className={className} />;
+    case 'TentIcon': return <TentIcon className={className} />;
     case 'UploadIcon': return <UploadIcon className={className} />;
     case 'DownloadIcon': return <DownloadIcon className={className} />;
     case 'ChestIcon': return <ChestIcon className={className} />;
+    case 'HomeIcon': return <HomeIcon className={className} />;
+    case 'BuildingIcon': return <BuildingIcon className={className} />;
+    case 'TagIcon': return <TagIcon className={className} />;
+    case 'LayoutIcon': return <LayoutIcon className={className} />;
+    case 'ToggleIcon': return <ToggleIcon className={className} />;
     case 'Default':
     default:
-      return <UnknownIcon className={className} />;
+      return <BookIcon className={className} />;
   }
 };
-
-export const TentIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l9 18H3l9-18z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v6m0 0l-3 6m3-6l3 6" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18" />
-  </svg>
-);
-
-export const HomeIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-  </svg>
-);
-
-export const BuildingIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m2.25-18v18m13.5-18v18m2.25-18v18M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
-  </svg>
-);
-
-export const TagIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
-  </svg>
-);
 
 export const SaveIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">

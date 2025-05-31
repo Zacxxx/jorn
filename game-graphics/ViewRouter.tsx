@@ -10,33 +10,34 @@ import {
   Consumable,
   ResourceCost,
   GeneratedSpellData,
-  GeneratedItemData,
   ItemType,
   SpellComponent,
-  HomesteadProject
+  GeneratedConsumableData,
+  GeneratedEquipmentData
 } from '../types';
+import { HomesteadProject } from '../src/types';
 
 // Import all view components
-import HomeScreenView from '../components/HomeScreenView';
-import CampView from '../components/CampView';
-import HomesteadView from '../components/HomesteadView';
-import SettlementView from '../components/SettlementView';
-import ShopView from '../components/ShopView';
-import NPCsView from '../components/NPCsView';
-import RecipeDiscoveryView from '../components/RecipeDiscoveryView';
-import CraftingWorkshopView from '../components/CraftingWorkshopView';
-import SpellCraftingView from '../components/SpellCraftingView';
-import SpellDesignStudioView from '../components/SpellDesignStudioView';
-import ResearchLabView from '../components/ResearchLabView';
-import ResearchView from '../components/ResearchView';
-import MapView from '../components/MapView';
-import ParametersView from '../components/ParametersView';
-import SpellEditingView from '../components/SpellEditingView';
-import TraitCraftingView from '../components/TraitCraftingView';
-import CombatView from '../components/CombatView';
-import ConfirmationView from '../components/ConfirmationView';
-import GameOverView from '../components/GameOverView';
-import LoadingSpinner from '../components/LoadingSpinner';
+import HomeScreenView from '../src/components/HomeScreenView';
+import CampView from '../src/CampView';
+import HomesteadView from '../src/components/HomesteadView';
+import SettlementView from '../src/components/SettlementView';
+import ShopView from '../src/components/ShopView';
+import NPCsView from '../src/components/NPCsView';
+import RecipeDiscoveryView from '../src/components/RecipeDiscoveryView';
+import CraftingWorkshopView from '../src/components/CraftingWorkshopView';
+import SpellCraftingView from '../src/components/SpellCraftingView';
+import SpellDesignStudioView from '../src/components/SpellDesignStudioView';
+import ResearchLabView from '../src/components/ResearchLabView';
+import ResearchView from '../src/components/ResearchView';
+import MapView from '../src/components/MapView';
+import ParametersView from '../src/components/ParametersView';
+import SpellEditingView from '../src/components/SpellEditingView';
+import TraitCraftingView from '../src/components/TraitCraftingView';
+import CombatView from '../src/components/CombatView';
+import ConfirmationView from '../src/components/ConfirmationView';
+import GameOverView from '../src/components/GameOverView';
+import LoadingSpinner from '../src/components/LoadingSpinner';
 
 /**
  * View Router Component
@@ -68,7 +69,7 @@ export interface ViewRouterProps {
   // Pending data
   pendingSpellCraftData: (GeneratedSpellData & { _componentUsageGoldCost?: number, _componentUsageEssenceCost?: number }) | null;
   pendingSpellEditData: GeneratedSpellData | null;
-  pendingItemCraftData: GeneratedItemData | null;
+  pendingItemCraftData: GeneratedConsumableData | GeneratedEquipmentData | null;
   originalSpellForEdit: Spell | null;
   
   // Calculated values

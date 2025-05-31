@@ -10,12 +10,12 @@ import {
 import { FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL } from '../constants';
 
 // Import layout and modal components
-import MainLayout from '../layouts/MainLayout';
-import Modal from '../components/Modal';
-import { CharacterSheetModal } from '../components/CharacterSheetModal';
-import HelpWikiModal from '../components/HelpWikiModal';
-import GameMenuModal from '../components/GameMenuModal';
-import MobileMenuModal from '../components/MobileMenuModal';
+import MainLayout from '../src/layouts/MainLayout';
+import Modal from '../src/components/Modal';
+import { CharacterSheetModal } from '../src/CharacterSheetModal.ancient';
+import HelpWikiModal from '../src/components/HelpWikiModal';
+import GameMenuModal from '../src/components/GameMenuModal';
+import MobileMenuModal from '../src/components/MobileMenuModal';
 
 // Import ViewRouter
 import ViewRouter, { ViewRouterProps } from './ViewRouter';
@@ -79,6 +79,27 @@ export interface AppShellProps {
   // Utility functions
   showMessageModal: (title: string, message: string, type?: 'info' | 'error' | 'success') => void;
   
+  // Extract specific ViewRouter props instead of using spread
+  isLoading: boolean;
+  currentEnemies: any[];
+  targetEnemyId: string | null;
+  combatLog: any[];
+  turn: number;
+  isPlayerTurn: boolean;
+  currentActingEnemyIndex: number;
+  pendingSpellCraftData: any | null;
+  pendingItemCraftData: any | null;
+  pendingSpellEditData: any | null;
+  initialSpellPromptForStudio: string;
+  currentShopId: string | null;
+  currentTavernId: string | null;
+  currentNPCId: string | null;
+  isWorldMapOpen: boolean;
+  isExplorationJournalOpen: boolean;
+  isTraveling: boolean;
+  debugMode: boolean;
+  autoSave: boolean;
+  
   // All ViewRouter props
   [key: string]: any;
 }
@@ -138,6 +159,27 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     // Utility functions
     showMessageModal,
     
+    // Extract specific ViewRouter props instead of using spread
+    isLoading,
+    currentEnemies,
+    targetEnemyId,
+    combatLog,
+    turn,
+    isPlayerTurn,
+    currentActingEnemyIndex,
+    pendingSpellCraftData,
+    pendingItemCraftData,
+    pendingSpellEditData,
+    initialSpellPromptForStudio,
+    currentShopId,
+    currentTavernId,
+    currentNPCId,
+    isWorldMapOpen,
+    isExplorationJournalOpen,
+    isTraveling,
+    debugMode,
+    autoSave,
+    
     // All other props for ViewRouter
     ...viewRouterProps
   } = props;
@@ -147,6 +189,35 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     player.level >= FIRST_TRAIT_LEVEL && 
     player.traits.length < (Math.floor((player.level - FIRST_TRAIT_LEVEL) / TRAIT_LEVEL_INTERVAL) + 1)
   );
+
+  // Prepare ViewRouter props
+  const routerProps = {
+    gameState,
+    isLoading: isLoading || false,
+    player,
+    effectivePlayerStats,
+    currentEnemies: currentEnemies || [],
+    targetEnemyId: targetEnemyId || null,
+    combatLog: combatLog || [],
+    isPlayerTurn: isPlayerTurn !== undefined ? isPlayerTurn : true,
+    playerActionSkippedByStun: false, // This should come from props if needed
+    defaultCharacterSheetTab,
+    initialSpellPromptForStudio: initialSpellPromptForStudio || '',
+    currentShopId: currentShopId || null,
+    modalContent,
+    pendingSpellCraftData: pendingSpellCraftData || null,
+    pendingSpellEditData: pendingSpellEditData || null,
+    pendingItemCraftData: pendingItemCraftData || null,
+    originalSpellForEdit: null, // This should come from props if needed
+    maxRegisteredSpells,
+    maxPreparedSpells,
+    maxPreparedAbilities,
+    useLegacyFooter,
+    debugMode: debugMode || false,
+    autoSave: autoSave !== undefined ? autoSave : true,
+    showMessageModal,
+    ...viewRouterProps
+  };
 
   return (
     <>
@@ -164,7 +235,7 @@ const AppShell: React.FC<AppShellProps> = (props) => {
         onOpenGameMenu={onOpenGameMenu}
         useLegacyFooter={useLegacyFooter}
       >
-        <ViewRouter {...viewRouterProps} />
+        <ViewRouter {...routerProps} />
       </MainLayout>
 
       {/* Main Modal */}

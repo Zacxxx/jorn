@@ -4,7 +4,7 @@ import ActionButton from '../../ui/ActionButton';
 import { GearIcon, HeroBackIcon, FlaskIcon, CheckmarkCircleIcon, GoldCoinIcon, SearchIcon, FilterListIcon, BookIcon, WandIcon, AtomIcon } from './IconComponents';
 import { MASTER_ITEM_DEFINITIONS } from '../../services/itemService';
 import { getAllRecipes, getRecipeById } from '../../services/craftingService';
-import ItemCraftingForm from '../../components/ItemCraftingForm';
+import ItemCraftingForm from './ItemCraftingForm';
 
 interface CraftingWorkshopViewProps {
   player: Player;

@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import ActionButton from '../../ui/ActionButton';
+import ActionButton from './ActionButton';
 import { Player, SpellComponent, SpellComponentCategory, ElementName, TagName } from '../types';
 import { BookIcon, FlaskIcon, FilterListIcon, SearchIcon } from './IconComponents';
-import SpellComponentCard from './SpellComponentCard'; // Corrected import
+import SpellComponentCard from './SpellComponentCard';
 import { ALL_ELEMENTS } from './gameplay/elements/element-list';
 import { ALL_TAG_NAMES } from './gameplay/tags';
 

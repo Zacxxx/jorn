@@ -192,6 +192,7 @@ export const usePlayerState = () => {
   return {
     player,
     setPlayer,
+    savePlayer: () => savePlayerToStorage(player),
   };
 };
 

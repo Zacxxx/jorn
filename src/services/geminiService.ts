@@ -2,7 +2,8 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { 
     GEMINI_MODEL_TEXT, AVAILABLE_SPELL_ICONS, DEFAULT_TRAIT_ICON, DEFAULT_QUEST_ICON, 
     AVAILABLE_STATUS_EFFECTS, STATUS_EFFECT_ICONS, AVAILABLE_RESOURCE_TYPES_FOR_AI, AVAILABLE_ITEM_ICONS, 
-    CONSUMABLE_EFFECT_TYPES, AVAILABLE_EQUIPMENT_SLOTS, EXAMPLE_SPELL_COMPONENTS, ENEMY_DIFFICULTY_XP_REWARD
+    CONSUMABLE_EFFECT_TYPES, AVAILABLE_EQUIPMENT_SLOTS, EXAMPLE_SPELL_COMPONENTS, ENEMY_DIFFICULTY_XP_REWARD,
+    TAG_DEFINITIONS
 } from '../constants';
 import { 
     GeneratedSpellData, GeneratedEnemyData, SpellIconName, GeneratedTraitData, GeneratedQuestData, 
@@ -178,6 +179,10 @@ ${JSON.stringify(chosenComponentsDetails, null, 2)}
 
 The spell is being constructed with components and/or player investments that ALREADY REQUIRE these resources:
 ${investedResources && investedResources.length > 0 ? JSON.stringify(investedResources.map(rc => ({ itemId: rc.itemId, quantity: rc.quantity, type: rc.type })), null, 2) : "No pre-committed resources."}
+
+Available Tags: ${ALL_TAG_NAMES.join(', ')}.
+Tag Conflict Data: ${TAG_CONFLICT_DATA_STRING}
+CRITICAL INSTRUCTION: Avoid selecting multiple tags for the spell if they are listed as conflicting with each other in the provided Tag Conflict Data. For example, do not put both 'Fire' and 'Ice' on the same spell if they conflict. Prioritize the tag that appears first in the component list or player prompt if a choice must be made.
 
 Your task is to finalize this spell. Generate a JSON object with:
 - name: (string) Creative spell name. Adapt if player provided.
@@ -824,3 +829,16 @@ Be generous with matches but require some logical connection. If multiple recipe
     };
   }
 }
+
+// Helper function to generate tag conflict string for AI prompts
+function generateTagConflictString(): string {
+  let conflictStrings: string[] = [];
+  for (const tagName in TAG_DEFINITIONS) {
+    const tagDef = TAG_DEFINITIONS[tagName as TagName];
+    if (tagDef.conflictsWith && tagDef.conflictsWith.length > 0) {
+      conflictStrings.push(`${tagDef.name} conflicts with: ${tagDef.conflictsWith.join(', ')}.`);
+    }
+  }
+  return conflictStrings.join(' ');
+}
+const TAG_CONFLICT_DATA_STRING = generateTagConflictString();

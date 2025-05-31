@@ -54,20 +54,23 @@ export const App: React.FC = () => {
   // Create context objects for our extracted modules
   const createNavigationContext = useCallback(() => ({
     player: playerState.player,
-    gameState: gameState.gameState,
-    setPlayer: playerState.setPlayer,
-    setGameState: gameState.setGameState,
-    setModalContent: gameState.setModalContent,
+    effectivePlayerStats,
+    pendingTraitUnlock: TraitManagerUtils.canCraftTrait(playerState.player),
+    setGameState: gameState.setGameState as (state: string) => void,
     setDefaultCharacterSheetTab: gameState.setDefaultCharacterSheetTab,
+    setInitialSpellPromptForStudio: gameState.setInitialSpellPromptForStudio,
     setIsHelpWikiOpen: gameState.setIsHelpWikiOpen,
     setIsGameMenuOpen: gameState.setIsGameMenuOpen,
     setIsMobileMenuOpen: gameState.setIsMobileMenuOpen,
+    setCurrentEnemies: gameState.setCurrentEnemies,
+    setTargetEnemyId: gameState.setTargetEnemyId,
+    setCombatLog: gameState.setCombatLog,
+    setModalContent: gameState.setModalContent,
+    setPlayer: playerState.setPlayer,
     setUseLegacyFooter: gameState.setUseLegacyFooter,
     setDebugMode: gameState.setDebugMode,
     setAutoSave: gameState.setAutoSave,
-    addLog: gameState.addLog,
-    showMessageModal: gameState.showMessageModal,
-  }), [playerState, gameState]);
+  }), [playerState, gameState, effectivePlayerStats]);
 
   // Navigation handlers using our extracted NavigationController
   const handleNavigateHome = useCallback(() => {
@@ -77,7 +80,7 @@ export const App: React.FC = () => {
 
   const handleOpenCharacterSheet = useCallback((tab?: CharacterSheetTab) => {
     const context = createNavigationContext();
-    NavigationControllerUtils.navigateToInventory(tab || 'Main', context);
+    NavigationControllerUtils.navigateToCharacterSheet(context, tab || 'Main');
   }, [createNavigationContext]);
 
   const handleOpenCraftingHub = useCallback(() => {
@@ -87,82 +90,58 @@ export const App: React.FC = () => {
 
   // Equipment handlers using our extracted ItemManagement
   const handleEquipItem = useCallback((itemId: string, slot: DetailedEquipmentSlot) => {
-    const context = {
-      player: playerState.player,
-      setPlayer: playerState.setPlayer,
-      addLog: gameState.addLog,
-      showMessageModal: gameState.showMessageModal,
-    };
-    const result = ItemManagementUtils.equipItem(itemId, slot, context);
-    if (!result.success) {
-      gameState.showMessageModal('Equipment Error', result.message, 'error');
+    const result = ItemManagementUtils.equipItem(playerState.player, itemId, slot);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+    } else {
+      gameState.showMessageModal('Equipment Error', result.error || 'Failed to equip item', 'error');
     }
   }, [playerState, gameState]);
 
   const handleUnequipItem = useCallback((slot: DetailedEquipmentSlot) => {
-    const context = {
-      player: playerState.player,
-      setPlayer: playerState.setPlayer,
-      addLog: gameState.addLog,
-      showMessageModal: gameState.showMessageModal,
-    };
-    const result = ItemManagementUtils.unequipItem(slot, context);
-    if (!result.success) {
-      gameState.showMessageModal('Equipment Error', result.message, 'error');
+    const result = ItemManagementUtils.unequipItem(playerState.player, slot);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+    } else {
+      gameState.showMessageModal('Equipment Error', result.error || 'Failed to unequip item', 'error');
     }
   }, [playerState, gameState]);
 
   // Spell preparation handlers
   const handlePrepareSpell = useCallback((spell: Spell) => {
-    const context = {
-      player: playerState.player,
-      setPlayer: playerState.setPlayer,
-      addLog: gameState.addLog,
-      showMessageModal: gameState.showMessageModal,
-    };
-    const result = ItemManagementUtils.prepareSpell(spell.id, context);
-    if (!result.success) {
-      gameState.showMessageModal('Spell Preparation Error', result.message, 'error');
+    const result = ItemManagementUtils.prepareSpell(playerState.player, spell);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+    } else {
+      gameState.showMessageModal('Spell Preparation Error', result.error || 'Failed to prepare spell', 'error');
     }
   }, [playerState, gameState]);
 
   const handleUnprepareSpell = useCallback((spell: Spell) => {
-    const context = {
-      player: playerState.player,
-      setPlayer: playerState.setPlayer,
-      addLog: gameState.addLog,
-      showMessageModal: gameState.showMessageModal,
-    };
-    const result = ItemManagementUtils.unprepareSpell(spell.id, context);
-    if (!result.success) {
-      gameState.showMessageModal('Spell Preparation Error', result.message, 'error');
+    const result = ItemManagementUtils.unprepareSpell(playerState.player, spell);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+    } else {
+      gameState.showMessageModal('Spell Preparation Error', result.error || 'Failed to unprepare spell', 'error');
     }
   }, [playerState, gameState]);
 
   // Ability preparation handlers
   const handlePrepareAbility = useCallback((ability: Ability) => {
-    const context = {
-      player: playerState.player,
-      setPlayer: playerState.setPlayer,
-      addLog: gameState.addLog,
-      showMessageModal: gameState.showMessageModal,
-    };
-    const result = ItemManagementUtils.prepareAbility(ability.id, context);
-    if (!result.success) {
-      gameState.showMessageModal('Ability Preparation Error', result.message, 'error');
+    const result = ItemManagementUtils.prepareAbility(playerState.player, ability);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+    } else {
+      gameState.showMessageModal('Ability Preparation Error', result.error || 'Failed to prepare ability', 'error');
     }
   }, [playerState, gameState]);
 
   const handleUnprepareAbility = useCallback((ability: Ability) => {
-    const context = {
-      player: playerState.player,
-      setPlayer: playerState.setPlayer,
-      addLog: gameState.addLog,
-      showMessageModal: gameState.showMessageModal,
-    };
-    const result = ItemManagementUtils.unprepareAbility(ability.id, context);
-    if (!result.success) {
-      gameState.showMessageModal('Ability Preparation Error', result.message, 'error');
+    const result = ItemManagementUtils.unprepareAbility(playerState.player, ability);
+    if (result.success && result.updatedPlayer) {
+      playerState.setPlayer(() => result.updatedPlayer!);
+    } else {
+      gameState.showMessageModal('Ability Preparation Error', result.error || 'Failed to unprepare ability', 'error');
     }
   }, [playerState, gameState]);
 
@@ -183,7 +162,7 @@ export const App: React.FC = () => {
   }, [gameState]);
 
   // Consumable usage handler
-  const handleUseConsumable = useCallback((itemId: string, targetId?: string) => {
+  const handleUseConsumable = useCallback((itemId: string, targetId: string | null) => {
     const context = {
       player: playerState.player,
       currentEnemies: gameState.currentEnemies,
@@ -197,7 +176,7 @@ export const App: React.FC = () => {
         console.log('Apply status effect:', effect, 'to', targetId, 'from', sourceId);
       },
     };
-    const result = ConsumablesUtils.useConsumable(itemId, targetId || null, context);
+    const result = ConsumablesUtils.useConsumable(itemId, targetId, context);
     if (!result.success) {
       gameState.showMessageModal('Consumable Error', result.message, 'error');
     }
@@ -213,7 +192,7 @@ export const App: React.FC = () => {
     player: playerState.player,
     effectivePlayerStats,
     modalContent: gameState.modalContent,
-    defaultCharacterSheetTab: gameState.defaultCharacterSheetTab,
+    defaultCharacterSheetTab: gameState.defaultCharacterSheetTab || 'Main',
     useLegacyFooter: gameState.useLegacyFooter,
     maxRegisteredSpells,
     maxPreparedSpells,
@@ -255,7 +234,7 @@ export const App: React.FC = () => {
     onUnprepareSpell: handleUnprepareSpell,
     onPrepareAbility: handlePrepareAbility,
     onUnprepareAbility: handleUnprepareAbility,
-    onOpenLootChest: (chestId: string) => {
+    onOpenLootChest: async (chestId: string) => {
       // Handle loot chest opening
       console.log('Opening loot chest:', chestId);
     },
