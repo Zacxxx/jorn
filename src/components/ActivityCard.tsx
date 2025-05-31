@@ -12,6 +12,7 @@ interface ActivityCardProps {
   borderColor: string;
   iconColor: string;
   backgroundImage: string;
+  gifBackgroundImage?: string;
 }
 
 const ActivityCard: React.FC<ActivityCardProps> = ({
@@ -26,6 +27,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   borderColor,
   iconColor,
   backgroundImage,
+  gifBackgroundImage,
 }) => {
   const isCampCard = id === 'camp';
   const [isHovered, setIsHovered] = React.useState(false);
@@ -37,9 +39,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   // Debug logging for camp card
   React.useEffect(() => {
     if (isCampCard) {
-      console.log('Camp card rendered with background:', backgroundImage);
+      console.log('Camp card rendered with background:', currentBackgroundImage);
     }
-  }, [isCampCard, backgroundImage]);
+  }, [isCampCard, currentBackgroundImage]);
 
   return (
     <div
@@ -51,66 +53,60 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
       {/* Enhanced Background Illustration with Ambient Effects */}
       <div className={`absolute inset-0 ${isCampCard ? 'opacity-70' : 'opacity-0 group-hover:opacity-15'} transition-all duration-500`}>
         <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-xl overflow-hidden`}>
-          {isCampCard ? (
-            // Special handling for camp card with gif and enhanced effects
-            <div className="relative w-full h-full">
-              <img 
-                src={backgroundImage} 
-                alt={`${title} background`}
-                className={`w-full h-full object-cover transition-all duration-500 ${
-                  isHovered ? 'opacity-90 scale-110 rotate-1' : 'opacity-60 scale-100'
-                }`}
-                style={{
-                  filter: isHovered ? 'brightness(1.2) contrast(1.2) saturate(1.1)' : 'brightness(0.8) contrast(0.9)',
-                }}
-                onLoad={() => console.log('Camp gif loaded successfully!')}
-                onError={(e) => {
-                  console.log('Failed to load camp gif:', backgroundImage);
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-              {/* Enhanced overlay with gradient animation */}
-              <div className={`absolute inset-0 bg-gradient-to-t from-amber-900/50 via-transparent to-amber-900/30 transition-all duration-500 ${
-                isHovered ? 'opacity-50' : 'opacity-80'
-              }`} />
-              {/* Ambient glow effect */}
-              <div className={`absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 transition-opacity duration-500 ${
-                isHovered ? 'opacity-100' : 'opacity-0'
-              }`} />
-            </div>
-          ) : (
-            // Enhanced image handling for other cards
-            <div className="relative w-full h-full">
-              <img 
-                src={backgroundImage} 
-                alt={`${title} background`}
-                className={`w-full h-full object-cover transition-all duration-500 ${
-                  isHovered ? 'opacity-80 scale-105' : 'opacity-60 scale-100'
-                }`}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'block';
-                }}
-              />
-              {/* Ambient background effect */}
+          {/* Unified image rendering logic */}
+          <div className="relative w-full h-full">
+            <img
+              src={currentBackgroundImage} // Use currentBackgroundImage
+              alt={`${title} background`}
+              className={`w-full h-full object-cover transition-all duration-500 ${
+                // Conditional styling based on isHovered and isCampCard
+                isHovered ? (isCampCard ? 'opacity-90 scale-110 rotate-1' : 'opacity-80 scale-105') : 'opacity-60 scale-100'
+              }`}
+              style={{
+                // Conditional filter effects
+                filter: isHovered && isCampCard ? 'brightness(1.2) contrast(1.2) saturate(1.1)' : (isHovered ? 'brightness(1.1)' : 'brightness(0.8) contrast(0.9)'),
+              }}
+              onLoad={() => console.log('Background image loaded successfully!')}
+              onError={(e) => {
+                // Updated onError handler
+                console.log('Failed to load background image:', currentBackgroundImage);
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                // Ensure fallback icon illustration is shown
+                const fallback = target.closest('.relative')?.querySelector('.fallback-icon-illustration') as HTMLElement;
+                if (fallback) fallback.style.display = 'block';
+              }}
+            />
+            {/* Conditional Camp Card Enhancements */}
+            {isCampCard && (
+              <>
+                {/* Enhanced overlay with gradient animation */}
+                <div className={`absolute inset-0 bg-gradient-to-t from-amber-900/50 via-transparent to-amber-900/30 transition-all duration-500 ${
+                  isHovered ? 'opacity-50' : 'opacity-80'
+                }`} />
+                {/* Ambient glow effect */}
+                <div className={`absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 transition-opacity duration-500 ${
+                  isHovered ? 'opacity-100' : 'opacity-0'
+                }`} />
+              </>
+            )}
+            {/* Ambient background effect for non-camp cards */}
+            {!isCampCard && (
               <div className={`absolute inset-0 opacity-5 bg-gradient-to-br ${color.replace('/20', '/30')} transition-opacity duration-500 ${
                 isHovered ? 'opacity-10' : 'opacity-5'
               }`} />
-            </div>
-          )}
+            )}
+          </div>
           
           {/* Enhanced Fallback icon illustration */}
-          <div className="hidden w-full h-full">
+          <div className="hidden w-full h-full fallback-icon-illustration">
             <div className="absolute top-0.5 right-0.5 w-6 h-6 opacity-30">
-              <div className={`w-full h-full ${iconColor} scale-[1.5] transform rotate-12 transition-transform duration-300 hover:rotate-45`}>
+              <div className={`w-full h-full ${iconColor} scale-[1.5] transform rotate-12 transition-transform duration-300 group-hover:rotate-45`}>
                 {icon}
               </div>
             </div>
             <div className="absolute bottom-0.5 left-0.5 w-4 h-4 opacity-20">
-              <div className={`w-full h-full ${iconColor} scale-[1.5] transform -rotate-12 transition-transform duration-300 hover:-rotate-45`}>
+              <div className={`w-full h-full ${iconColor} scale-[1.5] transform -rotate-12 transition-transform duration-300 group-hover:-rotate-45`}>
                 {icon}
               </div>
             </div>

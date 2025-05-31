@@ -61,7 +61,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-amber-500/20 to-amber-600/20',
       borderColor: 'border-amber-500/30',
       iconColor: 'text-amber-400',
-      backgroundImage: '/assets/activity-card/camp.gif'
+      backgroundImage: '/assets/activity-card/camp.svg',
+      gifBackgroundImage: '/assets/activity-card/camp.gif'
     },
     {
       id: 'research',
@@ -75,7 +76,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-blue-500/20 to-blue-600/20',
       borderColor: 'border-blue-500/30',
       iconColor: 'text-blue-400',
-      backgroundImage: '/assets/activity-card/research.svg'
+      backgroundImage: '/assets/activity-card/research.svg',
+      gifBackgroundImage: '/assets/activity-card/research.gif'
     },
     {
       id: 'crafting',
@@ -89,7 +91,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-orange-500/20 to-orange-600/20',
       borderColor: 'border-orange-500/30',
       iconColor: 'text-orange-400',
-      backgroundImage: '/assets/activity-card/crafting.svg'
+      backgroundImage: '/assets/activity-card/crafting.svg',
+      gifBackgroundImage: '/assets/activity-card/crafting.gif'
     },
     {
       id: 'npcs',
@@ -103,7 +106,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-purple-500/20 to-purple-600/20',
       borderColor: 'border-purple-500/30',
       iconColor: 'text-purple-400',
-      backgroundImage: '/assets/activity-card/npcs.svg'
+      backgroundImage: '/assets/activity-card/npcs.svg',
+      gifBackgroundImage: '/assets/activity-card/npcs.gif'
     },
     {
       id: 'quests',
@@ -131,7 +135,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       color: 'from-emerald-500/20 to-emerald-600/20',
       borderColor: 'border-emerald-500/30',
       iconColor: 'text-emerald-400',
-      backgroundImage: '/assets/activity-card/trading.svg'
+      backgroundImage: '/assets/activity-card/trading.svg',
+      gifBackgroundImage: '/assets/activity-card/market.gif'
     }
   ];
 
@@ -411,29 +416,38 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
             </div>
           </div>
 
-          {/* Third Column - Feature Cards */}
-          <div className="flex flex-col h-full">
-            {/* Feature Cards Grid - Single Column Layout */}
-            <div className="grid grid-cols-1 gap-1 sm:gap-1.5 md:gap-2 h-full overflow-y-auto">
-              {activityCards.map((activity) => (
-                <ActivityCard
-                  key={activity.id}
-                  id={activity.id}
-                  title={activity.title}
-                  shortTitle={activity.shortTitle}
-                  description={activity.description}
-                  icon={activity.icon}
-                  onClick={activity.onClick}
-                  benefits={activity.benefits}
-                  color={activity.color}
-                  borderColor={activity.borderColor}
-                  iconColor={activity.iconColor}
-                  backgroundImage={activity.backgroundImage}
-                />
-              ))}
+            {/* Third Column - Feature Cards with Enhanced Responsive Layout */}
+            <div className="flex flex-col h-full min-h-0">
+              {/* Feature Cards Grid - Single Column Layout with SortableContext */}
+              <SortableContext items={activityOrder} strategy={verticalListSortingStrategy}>
+                <div className="grid grid-cols-1 gap-1 sm:gap-1.5 md:gap-2 h-full overflow-y-auto">
+                  {activityOrder.map((activityId) => {
+                    const activity = activityCards.find(card => card.id === activityId);
+                    if (!activity) return null;
+                    
+                    return (
+                      <div key={activity.id} className="transition-all duration-300 ease-in-out">
+                        <ActivityCard
+                          id={activity.id}
+                          title={activity.title}
+                          shortTitle={activity.shortTitle}
+                          description={activity.description}
+                          icon={activity.icon}
+                          onClick={activity.onClick}
+                          benefits={activity.benefits}
+                          color={activity.color}
+                          borderColor={activity.borderColor}
+                          iconColor={activity.iconColor}
+                          backgroundImage={activity.backgroundImage}
+                          gifBackgroundImage={activity.gifBackgroundImage}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </SortableContext>
             </div>
           </div>
-        </div>
 
         {/* Mobile Layout - Additional Actions for smaller screens */}
         <div className="xl:hidden mt-2 sm:mt-3 md:mt-4">
