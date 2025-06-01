@@ -152,10 +152,10 @@ const GameOverView: React.FC<GameOverViewProps> = ({
         </div>
       )}
 
-      {/* Main Content - Fixed fullscreen layout */}
-      <div className="relative z-10 h-full flex flex-col overflow-hidden">
-        {/* Header Section - Fixed height */}
-        <div className="flex-shrink-0 pt-3 pb-2 px-4">
+      {/* Main Content - Fixed fullscreen layout with proper containment */}
+      <div className="relative z-10 h-full flex flex-col overflow-hidden max-w-full">
+        {/* Header Section - Fixed height with max width */}
+        <div className="flex-shrink-0 pt-3 pb-2 px-4 max-w-4xl mx-auto w-full">
           <div className="text-center">
             {/* Main Title with Animation */}
             <div className={`transform transition-all duration-1000 ${animationPhase >= 0 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
@@ -210,14 +210,14 @@ const GameOverView: React.FC<GameOverViewProps> = ({
           </div>
         </div>
 
-        {/* Content Area - Flexible height with no overflow */}
-        <div className="flex-1 px-4 min-h-0 flex flex-col">
+        {/* Content Area - Flexible height with proper containment */}
+        <div className="flex-1 px-4 min-h-0 flex flex-col max-w-4xl mx-auto w-full">
           {/* Defeated Enemies Section - Victory Only */}
           {isVictory && defeatedEnemies.length > 0 && (
             <div className={`flex-shrink-0 transform transition-all duration-1000 delay-500 ${
               animationPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}>
-              <div className="flex flex-col">
+              <div className="flex flex-col w-full">
                 <button
                   onClick={() => setShowDetails(!showDetails)}
                   className="flex-shrink-0 w-full bg-slate-800/60 backdrop-blur-lg rounded-lg p-2 border border-slate-600/40 shadow-xl hover:border-emerald-500/40 transition-all duration-300 mb-2"
@@ -235,11 +235,11 @@ const GameOverView: React.FC<GameOverViewProps> = ({
                   </div>
                   
                   {!showDetails && (
-                    <div className="flex flex-wrap gap-1 mt-1 justify-center">
+                    <div className="flex flex-wrap gap-1 mt-1 justify-center max-w-full">
                       {defeatedEnemies.slice(0, 2).map(enemy => (
                         <div key={enemy.id} className="flex items-center space-x-1 bg-slate-700/50 px-2 py-1 rounded text-xs">
-                          <span className="text-slate-300 font-medium">{enemy.name}</span>
-                          <span className="text-slate-500">Lvl {enemy.level}</span>
+                          <span className="text-slate-300 font-medium truncate">{enemy.name}</span>
+                          <span className="text-slate-500 flex-shrink-0">Lvl {enemy.level}</span>
                         </div>
                       ))}
                       {defeatedEnemies.length > 2 && (
@@ -251,17 +251,17 @@ const GameOverView: React.FC<GameOverViewProps> = ({
                   )}
                 </button>
 
-                {/* Detailed Enemy List - Clickable Cards with limited height */}
+                {/* Detailed Enemy List - Responsive grid with proper constraints */}
                 {showDetails && (
-                  <div className="max-h-32 overflow-y-auto mb-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pb-2">
+                  <div className="max-h-32 overflow-y-auto mb-2 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 pb-2 w-full">
                       {defeatedEnemies.map(enemy => (
                         <button
                           key={enemy.id}
                           onClick={() => setSelectedEnemy(enemy)}
-                          className="transform hover:scale-105 transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-lg"
+                          className="transform hover:scale-105 transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-lg w-full min-w-0"
                         >
-                          <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg border border-slate-600/40 hover:border-emerald-500/40 transition-colors">
+                          <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg border border-slate-600/40 hover:border-emerald-500/40 transition-colors w-full">
                             <EnemyDisplay enemy={enemy} />
                           </div>
                         </button>
@@ -273,11 +273,11 @@ const GameOverView: React.FC<GameOverViewProps> = ({
             </div>
           )}
 
-          {/* Action Buttons - Below enemies section */}
+          {/* Action Buttons - Below enemies section with proper centering */}
           <div className={`flex-shrink-0 py-2 transform transition-all duration-1000 delay-700 ${
             animationPhase >= 3 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-            <div className="max-w-xs mx-auto space-y-2">
+            <div className="max-w-xs mx-auto space-y-2 w-full">
               <ActionButton 
                 onClick={onReturnHome} 
                 variant="primary" 
@@ -304,7 +304,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
 
           {/* Combat Log Section - Only show if no enemies or enemies section is collapsed */}
           {(!isVictory || defeatedEnemies.length === 0 || !showDetails) && (
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 w-full">
               <button
                 onClick={() => setShowCombatLog(!showCombatLog)}
                 className="w-full bg-slate-800/60 backdrop-blur-lg rounded-lg p-2 border border-slate-600/40 shadow-xl hover:border-slate-500/60 transition-all duration-300 mb-2"
@@ -320,7 +320,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
               </button>
 
               {showCombatLog && (
-                <div className="bg-slate-900/60 backdrop-blur-lg rounded-lg border border-slate-600/40 shadow-xl h-32 overflow-y-auto">
+                <div className="bg-slate-900/60 backdrop-blur-lg rounded-lg border border-slate-600/40 shadow-xl h-32 overflow-y-auto w-full">
                   <div className="p-2">
                     <CombatLogDisplay logs={combatLog} />
                   </div>
