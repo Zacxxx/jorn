@@ -799,9 +799,13 @@ const CombatView: React.FC<CombatViewProps> = ({
       </div>
 
       {/* Desktop Layout - Keep existing */}
-      <div className="hidden md:block h-full">
-        {/* Battlefield - Full Center */}
-        <div className="flex-1 relative mx-4 md:mx-8 mb-2 md:mb-4 overflow-hidden backdrop-blur-sm rounded-2xl">
+      <div className="hidden md:flex md:flex-col h-full">
+        {/* Battlefield - Full Center with proper background and height */}
+        <div className="flex-1 relative mx-4 md:mx-8 mb-2 md:mb-4 overflow-hidden backdrop-blur-sm rounded-2xl bg-gradient-to-br from-slate-800/30 to-slate-900/50 border border-slate-700/30 min-h-[400px]">
+          {/* Background battlefield effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
+          
           {/* Enemies Section - Top of battlefield */}
           <div className="absolute top-16 md:top-28 left-1/2 transform -translate-x-1/2 z-30 w-full">
             <div className={`${getEnemyGridLayout()} px-4 md:px-8`}>
@@ -845,24 +849,24 @@ const CombatView: React.FC<CombatViewProps> = ({
             {/* Dynamic Area */}
             <div className="w-1/2">
               <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
-            {renderDynamicAreaContent()}
+                {renderDynamicAreaContent()}
               </div>
-        </div>
+            </div>
 
             {/* Action Categories */}
             <div className="w-1/4">
               <div className="grid grid-rows-5 gap-1 h-full">
-           {actionCategories.map(cat => (
-              <ActionCategoryButton
-                key={cat.view}
-                label={cat.label}
-                icon={cat.icon}
-                isActive={activeDynamicView === cat.view}
-                onClick={() => handleCategoryChange(cat.view)}
-                disabled={cat.view !== 'log' && !canPlayerAct}
+                {actionCategories.map(cat => (
+                  <ActionCategoryButton
+                    key={cat.view}
+                    label={cat.label}
+                    icon={cat.icon}
+                    isActive={activeDynamicView === cat.view}
+                    onClick={() => handleCategoryChange(cat.view)}
+                    disabled={cat.view !== 'log' && !canPlayerAct}
                     count={cat.count}
-              />
-            ))}
+                  />
+                ))}
               </div>
             </div>
           </div>
