@@ -31,11 +31,11 @@ const CompactStatBarWithText: React.FC<CompactStatBarWithTextProps> =
         />
         {/* Text overlay */}
         <div className="absolute inset-0 flex items-center justify-between px-1.5 sm:px-2">
-          <span className="flex items-center font-semibold text-white text-shadow-sm battle-statbar-label-text">
+          <span className="flex items-center font-semibold text-white text-shadow-sm battle-statbar-label-text text-xs">
             {React.cloneElement(icon, { className: "w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" })}
             {label}
           </span>
-          <span className="font-mono font-semibold text-white text-shadow-sm battle-statbar-value-text">{value}</span>
+          <span className="font-mono font-semibold text-white text-shadow-sm battle-statbar-value-text text-xs">{value}</span>
         </div>
       </div>
     </div>
