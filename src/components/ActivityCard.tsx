@@ -31,28 +31,48 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
 }) => {
   const isCampCard = id === 'camp';
   const [isHovered, setIsHovered] = React.useState(false);
+  const [gifLoaded, setGifLoaded] = React.useState(false);
+  const [gifError, setGifError] = React.useState(false);
+  const gifRef = React.useRef<HTMLImageElement>(null);
+
+  // Create static preview image path from GIF path
+  const getPreviewImagePath = (gifPath: string) => {
+    return gifPath.replace('.gif', '.svg');
+  };
+
+  // Preload GIF when hovering starts
+  React.useEffect(() => {
+    if (isHovered && gifBackgroundImage && !gifLoaded && !gifError) {
+      const img = new Image();
+      img.onload = () => {
+        setGifLoaded(true);
+      };
+      img.onerror = () => {
+        setGifError(true);
+      };
+      img.src = gifBackgroundImage;
+    }
+  }, [isHovered, gifBackgroundImage, gifLoaded, gifError]);
 
   // Determine which background image to use
   const currentBackgroundImage = React.useMemo(() => {
-    if (isCampCard && isHovered && gifBackgroundImage) {
+    // Always show static preview by default
+    if (!isHovered || !gifBackgroundImage) {
+      return getPreviewImagePath(backgroundImage);
+    }
+    
+    // Show GIF only if hovered and loaded successfully
+    if (isHovered && gifLoaded && !gifError) {
       return gifBackgroundImage;
     }
-    if (gifBackgroundImage && isHovered) {
-      return gifBackgroundImage;
-    }
-    return backgroundImage;
-  }, [isCampCard, isHovered, backgroundImage, gifBackgroundImage]);
+    
+    // Fallback to static preview
+    return getPreviewImagePath(backgroundImage);
+  }, [isHovered, backgroundImage, gifBackgroundImage, gifLoaded, gifError]);
 
   // Enhanced card animation classes - using transform-origin and z-index for contained scaling
   const cardBaseClasses = "backdrop-blur-md rounded-lg shadow-lg border transition-all duration-300 ease-in-out cursor-pointer group overflow-hidden";
   const cardHoverClasses = "hover:border-opacity-80 hover:shadow-xl";
-
-  // Debug logging for camp card
-  React.useEffect(() => {
-    if (isCampCard) {
-      console.log('Camp card rendered with background:', currentBackgroundImage);
-    }
-  }, [isCampCard, currentBackgroundImage]);
 
   return (
     <div className="relative w-full h-auto">
@@ -73,31 +93,49 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         <div className={`absolute inset-0 ${
       isCampCard
       ? 'opacity-70'
-      : (isHovered && currentBackgroundImage === gifBackgroundImage && gifBackgroundImage)
+      : (isHovered && gifLoaded && !gifError)
         ? 'opacity-70'
         : 'opacity-0 group-hover:opacity-20'
     } transition-all duration-500 rounded-lg overflow-hidden`}>
           <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-lg overflow-hidden`}>
             {/* Unified image rendering logic */}
             <div className="relative w-full h-full">
+              {/* Static preview image - always visible */}
               <img
-                src={currentBackgroundImage}
-                alt={`${title} background`}
-                className={`w-full h-full object-cover transition-all duration-500 ${
-                  isHovered ? (isCampCard ? 'opacity-90 scale-110' : 'opacity-80 scale-105') : 'opacity-60 scale-100'
-                }`}
+                src={getPreviewImagePath(backgroundImage)}
+                alt={`${title} preview`}
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                  isHovered && gifLoaded && !gifError ? 'opacity-0' : 'opacity-60'
+                } scale-100`}
                 style={{
-                  filter: isHovered && isCampCard ? 'brightness(1.2) contrast(1.2) saturate(1.1)' : (isHovered ? 'brightness(1.1)' : 'brightness(0.8) contrast(0.9)'),
-                }}
-                onLoad={() => console.log('Background image loaded successfully!')}
-                onError={(e) => {
-                  console.log('Failed to load background image:', currentBackgroundImage);
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.closest('.relative')?.querySelector('.fallback-icon-illustration') as HTMLElement;
-                  if (fallback) fallback.style.display = 'block';
+                  filter: 'brightness(0.8) contrast(0.9)',
                 }}
               />
+              
+              {/* GIF image - only visible when hovered and loaded */}
+              {gifBackgroundImage && (
+                <img
+                  ref={gifRef}
+                  src={isHovered ? gifBackgroundImage : ''}
+                  alt={`${title} animation`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                    isHovered && gifLoaded && !gifError ? 'opacity-90 scale-110' : 'opacity-0'
+                  }`}
+                  style={{
+                    filter: isHovered && gifLoaded ? 'brightness(1.2) contrast(1.2) saturate(1.1)' : 'brightness(0.8) contrast(0.9)',
+                  }}
+                  onLoad={() => setGifLoaded(true)}
+                  onError={() => setGifError(true)}
+                />
+              )}
+              
+              {/* Loading indicator for GIF */}
+              {isHovered && gifBackgroundImage && !gifLoaded && !gifError && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white/80 rounded-full animate-spin"></div>
+                </div>
+              )}
+              
               {/* Conditional Camp Card Enhancements */}
               {isCampCard && (
                 <>

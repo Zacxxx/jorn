@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../src/types';
 import ActionButton from './ActionButton';
-import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, ReflexIcon } from '../src/components/IconComponents';
+import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, ReflexIcon, GearIcon, HomeIcon } from '../src/components/IconComponents';
 
 interface HeaderProps {
   player: Player;
@@ -28,8 +28,28 @@ const Header: React.FC<HeaderProps> = ({
   isInAnyCombat, 
   onReturnToCombat 
 }) => {
+  // State for desktop dropdown menu
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  
   // Show health/mana bars on desktop when not in combat
   const showHealthManaBar = effectivePlayerStats && gameState !== 'IN_COMBAT';
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isDropdownOpen) {
+        const target = event.target as Element;
+        if (!target.closest('.dropdown-container')) {
+          setIsDropdownOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <header className="bg-black/20 backdrop-blur-xl border-b border-white/10 sticky top-0 z-[1000] shadow-2xl shadow-black/20">
@@ -145,17 +165,63 @@ const Header: React.FC<HeaderProps> = ({
         
         {/* Right Side - Action Buttons */}
         <div className="flex items-center gap-2">
-          {/* Game Menu Button - Desktop Only */}
-          <ActionButton
-            onClick={onOpenGameMenu}
-            size="sm"
-            variant="secondary"
-            icon={<Bars3Icon className="w-4 h-4" />}
-            className="hidden sm:flex !px-3 !py-2 !bg-transparent !border-transparent hover:!bg-white/10 hover:!border-white/20 !text-white/80 hover:!text-white !shadow-none backdrop-blur-sm items-center"
-            title="Open Game Menu"
-          >
-            <span className="text-xs font-medium drop-shadow-sm">Menu</span>
-          </ActionButton>
+          {/* Desktop Dropdown Menu */}
+          <div className="hidden sm:block relative dropdown-container">
+            <ActionButton
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              size="sm"
+              variant="secondary"
+              icon={<Bars3Icon className="w-4 h-4" />}
+              className="!px-3 !py-2 !bg-transparent !border-transparent hover:!bg-white/10 hover:!border-white/20 !text-white/80 hover:!text-white !shadow-none backdrop-blur-sm items-center"
+              title="Open Menu"
+            >
+              <span className="text-xs font-medium drop-shadow-sm">Menu</span>
+            </ActionButton>
+            
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-black/40 backdrop-blur-3xl rounded-lg border border-white/30 shadow-2xl shadow-black/40 z-[1001] overflow-hidden">
+                {/* Extra blur overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-2xl"></div>
+                <div className="relative p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      onOpenCharacterSheet();
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-md text-sm text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
+                  >
+                    <UserIcon className="w-4 h-4" />
+                    Character Sheet
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      onOpenGameMenu();
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-md text-sm text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
+                  >
+                    <GearIcon className="w-4 h-4" />
+                    Game Settings
+                  </button>
+                  
+                  <div className="h-px bg-white/20 my-1"></div>
+                  
+                  <button
+                    onClick={() => {
+                      onNavigateHome();
+                      setIsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-md text-sm text-white/90 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
+                  >
+                    <HomeIcon className="w-4 h-4" />
+                    Home
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Mobile Menu Button - Mobile Only */}
           {onOpenMobileMenu && (

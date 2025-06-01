@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="tradingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="url(#tradingGrad)" opacity="0.1"/>
+  
+  <!-- Market stall/shop -->
+  <rect x="20" y="35" width="60" height="40" fill="url(#tradingGrad)" opacity="0.3" rx="3"/>
+  <rect x="25" y="40" width="50" height="30" fill="url(#tradingGrad)" opacity="0.5" rx="2"/>
+  
+  <!-- Awning/roof -->
+  <path d="M15 35 L50 25 L85 35 L80 40 L50 30 L20 40 Z" fill="url(#tradingGrad)" opacity="0.6"/>
+  
+  <!-- Coins -->
+  <circle cx="35" cy="50" r="4" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="45" cy="52" r="3" fill="#f59e0b" opacity="0.7"/>
+  <circle cx="55" cy="48" r="3.5" fill="#fbbf24" opacity="0.9"/>
+  
+  <!-- Trade arrows -->
+  <path d="M30 60 L40 55 L30 50" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.7"/>
+  <path d="M70 50 L60 55 L70 60" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.7"/>
+</svg> 
