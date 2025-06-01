@@ -7,7 +7,7 @@ export const GEMINI_MODEL_TEXT = 'gemini-2.5-flash-preview-04-17';
 export const INITIAL_PLAYER_NAME = "Hero"; 
 export const INITIAL_PLAYER_GOLD = 50; 
 export const INITIAL_PLAYER_ESSENCE = 10; 
-export const INITIAL_PLAYER_LOCATION = "loc_001"; // Starting location ID
+export const INITIAL_PLAYER_LOCATION = "eldergrove"; // Starting location ID, updated from src/constants.ts
 
 export const INITIAL_PLAYER_EP = 50;
 export const PLAYER_EP_REGEN_PER_TURN = 5;
