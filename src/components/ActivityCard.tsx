@@ -70,7 +70,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         }}
       >
         {/* Enhanced Background Illustration with Ambient Effects */}
-        <div className={`absolute inset-0 ${isCampCard ? 'opacity-70' : 'opacity-0 group-hover:opacity-20'} transition-all duration-500 rounded-lg overflow-hidden`}>
+        <div className={`absolute inset-0 ${
+      isCampCard
+      ? 'opacity-70'
+      : (isHovered && currentBackgroundImage === gifBackgroundImage && gifBackgroundImage)
+        ? 'opacity-70'
+        : 'opacity-0 group-hover:opacity-20'
+    } transition-all duration-500 rounded-lg overflow-hidden`}>
           <div className={`w-full h-full ${isCampCard ? 'bg-amber-900/20' : `bg-gradient-to-br ${color.replace('/20', '/40')}`} rounded-lg overflow-hidden`}>
             {/* Unified image rendering logic */}
             <div className="relative w-full h-full">
