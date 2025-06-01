@@ -349,8 +349,8 @@ const EnhancedEnemyDisplay: React.FC<EnhancedEnemyDisplayProps> = ({ enemy, isTa
           title={`Target ${enemy.name}`}
         />
         
-        {/* Health Bar Overlay */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-28">
+        {/* Health Bar Overlay - Positioned above sprite */}
+        <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-28">
           {/* Name */}
           <div className="bg-slate-900/90 backdrop-blur-sm rounded-t-md px-2 py-0.5 border-x border-t border-slate-600/50">
             <div className="flex items-center justify-between">
@@ -661,14 +661,15 @@ const CombatView: React.FC<CombatViewProps> = ({
   
   return (
     <div className="fixed inset-0 top-16 flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden z-40">
+      {/* Background effects - Extended beyond battle area */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10 animate-pulse" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/20 via-slate-800/60 to-emerald-900/20" />
+      
       {/* Battlefield - Full Center */}
-      <div className="flex-1 relative bg-gradient-to-b from-indigo-900/20 via-slate-800/60 to-emerald-900/20 mx-8 mb-4 overflow-hidden shadow-xl backdrop-blur-sm rounded-2xl border-2 border-slate-600/40">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10 animate-pulse" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
-        
+      <div className="flex-1 relative mx-8 mb-4 overflow-hidden backdrop-blur-sm rounded-2xl">
         {/* Enemies Section - Top of battlefield */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-30 w-full">
+        <div className="absolute top-28 left-1/2 transform -translate-x-1/2 z-30 w-full">
           <div className={`${getEnemyGridLayout()} px-8`}>
             {currentEnemies.map(enemy => (
               <EnhancedEnemyDisplay
