@@ -1,10 +1,12 @@
 import React from 'react';
-import { Player } from '../types';
+import { Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
-import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon } from '../src/components/IconComponents'; 
+import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, StarIcon } from '../src/components/IconComponents'; 
 
 interface HeaderProps {
   player: Player;
+  effectivePlayerStats?: PlayerEffectiveStats;
+  gameState?: string;
   onOpenCharacterSheet: () => void;
   onNavigateHome: () => void;
   onOpenMobileMenu?: () => void; 
@@ -14,7 +16,21 @@ interface HeaderProps {
   onReturnToCombat?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigateHome, onOpenMobileMenu, onOpenGameMenu, isInCombatButNotOnCombatScreen = false, isInAnyCombat, onReturnToCombat }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  player, 
+  effectivePlayerStats, 
+  gameState, 
+  onOpenCharacterSheet, 
+  onNavigateHome, 
+  onOpenMobileMenu, 
+  onOpenGameMenu, 
+  isInCombatButNotOnCombatScreen = false, 
+  isInAnyCombat, 
+  onReturnToCombat 
+}) => {
+  // Show health/mana bars on desktop when not in combat
+  const showHealthManaBar = effectivePlayerStats && gameState !== 'IN_COMBAT';
+
   return (
     <header className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-[1000] shadow-lg">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between max-w-7xl">
@@ -66,6 +82,61 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
               </div>
             </div>
           </div>
+          
+          {/* Health/Mana Bars - Desktop Only, Not in Combat */}
+          {showHealthManaBar && (
+            <div className="hidden lg:flex items-center gap-3 ml-2">
+              <div className="w-px h-6 bg-slate-700"></div>
+              
+              {/* Stacked Bars - Compact Vertical Layout */}
+              <div className="flex flex-col gap-1 min-w-0">
+                {/* Health Bar */}
+                <div className="flex items-center gap-1.5">
+                  <HealIcon className="w-3 h-3 text-red-400 flex-shrink-0" />
+                  <div className="flex items-center gap-1 min-w-0">
+                    <span className="text-xs font-medium text-slate-300 w-6">HP</span>
+                    <div className="w-16 bg-slate-700/50 rounded-full h-1">
+                      <div 
+                        className="bg-gradient-to-r from-red-500 to-red-400 h-1 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(0, (player.hp / effectivePlayerStats.maxHp) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono text-red-300 min-w-0 text-right">{player.hp}/{effectivePlayerStats.maxHp}</span>
+                  </div>
+                </div>
+                
+                {/* Mana Bar */}
+                <div className="flex items-center gap-1.5">
+                  <WandIcon className="w-3 h-3 text-blue-400 flex-shrink-0" />
+                  <div className="flex items-center gap-1 min-w-0">
+                    <span className="text-xs font-medium text-slate-300 w-6">MP</span>
+                    <div className="w-16 bg-slate-700/50 rounded-full h-1">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-cyan-400 h-1 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(0, (player.mp / effectivePlayerStats.maxMp) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono text-blue-300 min-w-0 text-right">{player.mp}/{effectivePlayerStats.maxMp}</span>
+                  </div>
+                </div>
+                
+                {/* Energy Bar */}
+                <div className="flex items-center gap-1.5">
+                  <StarIcon className="w-3 h-3 text-yellow-400 flex-shrink-0" />
+                  <div className="flex items-center gap-1 min-w-0">
+                    <span className="text-xs font-medium text-slate-300 w-6">EP</span>
+                    <div className="w-16 bg-slate-700/50 rounded-full h-1">
+                      <div 
+                        className="bg-gradient-to-r from-yellow-500 to-amber-400 h-1 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(0, (player.ep / effectivePlayerStats.maxEp) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono text-yellow-300 min-w-0 text-right">{player.ep}/{effectivePlayerStats.maxEp}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Combat Status Indicator */}
           {isInAnyCombat && onReturnToCombat && (

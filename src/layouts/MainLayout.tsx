@@ -1,10 +1,12 @@
 import React from 'react';
 import Header from '../..//ui/Header';
-import { Player } from '../../types'; // Assuming types.ts is in the root
+import { Player, PlayerEffectiveStats } from '../../types'; // Assuming types.ts is in the root
 
 interface MainLayoutProps {
   children: React.ReactNode;
   player: Player;
+  effectivePlayerStats?: PlayerEffectiveStats;
+  gameState?: string;
   onOpenCharacterSheet: () => void;
   onNavigateHome: () => void;
   onOpenMobileMenu?: () => void;
@@ -23,6 +25,8 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({
   children,
   player,
+  effectivePlayerStats,
+  gameState,
   onOpenCharacterSheet,
   onNavigateHome,
   onOpenMobileMenu,
@@ -41,11 +45,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col" style={{fontFamily: "'Inter', sans-serif"}}>
       <Header
         player={player}
+        effectivePlayerStats={effectivePlayerStats}
+        gameState={gameState}
         onOpenCharacterSheet={onOpenCharacterSheet}
         onNavigateHome={onNavigateHome}
         onOpenMobileMenu={onOpenMobileMenu}
         onOpenGameMenu={onOpenGameMenu}
         isInCombatButNotOnCombatScreen={isInCombatButNotOnCombatScreen}
+        isInAnyCombat={isInAnyCombat}
         onReturnToCombat={onReturnToCombat}
       />
       <main className="flex-grow container mx-auto p-3 sm:p-4 md:p-6 max-w-6xl">

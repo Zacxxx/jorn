@@ -288,6 +288,8 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     <>
       <MainLayout
         player={player}
+        effectivePlayerStats={effectivePlayerStats}
+        gameState={gameState}
         onOpenCharacterSheet={() => onOpenCharacterSheet('Main')}
         onNavigateHome={onNavigateHome}
         onOpenMobileMenu={onOpenMobileMenu}
