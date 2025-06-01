@@ -79,6 +79,30 @@ export type TagName =
   | ElementName;
 
 
+export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia' | 'Progress';
+
+// Class System Types
+export interface PlayerClass {
+  id: string;
+  name: string;
+  description: string;
+  specializations: PlayerSpecialization[];
+}
+
+export interface PlayerSpecialization {
+  id: string;
+  name: string;
+  description: string;
+  bonuses?: {
+    body?: number;
+    mind?: number;
+    reflex?: number;
+    maxHp?: number;
+    maxMp?: number;
+    maxEp?: number;
+  };
+}
+
 export interface Player {
   hp: number;
   maxHp: number;
@@ -109,6 +133,10 @@ export interface Player {
   preparedAbilityIds: string[];
   iconName?: SpellIconName;
   name?: string; 
+  title?: string; // Player's title (displayed before name)
+  classId?: string; // Reference to PlayerClass
+  specializationId?: string; // Reference to PlayerSpecialization
+  hasCustomizedCharacter?: boolean; // Track if player has customized their character
   bestiary: Record<string, { 
     id: string; 
     name: string; 
@@ -633,21 +661,6 @@ export interface GeneratedQuestData {
   iconName: SpellIconName;
 }
 
-export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia';
-
-
-export interface LootTableEntry {
-    itemId: string; 
-    quantityMin: number;
-    quantityMax: number;
-    weight: number; 
-}
-
-export interface LootTable {
-    id: string;
-    entries: LootTableEntry[];
-}
-
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';
 export interface LootDrop {
     type: LootDropType;
@@ -668,4 +681,16 @@ export interface Character {
   race: string;
   class: string;
   level: number;
+}
+
+export interface LootTableEntry {
+    itemId: string; 
+    quantityMin: number;
+    quantityMax: number;
+    weight: number; 
+}
+
+export interface LootTable {
+    id: string;
+    entries: LootTableEntry[];
 }

@@ -4,7 +4,7 @@ import Modal from '../../../ui/Modal'; // Corrected
 import '../../src/styles/ability-list.css'; // Assuming path is correct relative to src
 import ActionButton from '../../../ui/ActionButton'; // Corrected
 import {
-    UserIcon, BagIcon, WandIcon, StarIcon, BookIcon, CollectionIcon // Icons used in TABS array
+    UserIcon, BagIcon, WandIcon, StarIcon, BookIcon, CollectionIcon, GearIcon // Icons used in TABS array
 } from '../IconComponents';
 import {
     STATUS_EFFECT_ICONS, GENERIC_TO_DETAILED_SLOT_MAP // GENERIC_TO_DETAILED_SLOT_MAP needed for getCompatibleItemsForSlot
@@ -23,6 +23,10 @@ import AbilitiesTab from './tabs/AbilitiesTab';
 import TraitsTab from './tabs/TraitsTab';
 import QuestsTab from './tabs/QuestsTab';
 import EncyclopediaTab from './tabs/EncyclopediaTab';
+import ProgressTab from './ProgressTab';
+
+// Character Creation
+import CharacterCreationModal from '../CharacterCreationModal';
 
 
 interface CharacterSheetModalProps {
@@ -46,6 +50,7 @@ interface CharacterSheetModalProps {
   canCraftNewTrait?: boolean;
   onOpenLootChest?: (chestId: string) => Promise<void>;
   onUseConsumableFromInventory: (itemId: string, targetId: string | null) => void;
+  onUpdatePlayer?: (updater: (prev: Player) => Player) => void; // For character creation
 }
 
 // AttributesDisplay is now imported from ui/AttributesDisplay and used within MainTab.tsx
@@ -59,7 +64,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   onPrepareSpell, onUnprepareSpell, onPrepareAbility, onUnprepareAbility,
   initialTab, onOpenSpellCraftingScreen,
   onOpenTraitCraftingScreen, canCraftNewTrait, onOpenLootChest,
-  onUseConsumableFromInventory
+  onUseConsumableFromInventory, onUpdatePlayer
 }) => {
   const [activeTab, setActiveTab] = useState<CharacterSheetTab>(initialTab || 'Main');
   const [itemSelectionModalState, setItemSelectionModalState] = useState<{isOpen: boolean, slot: DetailedEquipmentSlot | null}>({isOpen: false, slot: null});
@@ -72,6 +77,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
   const [selectedTalentDetails, setSelectedTalentDetails] = useState<any | null>(null); // Replace 'any' with a proper Talent type
   const [createTalentModalOpen, setCreateTalentModalOpen] = useState<boolean>(false);
   const [researchUnlocksModalOpen, setResearchUnlocksModalOpen] = useState<boolean>(false);
+  const [characterCreationModalOpen, setCharacterCreationModalOpen] = useState<boolean>(false);
 
   // Placeholder for talent data (to be replaced with actual data structure)
   const treeData: any = {
@@ -177,6 +183,20 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     setItemSelectionModalState({ isOpen: false, slot: null });
   };
 
+  const handleCharacterCreation = (name: string, classId: string, specializationId: string, title?: string) => {
+    if (onUpdatePlayer) {
+      onUpdatePlayer((prev) => ({
+        ...prev,
+        name,
+        title,
+        classId,
+        specializationId,
+        hasCustomizedCharacter: true
+      }));
+    }
+    setCharacterCreationModalOpen(false);
+  };
+
   // Inventory handler functions (getInventoryGridItems, handleInventoryGridSlotClick, etc.) moved to InventoryTab.tsx
   // renderEncyclopediaContent and its helper renderEntryDetail are now part of EncyclopediaTab.tsx
 
@@ -189,6 +209,7 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     { id: 'Traits', label: 'Traits', icon: <StarIcon className="text-yellow-400"/> },
     { id: 'Quests', label: 'Quests', icon: <BookIcon /> },
     { id: 'Encyclopedia', label: 'Encyclopedia', icon: <CollectionIcon /> },
+    { id: 'Progress', label: 'Progress', icon: <GearIcon /> },
   ];
 
 
@@ -267,6 +288,12 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
           {activeTab === 'Encyclopedia' && (
             <EncyclopediaTab player={player} />
           )}
+          {activeTab === 'Progress' && (
+            <ProgressTab 
+              player={player} 
+              onOpenCharacterCreation={() => setCharacterCreationModalOpen(true)}
+            />
+          )}
         </div>
       </div>
 
@@ -293,6 +320,14 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
         isOpen={researchUnlocksModalOpen}
         onClose={() => setResearchUnlocksModalOpen(false)}
         // TODO: Pass actual research data and unlock handlers
+      />
+
+      <CharacterCreationModal
+        isOpen={characterCreationModalOpen}
+        player={player}
+        onCreateCharacter={handleCharacterCreation}
+        onClose={() => setCharacterCreationModalOpen(false)}
+        isRecreation={true}
       />
 
       {/* ContextMenu is now rendered within InventoryTab.tsx as per previous successful refactor */}

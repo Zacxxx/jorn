@@ -116,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="min-w-0">
               {/* Character Name */}
               <div className="text-slate-100 text-xs sm:text-sm font-semibold truncate group-hover:text-white transition-colors"> {/* MOD: Adjusted text size for mobile */}
-                {player.name || 'Player'}
+                {player.title ? `${player.title} ${player.name || 'Player'}` : (player.name || 'Player')}
               </div>
               
               {/* Character Stats - Compact Row */}
