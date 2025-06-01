@@ -17,7 +17,7 @@ try {
 const REST_PREFERENCES_KEY = 'jorn-rest-preferences';
 
 // Video background configuration
-const VIDEO_PLAYBACK_RATE = 1; // 25% of normal speed (very slow motion)
+const VIDEO_PLAYBACK_RATE = 1; // Normal speed (1.0 = 100% speed)
 // Alternative rates: 0.1 (ultra slow), 0.5 (slow), 0.75 (slightly slow), 1.0 (normal)
 
 interface RestPreferences {
@@ -334,7 +334,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           // Video filters for darker, blurry background effect
           // Current: Heavy blur, quite dark, enhanced contrast, reduced saturation
           // Playback rate is set to 0.25 (25% speed) via useEffect for slow motion
-          filter: 'blur(10px) brightness(0.4) contrast(1.9) saturate(0.8)',
+          filter: 'blur(25px) brightness(0.4) contrast(1.3) saturate(0.8)',
           // Alternative filter options:
           // Subtle: 'blur(1px) brightness(0.6) contrast(1.05) saturate(0.9)'
           // Heavy: 'blur(3px) brightness(0.3) contrast(1.2) saturate(0.7)'
@@ -346,7 +346,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           console.warn('Video background failed to load');
         }}
       >
-        <source src="/assets/background/jorn-background.webm" type="video/webm" />
+        <source src="/assets/background/jorn-background-2.mp4" type="video/webm" />
       </video>
       
       {/* Fallback background for when video doesn't load */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player, PlayerEffectiveStats } from '../types';
+import { Player, PlayerEffectiveStats } from '../src/types';
 import ActionButton from './ActionButton';
 import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, ReflexIcon } from '../src/components/IconComponents';
 
@@ -32,34 +32,34 @@ const Header: React.FC<HeaderProps> = ({
   const showHealthManaBar = effectivePlayerStats && gameState !== 'IN_COMBAT';
 
   return (
-    <header className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-[1000] shadow-lg">
+    <header className="bg-black/20 backdrop-blur-xl border-b border-white/10 sticky top-0 z-[1000] shadow-2xl shadow-black/20">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between max-w-7xl">
         {/* Left Side - Character Info */}
         <div className="flex items-center gap-2 sm:gap-3"> {/* MOD: Reduced gap for overall left side on mobile */}
           {/* Character Avatar and Info */}
           <div 
-            className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-slate-800/50 rounded-xl px-2 py-2 sm:px-3 transition-all duration-200 group" // MOD: Reduced padding and gap for mobile
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-white/10 rounded-xl px-2 py-2 sm:px-3 transition-all duration-200 group backdrop-blur-sm border border-white/5 hover:border-white/20" // MOD: Reduced padding and gap for mobile
             onClick={onOpenCharacterSheet}
             title="Open Character Sheet"
           >
             {/* Avatar with Circular Health/Mana Indicators */}
             <div className="relative">
               {/* Main Avatar */}
-              <div className="w-9 h-9 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600/50 rounded-xl flex items-center justify-center shadow-sm group-hover:border-slate-500/70 transition-colors relative z-10">
-                <UserIcon className="w-5 h-5 text-slate-300 group-hover:text-slate-200 transition-colors" />
+              <div className="w-9 h-9 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center shadow-lg group-hover:border-white/30 transition-colors relative z-10">
+                <UserIcon className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" />
               </div>
               
               {/* Circular Progress Rings - Desktop Only, Not in Combat */}
               {/* SVGs removed as per request */}
               
               {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full z-20"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-black/30 rounded-full z-20 shadow-lg"></div>
             </div>
             
             {/* Character Details */}
             <div className="min-w-0">
               {/* Character Name */}
-              <div className="text-slate-100 text-xs sm:text-sm font-semibold truncate group-hover:text-white transition-colors"> {/* MOD: Adjusted text size for mobile */}
+              <div className="text-white text-xs sm:text-sm font-semibold truncate group-hover:text-white/90 transition-colors drop-shadow-sm"> {/* MOD: Adjusted text size for mobile */}
                 {player.title ? `${player.title} ${player.name || 'Player'}` : (player.name || 'Player')}
               </div>
               
@@ -69,46 +69,43 @@ const Header: React.FC<HeaderProps> = ({
                   {/* HP */}
                   <div className="flex items-center gap-1">
                     <HealIcon className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-red-300 font-mono text-xs">{player.hp}/{effectivePlayerStats.maxHp}</span>
+                    <span className="text-red-300 font-mono text-xs drop-shadow-sm">{player.hp}/{effectivePlayerStats.maxHp}</span>
                   </div>
                   {/* MP */}
                   <div className="flex items-center gap-1">
                     <WandIcon className="w-3.5 h-3.5 text-blue-400" />
-                    <span className="text-blue-300 font-mono text-xs">{player.mp}/{effectivePlayerStats.maxMp}</span>
+                    <span className="text-blue-300 font-mono text-xs drop-shadow-sm">{player.mp}/{effectivePlayerStats.maxMp}</span>
                   </div>
                   {/* EP */}
                   <div className="flex items-center gap-1">
                     <ReflexIcon className="w-3.5 h-3.5 text-yellow-400" /> {/* Or SpeedIcon */}
-                    <span className="text-yellow-300 font-mono text-xs">{player.ep}/{effectivePlayerStats.maxEp}</span>
+                    <span className="text-yellow-300 font-mono text-xs drop-shadow-sm">{player.ep}/{effectivePlayerStats.maxEp}</span>
                   </div>
                 </div>
               )}
               {/* NEW STATS BLOCK END */}
 
               {/* Character Stats - Compact Row (original, now without HP/MP/EP) */}
-              <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400"> {/* MOD: Reduced gap for mobile */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs text-white/60"> {/* MOD: Reduced gap for mobile */}
                 {/* Level */}
-                <span className="text-blue-400 font-medium">L{player.level}</span>
+                <span className="text-blue-300 font-medium drop-shadow-sm">L{player.level}</span>
                 
                 {/* Resources - Compact */}
                 <div className="flex items-center gap-1.5 sm:gap-2"> {/* MOD: Reduced gap for mobile */}
                   <div className="flex items-center gap-0.5 sm:gap-1"> {/* MOD: Reduced gap for mobile */}
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                    <span className="font-medium text-slate-300">{player.gold.toLocaleString()}</span>
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full shadow-sm"></div>
+                    <span className="font-medium text-white/80 drop-shadow-sm">{player.gold.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center gap-0.5 sm:gap-1"> {/* MOD: Reduced gap for mobile */}
-                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                    <span className="font-medium text-slate-300">{player.essence.toLocaleString()}</span>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full shadow-sm"></div>
+                    <span className="font-medium text-white/80 drop-shadow-sm">{player.essence.toLocaleString()}</span>
                   </div>
                 </div>
                 
                 {/* Location - Hidden on small screens */}
-                <span className="hidden sm:inline text-slate-500 truncate max-w-24">
+                <span className="hidden sm:inline text-white/40 truncate max-w-24 drop-shadow-sm">
                   {player.currentLocationId || 'Unknown'}
                 </span>
-                
-                {/* Health/Mana Values - Desktop Only, Not in Combat -- THIS IS THE BLOCK THAT WAS MOVED AND RESTRUCTURED */}
-                {/* {showHealthManaBar && ( ... )} */}
               </div>
             </div>
           </div>
@@ -116,19 +113,19 @@ const Header: React.FC<HeaderProps> = ({
           {/* Combat Status Indicator */}
           {isInAnyCombat && onReturnToCombat && (
             <div className="flex items-center">
-              <div className="w-px h-6 bg-slate-700 mx-1 sm:mx-2"></div> {/* MOD: Reduced margin for mobile */}
+              <div className="w-px h-6 bg-white/20 mx-1 sm:mx-2"></div> {/* MOD: Reduced margin for mobile */}
               <button
                 onClick={isInCombatButNotOnCombatScreen ? onReturnToCombat : undefined}
-                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${ // MOD: Reduced padding and gap for mobile
+                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all duration-200 backdrop-blur-sm border ${ // MOD: Reduced padding and gap for mobile
                   isInCombatButNotOnCombatScreen 
-                    ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 cursor-pointer' 
-                    : 'bg-slate-700/50 text-slate-400 border border-slate-600/30 cursor-default'
+                    ? 'bg-red-500/20 text-red-300 border-red-400/30 hover:bg-red-500/30 hover:border-red-400/50 cursor-pointer shadow-lg' 
+                    : 'bg-white/10 text-white/60 border-white/20 cursor-default'
                 }`}
                 title={isInCombatButNotOnCombatScreen ? "Return to Active Combat" : "Currently in Combat"}
                 disabled={!isInCombatButNotOnCombatScreen}
               >
-                <div className={`w-2 h-2 rounded-full ${isInCombatButNotOnCombatScreen ? 'bg-red-400 animate-pulse' : 'bg-slate-500'}`}></div>
-                <span className="text-2xs sm:text-xs">{isInCombatButNotOnCombatScreen ? "Combat" : "In Combat"}</span> {/* MOD: Adjusted text size for mobile */}
+                <div className={`w-2 h-2 rounded-full ${isInCombatButNotOnCombatScreen ? 'bg-red-400 animate-pulse shadow-sm' : 'bg-white/40'}`}></div>
+                <span className="text-2xs sm:text-xs drop-shadow-sm">{isInCombatButNotOnCombatScreen ? "Combat" : "In Combat"}</span> {/* MOD: Adjusted text size for mobile */}
               </button>
             </div>
           )}
@@ -138,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <button
             onClick={onNavigateHome}
-            className="text-lg sm:text-xl font-bold bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent hover:from-sky-300 hover:to-cyan-300 transition-all duration-200 px-2 sm:px-3 py-1 rounded-lg hover:bg-slate-800/30" // MOD: Reduced padding and text size for mobile
+            className="text-lg sm:text-xl font-bold bg-gradient-to-r from-sky-300 to-cyan-300 bg-clip-text text-transparent hover:from-sky-200 hover:to-cyan-200 transition-all duration-200 px-2 sm:px-3 py-1 rounded-lg drop-shadow-lg" // MOD: Reduced padding and text size for mobile
             style={{fontFamily: "'Inter Tight', sans-serif"}}
             title="Go to Home Screen"
           >
@@ -154,10 +151,10 @@ const Header: React.FC<HeaderProps> = ({
             size="sm"
             variant="secondary"
             icon={<Bars3Icon className="w-4 h-4" />}
-            className="hidden sm:flex !px-3 !py-2 !bg-slate-800/50 !border-slate-600/30 hover:!bg-slate-700/50 hover:!border-slate-500/50 !text-slate-300 hover:!text-slate-200 !shadow-none"
+            className="hidden sm:flex !px-3 !py-2 !bg-transparent !border-transparent hover:!bg-white/10 hover:!border-white/20 !text-white/80 hover:!text-white !shadow-none backdrop-blur-sm items-center"
             title="Open Game Menu"
           >
-            <span className="text-xs font-medium">Menu</span>
+            <span className="text-xs font-medium drop-shadow-sm">Menu</span>
           </ActionButton>
           
           {/* Mobile Menu Button - Mobile Only */}
@@ -167,7 +164,7 @@ const Header: React.FC<HeaderProps> = ({
               size="sm"
               variant="secondary"
               icon={<Bars3Icon className="w-4 h-4" />}
-              className="sm:hidden !px-2 !py-2 !bg-transparent hover:!bg-slate-800/50 !border-transparent !shadow-none !text-slate-400 hover:!text-slate-200"
+              className="sm:hidden !px-2 !py-2 !bg-transparent hover:!bg-white/10 !border-transparent !shadow-none !text-white/60 hover:!text-white backdrop-blur-sm flex items-center justify-center"
               title="Open Menu"
             >
               {null} 
