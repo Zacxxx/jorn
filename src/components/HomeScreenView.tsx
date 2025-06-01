@@ -1,5 +1,6 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
+import SpriteAnimation from './SpriteAnimation'; // Added import
 import ActionButton from './ActionButton';
 import ActivityCard from './ActivityCard';
 import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon, PlusIcon } from './IconComponents';
@@ -286,6 +287,19 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
   return (
     <div className="min-h-screen md:min-h-[calc(100vh-12rem)] md:h-[calc(100vh-12rem)] w-full max-w-none mx-0 px-4 overflow-hidden">
+      <SpriteAnimation
+        imageUrl="assets/activity-card/camp.gif"
+        altText="Animated background"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: -10,
+          objectFit: 'cover',
+        }}
+      />
       {/* Player Stats Display - Conditional Rendering */}
       {PlayerStatsDisplay && (
         <div className="mb-4">
