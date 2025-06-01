@@ -31,6 +31,7 @@ interface CombatViewProps {
   onUseAbility: (abilityId: string, targetId: string | null) => void;
   consumables: Consumable[];
   abilities: Ability[];
+  onSeekBattle?: () => void;
 }
 
 type DynamicAreaView = 'actions' | 'spells' | 'abilities' | 'items' | 'log';
@@ -232,7 +233,7 @@ const CombatActionModal: React.FC<CombatActionModalProps> = ({ actionItem, isOpe
                 
                 <div className="space-y-2 text-sm">
                     {'manaCost' in actionItem && (
-                        <>
+                        <div>
                             <div className="flex justify-between">
                                 <span className="text-slate-300">MP Cost:</span>
                                 <span className="font-bold text-blue-300">{actionItem.manaCost}</span>
@@ -241,28 +242,20 @@ const CombatActionModal: React.FC<CombatActionModalProps> = ({ actionItem, isOpe
                                 <span className="text-slate-300">Damage:</span>
                                 <span className="font-bold text-red-300">{actionItem.damage} ({actionItem.damageType})</span>
                             </div>
-                            {actionItem.statusEffects && actionItem.statusEffects.length > 0 && (
-                                <div className="flex justify-between">
-                                    <span className="text-slate-300">Effects:</span>
-                                    <span className="font-bold text-purple-300">
-                                        {actionItem.statusEffects.map(e => e.name).join(', ')}
-                                    </span>
-                                </div>
-                            )}
-                        </>
+                        </div>
                     )}
                     
                     {'epCost' in actionItem && (
-                        <>
+                        <div>
                             <div className="flex justify-between">
                                 <span className="text-slate-300">EP Cost:</span>
                                 <span className="font-bold text-yellow-300">{actionItem.epCost}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-slate-300">Effect:</span>
-                                <span className="font-bold text-lime-300">{actionItem.effectType.replace(/_/g, ' ')}</span>
+                                <span className="font-bold text-lime-300">Special Ability</span>
                             </div>
-                        </>
+                        </div>
                     )}
                     
                     {'itemType' in actionItem && actionItem.itemType === 'Consumable' && (
@@ -357,21 +350,11 @@ interface EnhancedEnemyDisplayProps {
 const EnhancedEnemyDisplay: React.FC<EnhancedEnemyDisplayProps> = ({ enemy, isTargeted, onClick, onInfoClick }) => {
   return (
     <div className="flex flex-col items-center relative">
-      {/* Enemy Sprite - Clean with health bar overlay */}
+      {/* Enemy Sprite with Health Bar Overlay */}
       <div className="relative mb-2">
-        <img 
-          src="/assets/default-sprite/jorn-defaultmonster-front.png"
-          alt={enemy.name}
-          className={`w-32 h-32 object-contain transition-all duration-300 cursor-pointer ${
-            isTargeted ? 'scale-110 drop-shadow-2xl' : 'hover:scale-105'
-          }`}
-          onClick={onClick}
-          title={`Target ${enemy.name}`}
-        />
-        
-        {/* Health Bar Overlay - Positioned above sprite - CLICKABLE FOR DETAILS */}
+        {/* Health Bar Overlay - Positioned above sprite */}
         <div 
-          className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-28 cursor-pointer hover:bg-slate-800/70 transition-all duration-200 rounded-md"
+          className="absolute -top-16 left-1/2 transform -translate-x-1/2 w-32 cursor-pointer hover:bg-slate-800/70 transition-all duration-200 rounded-md z-10"
           onClick={onInfoClick}
           title={`View ${enemy.name} details`}
         >
@@ -397,6 +380,17 @@ const EnhancedEnemyDisplay: React.FC<EnhancedEnemyDisplayProps> = ({ enemy, isTa
             </div>
           </div>
         </div>
+
+        {/* Enemy Sprite */}
+        <img 
+          src="/assets/default-sprite/jorn-defaultmonster-front.png"
+          alt={enemy.name}
+          className={`w-32 h-32 object-contain transition-all duration-300 cursor-pointer ${
+            isTargeted ? 'scale-110 drop-shadow-2xl' : 'hover:scale-105'
+          }`}
+          onClick={onClick}
+          title={`Target ${enemy.name}`}
+        />
         
         {/* Targeting Indicator */}
         {isTargeted && (
@@ -471,6 +465,7 @@ const CombatView: React.FC<CombatViewProps> = ({
   preparedSpells, onPlayerAttack, onPlayerBasicAttack, onPlayerDefend, onPlayerFlee, onPlayerFreestyleAction,
   combatLog, isPlayerTurn, playerActionSkippedByStun,
   onUseConsumable, onUseAbility, consumables, abilities,
+  onSeekBattle,
 }) => {
   const [activeDynamicView, setActiveDynamicView] = useState<DynamicAreaView>('actions');
   const [freestyleActionText, setFreestyleActionText] = useState('');
@@ -478,6 +473,7 @@ const CombatView: React.FC<CombatViewProps> = ({
   const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
   const [selectedActionItem, setSelectedActionItem] = useState<CombatActionItemType | null>(null);
   const [showActionModal, setShowActionModal] = useState(false);
+  const [showMobileDynamicModal, setShowMobileDynamicModal] = useState(false);
   
   // Pagination states for swipeable spell/ability/item grids
   const [spellPage, setSpellPage] = useState(0);
@@ -500,6 +496,10 @@ const CombatView: React.FC<CombatViewProps> = ({
     setSpellPage(0);
     setAbilityPage(0);
     setItemPage(0);
+    // Show mobile modal on mobile devices
+    if (window.innerWidth < 768) {
+      setShowMobileDynamicModal(true);
+    }
   };
 
   const handleLongPress = (item: CombatActionItemType) => {
@@ -576,6 +576,10 @@ const CombatView: React.FC<CombatViewProps> = ({
                 }
                 else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
                 else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
+                // Close modal after action on mobile
+                if (window.innerWidth < 768) {
+                  setShowMobileDynamicModal(false);
+                }
               }}
               onLongPress={handleLongPress}
               isDisabledByGameLogic={!canPlayerAct} 
@@ -669,13 +673,17 @@ const CombatView: React.FC<CombatViewProps> = ({
       case 'actions':
         return (
           <div className="p-3 h-full flex flex-col gap-3">
-            {/* Quick Actions - 2x2 grid on mobile */}
+            {/* Quick Actions - 2x2 grid */}
             <div className="grid grid-cols-2 gap-2 flex-1">
               <ActionButton 
                 onClick={() => { 
                   if(targetEnemyId) { 
                     onPlayerBasicAttack(targetEnemyId); 
                   } else alert("Select a target first!");
+                  // Close modal after action on mobile
+                  if (window.innerWidth < 768) {
+                    setShowMobileDynamicModal(false);
+                  }
                 }} 
                 variant="danger" 
                 size="md"
@@ -686,7 +694,13 @@ const CombatView: React.FC<CombatViewProps> = ({
                 ATTACK
               </ActionButton>
               <ActionButton 
-                onClick={() => {onPlayerDefend();}} 
+                onClick={() => {
+                  onPlayerDefend();
+                  // Close modal after action on mobile
+                  if (window.innerWidth < 768) {
+                    setShowMobileDynamicModal(false);
+                  }
+                }} 
                 variant="info" 
                 size="md"
                 icon={<ShieldIcon className="w-5 h-5"/>} 
@@ -696,7 +710,13 @@ const CombatView: React.FC<CombatViewProps> = ({
                 DEFEND
               </ActionButton>
               <ActionButton 
-                onClick={() => {onPlayerFlee();}} 
+                onClick={() => {
+                  onPlayerFlee();
+                  // Close modal after action on mobile
+                  if (window.innerWidth < 768) {
+                    setShowMobileDynamicModal(false);
+                  }
+                }} 
                 variant="warning" 
                 size="md"
                 icon={<FleeIcon className="w-5 h-5"/>} 
@@ -711,7 +731,13 @@ const CombatView: React.FC<CombatViewProps> = ({
                 size="md"
                 className="h-full text-sm font-bold px-2 flex flex-col items-center justify-center gap-1" 
                 disabled={!canPlayerAct || !freestyleActionText.trim()} 
-                onClick={handleFreestyleSubmit}
+                onClick={() => {
+                  handleFreestyleSubmit(new Event('submit') as any);
+                  // Close modal after action on mobile
+                  if (window.innerWidth < 768) {
+                    setShowMobileDynamicModal(false);
+                  }
+                }}
               >
                 CUSTOM
               </ActionButton>
@@ -775,11 +801,11 @@ const CombatView: React.FC<CombatViewProps> = ({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
       <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/20 via-slate-800/60 to-emerald-900/20" />
       
-      {/* Battlefield - Full Center */}
-      <div className="flex-1 relative mx-4 md:mx-8 mb-2 md:mb-4 overflow-hidden backdrop-blur-sm rounded-2xl">
-        {/* Enemies Section - Top of battlefield */}
-        <div className="absolute top-16 md:top-28 left-1/2 transform -translate-x-1/2 z-30 w-full">
-          <div className={`${getEnemyGridLayout()} px-4 md:px-8`}>
+      {/* Mobile Layout */}
+      <div className="md:hidden flex flex-col h-full">
+        {/* Top Section - Enemy Display */}
+        <div className="flex-shrink-0 pt-28 pb-4">
+          <div className="flex justify-center">
             {currentEnemies.map(enemy => (
               <EnhancedEnemyDisplay
                 key={enemy.id}
@@ -792,103 +818,209 @@ const CombatView: React.FC<CombatViewProps> = ({
           </div>
         </div>
 
-        {/* Player Area - Bottom */}
-        <div className="absolute bottom-8 md:bottom-12 left-1/2 transform -translate-x-1/2 z-20">
+        {/* Middle Section - Player Sprite Area */}
+        <div className="flex-1 flex items-center justify-center relative">
           <EnhancedPlayerDisplay 
             player={player}
             effectiveStats={effectivePlayerStats}
             onInfoClick={() => setShowPlayerDetailsModal(true)}
           />
         </div>
-        
-        {/* Battle effects */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900/60 to-transparent pointer-events-none" />
+
+        {/* Bottom Section - Player Stats */}
+        <div className="flex-shrink-0 p-2">
+          <div className="bg-slate-900/90 backdrop-blur-xl rounded-lg border border-slate-600/40 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-slate-200 font-bold text-sm">{player.name || "Hero"}</span>
+              <div className="flex gap-2">
+                {/* Action Category Buttons - Horizontal */}
+                {actionCategories.map(cat => (
+                  <button
+                    key={cat.view}
+                    onClick={() => handleCategoryChange(cat.view)}
+                    disabled={cat.view !== 'log' && !canPlayerAct}
+                    className={`
+                      w-8 h-8 rounded-lg transition-all duration-200 border flex items-center justify-center relative
+                      ${activeDynamicView === cat.view 
+                        ? 'bg-cyan-600/40 border-cyan-400/60 text-cyan-200' 
+                        : cat.view !== 'log' && !canPlayerAct
+                          ? 'bg-slate-800/40 border-slate-700/40 text-slate-500 opacity-50'
+                          : 'bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/60'
+                      }
+                    `}
+                  >
+                    <div className="w-4 h-4">
+                      {cat.icon}
+                    </div>
+                    {cat.count !== undefined && cat.count > 0 && (
+                      <div className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px]">
+                        {cat.count > 9 ? '9+' : cat.count}
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Health, Mana, and Energy Bars */}
+            <div className="space-y-1">
+              {/* Health Bar */}
+              <div className="flex items-center space-x-2">
+                <span className="text-red-300 font-semibold text-xs w-6">HP</span>
+                <div className="flex-1 relative bg-slate-700/50 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-red-500 to-red-400 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.max(0, (player.hp / effectivePlayerStats.maxHp) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-red-300 font-bold text-xs min-w-0">{player.hp}/{effectivePlayerStats.maxHp}</span>
+              </div>
+              
+              {/* Mana Bar */}
+              <div className="flex items-center space-x-2">
+                <span className="text-blue-300 font-semibold text-xs w-6">MP</span>
+                <div className="flex-1 relative bg-slate-700/50 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.max(0, (player.mp / effectivePlayerStats.maxMp) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-blue-300 font-bold text-xs min-w-0">{player.mp}/{effectivePlayerStats.maxMp}</span>
+              </div>
+
+              {/* Energy Bar */}
+              <div className="flex items-center space-x-2">
+                <span className="text-yellow-300 font-semibold text-xs w-6">EP</span>
+                <div className="flex-1 relative bg-slate-700/50 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-yellow-500 to-amber-400 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.max(0, (player.ep / effectivePlayerStats.maxEp) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-yellow-300 font-bold text-xs min-w-0">{player.ep}/{effectivePlayerStats.maxEp}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Bottom Panel - Mobile: 2x2 Grid, Desktop: Row Layout */}
-      <div className="flex-shrink-0 p-2 md:p-4">
-        {/* Mobile Layout: 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-2 md:hidden h-48">
-          {/* Player Stats - Top Left */}
-          <div className="h-full">
-            <EnhancedStatusDisplay 
-              player={player} 
-              effectiveStats={effectivePlayerStats} 
-              onInfoClick={() => setShowPlayerDetailsModal(true)} 
-            />
-          </div>
-
-          {/* Action Categories - Top Right */}
-          <div className="h-full">
-            <div className="grid grid-rows-5 gap-1 h-full">
-              {actionCategories.map(cat => (
-                <ActionCategoryButton
-                  key={cat.view}
-                  label={cat.label}
-                  icon={cat.icon}
-                  isActive={activeDynamicView === cat.view}
-                  onClick={() => handleCategoryChange(cat.view)}
-                  disabled={cat.view !== 'log' && !canPlayerAct}
-                  count={cat.count}
+      {/* Desktop Layout - Keep existing */}
+      <div className="hidden md:block h-full">
+        {/* Battlefield - Full Center */}
+        <div className="flex-1 relative mx-4 md:mx-8 mb-2 md:mb-4 overflow-hidden backdrop-blur-sm rounded-2xl">
+          {/* Enemies Section - Top of battlefield */}
+          <div className="absolute top-16 md:top-28 left-1/2 transform -translate-x-1/2 z-30 w-full">
+            <div className={`${getEnemyGridLayout()} px-4 md:px-8`}>
+              {currentEnemies.map(enemy => (
+                <EnhancedEnemyDisplay
+                  key={enemy.id}
+                  enemy={enemy}
+                  isTargeted={targetEnemyId === enemy.id}
+                  onClick={() => onSetTargetEnemy(enemy.id)}
+                  onInfoClick={() => setShowEnemyDetailsModal(enemy)}
                 />
               ))}
             </div>
           </div>
 
-          {/* Dynamic Area - Bottom Span Full Width */}
-          <div className="col-span-2 h-full">
-            <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
-              {renderDynamicAreaContent()}
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop Layout: Row Layout */}
-        <div className="hidden md:flex flex-row gap-4 h-36">
-          {/* Player Stats */}
-          <div className="w-1/4">
-            <EnhancedStatusDisplay 
-              player={player} 
-              effectiveStats={effectivePlayerStats} 
-              onInfoClick={() => setShowPlayerDetailsModal(true)} 
+          {/* Player Area - Bottom */}
+          <div className="absolute bottom-8 md:bottom-12 left-1/2 transform -translate-x-1/2 z-20">
+            <EnhancedPlayerDisplay 
+              player={player}
+              effectiveStats={effectivePlayerStats}
+              onInfoClick={() => setShowPlayerDetailsModal(true)}
             />
           </div>
+          
+          {/* Battle effects */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900/60 to-transparent pointer-events-none" />
+        </div>
 
-          {/* Dynamic Area */}
-          <div className="w-1/2">
-            <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
-              {renderDynamicAreaContent()}
+        {/* Desktop Bottom Panel */}
+        <div className="flex-shrink-0 p-2 md:p-4">
+          <div className="flex flex-row gap-4 h-36">
+            {/* Player Stats */}
+            <div className="w-1/4">
+              <EnhancedStatusDisplay 
+                player={player}
+                effectiveStats={effectivePlayerStats}
+                onInfoClick={() => setShowPlayerDetailsModal(true)}
+              />
             </div>
-          </div>
 
-          {/* Action Categories */}
-          <div className="w-1/4">
-            <div className="grid grid-rows-5 gap-1 h-full">
-              {actionCategories.map(cat => (
-                <ActionCategoryButton
-                  key={cat.view}
-                  label={cat.label}
-                  icon={cat.icon}
-                  isActive={activeDynamicView === cat.view}
-                  onClick={() => handleCategoryChange(cat.view)}
-                  disabled={cat.view !== 'log' && !canPlayerAct}
-                  count={cat.count}
-                />
-              ))}
+            {/* Dynamic Area */}
+            <div className="w-1/2">
+              <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
+                {renderDynamicAreaContent()}
+              </div>
+            </div>
+
+            {/* Action Categories */}
+            <div className="w-1/4">
+              <div className="grid grid-rows-5 gap-1 h-full">
+                {actionCategories.map(cat => (
+                  <ActionCategoryButton
+                    key={cat.view}
+                    label={cat.label}
+                    icon={cat.icon}
+                    isActive={activeDynamicView === cat.view}
+                    onClick={() => handleCategoryChange(cat.view)}
+                    disabled={cat.view !== 'log' && !canPlayerAct}
+                    count={cat.count}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile Dynamic Modal Overlay */}
+      {showMobileDynamicModal && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => setShowMobileDynamicModal(false)}
+          />
+          
+          {/* Modal Content - Panel over bottom section */}
+          <div className="absolute left-2 right-2 bottom-2">
+            <div className="bg-slate-800/95 backdrop-blur-xl rounded-xl border border-slate-600/50 shadow-2xl overflow-hidden max-h-[45vh]">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-2 border-b border-slate-600/50 bg-slate-900/50">
+                <h3 className="text-sm font-bold text-slate-100 capitalize">
+                  {activeDynamicView === 'actions' ? 'Combat Actions' : 
+                   activeDynamicView === 'spells' ? 'Spells' :
+                   activeDynamicView === 'abilities' ? 'Abilities' :
+                   activeDynamicView === 'items' ? 'Items' : 'Combat Log'}
+                </h3>
+                <button
+                  onClick={() => setShowMobileDynamicModal(false)}
+                  className="w-6 h-6 rounded-full bg-slate-700/50 text-slate-300 hover:bg-slate-600/50 hover:text-slate-200 transition-colors flex items-center justify-center text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Modal Body - Optimized height for panel */}
+              <div className="h-56">
+                {renderDynamicAreaContent()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {showEnemyDetailsModal && (
         <Modal isOpen={true} onClose={() => setShowEnemyDetailsModal(null)} title={showEnemyDetailsModal.name} size="lg">
-            <EnemyDisplay enemy={showEnemyDetailsModal} />
+          <EnemyDisplay enemy={showEnemyDetailsModal} />
         </Modal>
       )}
       {showPlayerDetailsModal && (
         <Modal isOpen={true} onClose={() => setShowPlayerDetailsModal(false)} title={`${player.name || "Hero"} - Stats`} size="lg">
-            <PlayerStatsDisplay player={player} effectiveStats={effectivePlayerStats} />
+          <PlayerStatsDisplay player={player} effectiveStats={effectivePlayerStats} />
         </Modal>
       )}
       <CombatActionModal 

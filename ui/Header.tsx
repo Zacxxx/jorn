@@ -102,18 +102,19 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
         
         {/* Right Side - Action Buttons */}
         <div className="flex items-center gap-2">
+          {/* Game Menu Button - Desktop Only */}
           <ActionButton
             onClick={onOpenGameMenu}
             size="sm"
             variant="secondary"
             icon={<Bars3Icon className="w-4 h-4" />}
-            className="!px-3 !py-2 !bg-slate-800/50 !border-slate-600/30 hover:!bg-slate-700/50 hover:!border-slate-500/50 !text-slate-300 hover:!text-slate-200 !shadow-none"
+            className="hidden sm:flex !px-3 !py-2 !bg-slate-800/50 !border-slate-600/30 hover:!bg-slate-700/50 hover:!border-slate-500/50 !text-slate-300 hover:!text-slate-200 !shadow-none"
             title="Open Game Menu"
           >
-            <span className="hidden sm:inline text-xs font-medium">Menu</span>
+            <span className="text-xs font-medium">Menu</span>
           </ActionButton>
           
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Mobile Only */}
           {onOpenMobileMenu && (
             <ActionButton
               onClick={onOpenMobileMenu}
