@@ -187,8 +187,8 @@ export const processEnemyTurn = (context: TurnContext): void => {
     context.addLog('System', `${actingEnemy.name} succumbed to status effects!`, 'info');
     context.handleEnemyDefeat({ ...actingEnemy, hp: enemyCurrentHp });
     
-    // Check for victory after enemy defeat
-    const remainingLivingEnemies = context.currentEnemies.filter(e => e.id !== actingEnemy.id && e.hp > 0 && !e.isDefeated);
+    // Check for victory after enemy defeat - exclude the just-defeated enemy
+    const remainingLivingEnemies = context.currentEnemies.filter(e => e.id !== actingEnemy.id && e.hp > 0);
     if (remainingLivingEnemies.length === 0) {
       context.addLog('System', 'Victory! All enemies defeated.', 'success');
       context.setGameState('GAME_OVER_VICTORY');

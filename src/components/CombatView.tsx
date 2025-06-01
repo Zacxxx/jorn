@@ -34,7 +34,7 @@ interface CombatViewProps {
   onSeekBattle?: () => void;
 }
 
-type DynamicAreaView = 'actions' | 'spells' | 'abilities' | 'items' | 'log';
+type DynamicAreaView = 'actions' | 'spells' | 'abilities' | 'items' | 'log' | 'custom';
 type CombatActionItemType = Spell | Ability | Consumable;
 
 // --- Component Interfaces ---
@@ -426,6 +426,7 @@ const CombatView: React.FC<CombatViewProps> = ({
     if (!freestyleActionText.trim() || !canPlayerAct) return;
     onPlayerFreestyleAction(freestyleActionText, targetEnemyId);
     setFreestyleActionText('');
+    setActiveDynamicView('actions'); // Return to actions view after submission
   };
 
   const handleCategoryChange = (view: DynamicAreaView) => {
@@ -587,30 +588,87 @@ const CombatView: React.FC<CombatViewProps> = ({
         );
       }
       
-      // Desktop layout - show all items in a scrollable grid
-      const renderDesktopGrid = () => (
-        <div className="h-full p-3 overflow-y-auto">
-          <div className="grid grid-cols-3 gap-2">
-                {items.map(item => (
-              <EnhancedCombatActionSlot 
-                key={item.id} 
-                actionItem={item} 
-                player={player}
-                        onClick={(action) => {
-                            if (!canPlayerAct) return;
-                  if (type === 'spell') { 
-                    if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); 
-                    else alert("Select a target first!"); 
-                  }
-                            else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
-                            else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
-                        }}
-                        isDisabledByGameLogic={!canPlayerAct} 
-                    />
+      // Desktop layout - show items in a 4x2 grid with pagination
+      const renderDesktopGrid = () => {
+        const DESKTOP_ITEMS_PER_PAGE = 8; // 4x2 grid
+        const currentPage = type === 'spell' ? spellPage : type === 'ability' ? abilityPage : itemPage;
+        const setCurrentPage = type === 'spell' ? setSpellPage : type === 'ability' ? setAbilityPage : setItemPage;
+        const totalPages = Math.ceil(items.length / DESKTOP_ITEMS_PER_PAGE);
+        const startIndex = currentPage * DESKTOP_ITEMS_PER_PAGE;
+        const endIndex = Math.min(startIndex + DESKTOP_ITEMS_PER_PAGE, items.length);
+        const currentItems = items.slice(startIndex, endIndex);
+
+        return (
+          <div className="h-full flex flex-col">
+            {/* Items Grid - 4x2 */}
+            <div className="flex-1 p-3">
+              <div className="grid grid-cols-4 grid-rows-2 gap-2 h-full">
+                {currentItems.map(item => (
+                  <EnhancedCombatActionSlot 
+                    key={item.id} 
+                    actionItem={item} 
+                    player={player}
+                    onClick={(action) => {
+                      if (!canPlayerAct) return;
+                      if (type === 'spell') { 
+                        if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); 
+                        else alert("Select a target first!"); 
+                      }
+                      else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
+                      else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
+                    }}
+                    isDisabledByGameLogic={!canPlayerAct} 
+                  />
                 ))}
+                
+                {/* Fill empty slots to maintain grid */}
+                {Array.from({ length: DESKTOP_ITEMS_PER_PAGE - currentItems.length }).map((_, index) => (
+                  <div key={`empty-${index}`} className="w-full h-full opacity-0"></div>
+                ))}
+              </div>
             </div>
-        </div>
-      );
+            
+            {/* Page Indicator for Desktop */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 py-2 bg-slate-800/30 border-t border-slate-600/30">
+                <button
+                  onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                  disabled={currentPage === 0}
+                  className="w-6 h-6 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold disabled:opacity-30 hover:bg-slate-600/50 transition-colors"
+                >
+                  ‹
+                </button>
+                
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentPage(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                        index === currentPage 
+                          ? 'bg-cyan-400 scale-125' 
+                          : 'bg-slate-600/50 hover:bg-slate-500/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                  disabled={currentPage === totalPages - 1}
+                  className="w-6 h-6 rounded-full bg-slate-700/50 text-slate-300 text-xs font-bold disabled:opacity-30 hover:bg-slate-600/50 transition-colors"
+                >
+                  ›
+                </button>
+                
+                <span className="text-xs text-slate-400 ml-2">
+                  {currentPage + 1}/{totalPages}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      };
       
       // Mobile layout - use swipeable pagination
       const renderMobileGrid = () => {
@@ -643,9 +701,9 @@ const CombatView: React.FC<CombatViewProps> = ({
     switch (activeDynamicView) {
       case 'actions':
         return (
-          <div className="p-3 h-full flex flex-col gap-3">
-            {/* Quick Actions - 2x2 grid with proper sizing */}
-            <div className="grid grid-cols-2 gap-3 flex-1">
+          <div className="p-3 h-full flex flex-col gap-2">
+            {/* Quick Actions - 2x2 grid with smaller sizing */}
+            <div className="grid grid-cols-2 gap-2 h-full">
               <ActionButton 
                 onClick={() => { 
                   if(targetEnemyId) { 
@@ -657,10 +715,10 @@ const CombatView: React.FC<CombatViewProps> = ({
                   }
                 }} 
                 variant="danger" 
-                size="lg"
-                icon={<SwordsIcon className="w-5 h-5"/>} 
+                size="md"
+                icon={<SwordsIcon className="w-4 h-4"/>} 
                 disabled={!targetEnemyId || !canPlayerAct} 
-                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2"
+                className="h-full text-xs font-bold px-2 py-1 flex flex-col items-center justify-center gap-1"
               >
                 ATTACK
               </ActionButton>
@@ -673,10 +731,10 @@ const CombatView: React.FC<CombatViewProps> = ({
                   }
                 }} 
                 variant="info" 
-                size="lg"
-                icon={<ShieldIcon className="w-5 h-5"/>} 
+                size="md"
+                icon={<ShieldIcon className="w-4 h-4"/>} 
                 disabled={!canPlayerAct} 
-                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2"
+                className="h-full text-xs font-bold px-2 py-1 flex flex-col items-center justify-center gap-1"
               >
                 DEFEND
               </ActionButton>
@@ -689,49 +747,78 @@ const CombatView: React.FC<CombatViewProps> = ({
                   }
                 }} 
                 variant="warning" 
-                size="lg"
-                icon={<FleeIcon className="w-5 h-5"/>} 
+                size="md"
+                icon={<FleeIcon className="w-4 h-4"/>} 
                 disabled={!canPlayerAct} 
-                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2"
+                className="h-full text-xs font-bold px-2 py-1 flex flex-col items-center justify-center gap-1"
               >
                 FLEE
               </ActionButton>
               <ActionButton 
-                type="submit" 
-                variant="secondary" 
-                size="lg"
-                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2" 
-                disabled={!canPlayerAct || !freestyleActionText.trim()} 
                 onClick={() => {
-                  handleFreestyleSubmit(new Event('submit') as any);
+                  setActiveDynamicView('custom');
                   // Close modal after action on mobile
                   if (window.innerWidth < 768) {
                     setShowMobileDynamicModal(false);
                   }
                 }}
+                variant="secondary" 
+                size="md"
+                className="h-full text-xs font-bold px-2 py-1 flex flex-col items-center justify-center gap-1" 
+                disabled={!canPlayerAct}
               >
                 CUSTOM
               </ActionButton>
             </div>
-            
-            {/* Custom Action - Compact sizing */}
-            <div className="h-14 flex-shrink-0">
-              <form onSubmit={handleFreestyleSubmit} className="h-full">
-                <textarea 
-                  value={freestyleActionText} 
-                  onChange={(e) => setFreestyleActionText(e.target.value)} 
-                  placeholder="Describe your custom action..." 
-                  rows={2}
-                  className="w-full h-full p-2 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm resize-none shadow-lg" 
-                  disabled={!canPlayerAct} 
-                />
-                </form>
-                </div>
-            </div>
+          </div>
         );
       case 'spells': return renderActionGrid(preparedSpells, 'spell');
       case 'abilities': return renderActionGrid(abilities, 'ability');
       case 'items': return renderActionGrid(consumables, 'consumable');
+      case 'custom':
+        return (
+          <div className="p-4 h-full flex flex-col gap-3 relative">
+            {/* Small close button positioned over text area */}
+            <button
+              onClick={() => setActiveDynamicView('actions')}
+              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-slate-700/80 text-slate-300 hover:bg-slate-600/80 hover:text-slate-200 transition-colors flex items-center justify-center text-xs z-10"
+            >
+              ✕
+            </button>
+            
+            <div className="flex-1 flex flex-col gap-3">
+              <form onSubmit={handleFreestyleSubmit} className="flex-1 flex flex-col gap-3">
+                <input
+                  type="text"
+                  value={freestyleActionText} 
+                  onChange={(e) => setFreestyleActionText(e.target.value)} 
+                  placeholder="Describe your custom action..." 
+                  className="w-full p-3 pr-10 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm shadow-lg" 
+                  disabled={!canPlayerAct} 
+                />
+                <div className="flex gap-2">
+                  <ActionButton
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    disabled={!canPlayerAct || !freestyleActionText.trim()}
+                    className="flex-1"
+                  >
+                    Execute Action
+                  </ActionButton>
+                  <ActionButton
+                    onClick={() => setActiveDynamicView('actions')}
+                    variant="secondary"
+                    size="md"
+                    className="px-6"
+                  >
+                    Cancel
+                  </ActionButton>
+                </div>
+              </form>
+            </div>
+          </div>
+        );
       case 'log': 
         return (
           <div className="h-full p-2">

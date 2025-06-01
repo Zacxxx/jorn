@@ -168,20 +168,30 @@ Ensure valid JSON. Prioritize balanced spells.`;
 
 
 export async function generateSpellFromDesign(
-  designData: { level: number; componentsUsed: Array<{ componentId: string; configuration: Record<string, string | number> }>; investedResources?: ResourceCost[]; playerName?: string; playerDescription?: string; playerIcon?: SpellIconName; playerPrompt?: string; }
+  designData: { level: number; componentsUsed: Array<{ componentId: string; configuration: Record<string, string | number> }>; investedResources?: ResourceCost[]; playerName?: string; playerDescription?: string; playerIcon?: SpellIconName; playerPrompt?: string; playerInventory?: Record<string, number>; }
 ): Promise<GeneratedSpellData> {
-  const { level, componentsUsed, investedResources, playerName, playerDescription, playerIcon, playerPrompt } = designData;
+  const { level, componentsUsed, investedResources, playerName, playerDescription, playerIcon, playerPrompt, playerInventory } = designData;
 
   const chosenComponentsDetails = componentsUsed.map(cu => {
     const compDef = EXAMPLE_SPELL_COMPONENTS.find(c => c.id === cu.componentId); 
     return { ...compDef, configuration: cu.configuration }; 
   });
   
+  // Format player inventory for AI
+  const inventoryInfo = playerInventory ? 
+    Object.entries(playerInventory)
+      .filter(([_, quantity]) => quantity > 0)
+      .map(([itemId, quantity]) => `${itemId}: ${quantity}`)
+      .join(', ') : 
+    'No inventory information provided';
+  
   let promptForAI = `A player is designing a level ${level} spell.
 Player's concept prompt (optional): "${playerPrompt || 'None provided.'}"
 Player's chosen name (optional): "${playerName || 'None provided.'}"
 Player's chosen description (optional): "${playerDescription || 'None provided.'}"
 Player's chosen icon (optional): "${playerIcon || 'None provided.'}"
+
+Player's Current Inventory: ${inventoryInfo}
 
 Selected Spell Components and their configurations:
 ${JSON.stringify(chosenComponentsDetails, null, 2)}
@@ -202,7 +212,7 @@ Your task is to finalize this spell. Generate a JSON object with:
 - damageType: (ElementName from list: ${ALL_ELEMENTS.join(', ')}) Derived from components.
 - scalesWith: ('Body' | 'Mind' | null) Derived from components.
 - statusEffectInflict: (object | null) Derived status effect. Status Name from: ${AVAILABLE_STATUS_EFFECTS.join(', ')}. Chance: 10-100%. Duration: 1-5 turns. Magnitude: 1-25.
-- resourceCost: (array of ResourceCost objects | null) Final additional resources for crafting. Use itemId from master list. ResourceType from: ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}. Quantity: 1-5. Max 3 types.
+- resourceCost: (array of ResourceCost objects | null) IMPORTANT: Only request resources the player actually has in their inventory. Use itemId from master list. ResourceType from: ${AVAILABLE_RESOURCE_TYPES_FOR_AI.join(', ')}. Quantity: 1-5. Max 3 types. If player has no suitable resources, set to null or empty array.
 - tags: (array of strings, max 5) Functional tags from the Available Tags list. Adhere to the CRITICAL INSTRUCTION regarding tag conflicts. If scalesWith is set, include 'Scaling' tag.
 - rarity: (integer, 0-10) Estimate rarity based on power, complexity, component rarity.
 - epCost: (integer, optional) EP cost (0-50).

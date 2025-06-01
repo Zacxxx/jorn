@@ -68,9 +68,12 @@ export const finalizeSpellDesign = async (
   player: Player,
   designData: SpellDesignData
 ): Promise<{ success: boolean; spellData?: GeneratedSpellData & { _componentUsageGoldCost?: number, _componentUsageEssenceCost?: number }; error?: string }> => {
+  console.log('🎯 SpellCrafting: Starting finalizeSpellDesign...');
+  
   const maxRegisteredSpells = calculateMaxRegisteredSpells(player.level);
   
   if (player.spells.length >= maxRegisteredSpells) {
+    console.log('❌ SpellCrafting: Spell collection full');
     return {
       success: false,
       error: `Spell Collection Full. Max ${maxRegisteredSpells} spells at level ${player.level}.`
@@ -78,7 +81,15 @@ export const finalizeSpellDesign = async (
   }
 
   try {
-    const spellDetailsFromAI = await generateSpellFromDesign(designData);
+    console.log('🤖 SpellCrafting: Calling AI to generate spell...');
+    const spellDetailsFromAI = await generateSpellFromDesign({
+      ...designData,
+      playerInventory: player.inventory
+    });
+    
+    console.log('🤖 SpellCrafting: AI generated spell:', spellDetailsFromAI.name);
+    console.log('🤖 SpellCrafting: AI resource costs:', spellDetailsFromAI.resourceCost);
+    
     let totalComponentGoldCost = 0;
     let totalComponentEssenceCost = 0;
     
@@ -90,7 +101,10 @@ export const finalizeSpellDesign = async (
       }
     });
 
+    console.log(`💰 SpellCrafting: Component costs - Gold: ${totalComponentGoldCost}, Essence: ${totalComponentEssenceCost}`);
+
     if (player.gold < totalComponentGoldCost) {
+      console.log('❌ SpellCrafting: Insufficient gold for components');
       return {
         success: false,
         error: `Insufficient gold for component usage. Need ${totalComponentGoldCost}G. You have ${player.gold}G.`
@@ -98,10 +112,32 @@ export const finalizeSpellDesign = async (
     }
     
     if (player.essence < totalComponentEssenceCost) {
+      console.log('❌ SpellCrafting: Insufficient essence for components');
       return {
         success: false,
         error: `Insufficient essence for component usage. Need ${totalComponentEssenceCost}Ess. You have ${player.essence}Ess.`
       };
+    }
+    
+    // Check if player can afford the AI-generated resource costs
+    if (spellDetailsFromAI.resourceCost && spellDetailsFromAI.resourceCost.length > 0) {
+      console.log('🔍 SpellCrafting: Checking AI-generated resource costs...');
+      const resourceCheckResult = checkResources(player, spellDetailsFromAI.resourceCost);
+      if (!resourceCheckResult) {
+        console.log('❌ SpellCrafting: Cannot afford AI-generated resource costs');
+        const missingResources = spellDetailsFromAI.resourceCost
+          .filter(cost => (player.inventory[cost.itemId] || 0) < cost.quantity)
+          .map(cost => `${cost.quantity} ${cost.type || cost.itemId} (have ${player.inventory[cost.itemId] || 0})`)
+          .join(', ');
+        
+        return {
+          success: false,
+          error: `Insufficient resources for AI-generated spell. Missing: ${missingResources}`
+        };
+      }
+      console.log('✅ SpellCrafting: AI-generated resource costs are affordable');
+    } else {
+      console.log('ℹ️ SpellCrafting: No AI-generated resource costs');
     }
     
     const finalSpellData = {
@@ -110,12 +146,13 @@ export const finalizeSpellDesign = async (
       _componentUsageEssenceCost: totalComponentEssenceCost,
     };
 
+    console.log('✅ SpellCrafting: finalizeSpellDesign completed successfully');
     return {
       success: true,
       spellData: finalSpellData
     };
   } catch (error) {
-    console.error("Spell design finalization error:", error);
+    console.error("❌ SpellCrafting: Spell design finalization error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Could not finalize spell design with AI."
@@ -133,14 +170,21 @@ export const confirmSpellCraft = (
   player: Player,
   pendingSpellData: GeneratedSpellData & { _componentUsageGoldCost?: number, _componentUsageEssenceCost?: number }
 ): SpellCraftResult => {
+  console.log('🎯 SpellCrafting: Starting confirmSpellCraft...');
+  
   if (!pendingSpellData) {
+    console.log('❌ SpellCrafting: No spell data to confirm');
     return {
       success: false,
       error: "No spell data to confirm."
     };
   }
 
+  console.log('🔍 SpellCrafting: Checking final resource costs...');
+  console.log('📋 SpellCrafting: Resource costs to check:', pendingSpellData.resourceCost);
+
   if (!checkResources(player, pendingSpellData.resourceCost)) {
+    console.log('❌ SpellCrafting: Final resource check failed');
     return {
       success: false,
       error: "Insufficient final resources for this AI-balanced spell."
@@ -150,7 +194,10 @@ export const confirmSpellCraft = (
   const componentGoldCost = pendingSpellData._componentUsageGoldCost || 0;
   const componentEssenceCost = pendingSpellData._componentUsageEssenceCost || 0;
 
+  console.log(`💰 SpellCrafting: Final component costs - Gold: ${componentGoldCost}, Essence: ${componentEssenceCost}`);
+
   if (player.gold < componentGoldCost) {
+    console.log('❌ SpellCrafting: Insufficient gold for final component costs');
     return {
       success: false,
       error: `Insufficient gold for component usage. Need ${componentGoldCost}G.`
@@ -158,6 +205,7 @@ export const confirmSpellCraft = (
   }
   
   if (player.essence < componentEssenceCost) {
+    console.log('❌ SpellCrafting: Insufficient essence for final component costs');
     return {
       success: false,
       error: `Insufficient essence for component usage. Need ${componentEssenceCost}Ess.`
@@ -165,13 +213,18 @@ export const confirmSpellCraft = (
   }
 
   // Deduct resources
+  console.log('💰 SpellCrafting: Deducting resources...');
   const resourceResult = deductResources(player, pendingSpellData.resourceCost);
   if (!resourceResult.success || !resourceResult.updatedPlayer) {
+    console.log('❌ SpellCrafting: Resource deduction failed');
+    console.log('❌ SpellCrafting: Error:', resourceResult.error);
     return {
       success: false,
       error: "Failed to deduct resources."
     };
   }
+
+  console.log('✅ SpellCrafting: Resources deducted successfully');
 
   // Deduct component costs
   const updatedPlayer = {
@@ -179,6 +232,8 @@ export const confirmSpellCraft = (
     gold: resourceResult.updatedPlayer.gold - componentGoldCost,
     essence: resourceResult.updatedPlayer.essence - componentEssenceCost,
   };
+
+  console.log('💰 SpellCrafting: Component costs deducted');
 
   // Create new spell
   const newSpell: Spell = {
@@ -207,6 +262,9 @@ export const confirmSpellCraft = (
     ...updatedPlayer,
     spells: [...updatedPlayer.spells, newSpell]
   };
+
+  console.log('✅ SpellCrafting: Spell created and added to player');
+  console.log('🎉 SpellCrafting: confirmSpellCraft completed successfully');
 
   return {
     success: true,

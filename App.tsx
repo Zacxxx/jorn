@@ -116,7 +116,15 @@ export const App: React.FC = () => {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [gameState.isPlayerTurn, gameState.currentEnemies, gameState.currentActingEnemyIndex, playerState, gameState, effectivePlayerStats]);
+  }, [
+    gameState.isPlayerTurn, 
+    gameState.currentEnemies.length, 
+    gameState.currentActingEnemyIndex,
+    gameState.turn,
+    playerState.player.hp,
+    effectivePlayerStats.defense,
+    effectivePlayerStats.maxHp
+  ]);
 
   // Player turn start effects processing
   useEffect(() => {
@@ -148,7 +156,13 @@ export const App: React.FC = () => {
         }, 500);
       }
     }
-  }, [gameState.isPlayerTurn, gameState.turn, playerState.player.hp, gameState.currentEnemies.length, playerState, gameState, effectivePlayerStats]);
+  }, [
+    gameState.isPlayerTurn, 
+    gameState.turn, 
+    playerState.player.hp, 
+    gameState.currentEnemies.length,
+    playerState.player.activeStatusEffects.length
+  ]);
 
   // Create context objects for our extracted modules
   const createNavigationContext = useCallback(() => ({
@@ -566,12 +580,21 @@ export const App: React.FC = () => {
   }, [playerState, gameState]);
 
   const handleFinalizeSpellDesign = useCallback(async (designData: any) => {
-    const result = await SpellCraftingUtils.finalizeSpellDesign(playerState.player, designData);
-    if (result.success && result.spellData) {
-      gameState.setPendingSpellCraftData(result.spellData);
-      gameState.setGameState('SPELL_CRAFT_CONFIRMATION');
+    // Single-step spell crafting: finalize design and immediately craft the spell
+    const finalizeResult = await SpellCraftingUtils.finalizeSpellDesign(playerState.player, designData);
+    if (!finalizeResult.success || !finalizeResult.spellData) {
+      gameState.showMessageModal('Spell Design Error', finalizeResult.error || 'Failed to finalize spell design', 'error');
+      return;
+    }
+
+    // Immediately craft the spell using the finalized data
+    const craftResult = SpellCraftingUtils.confirmSpellCraft(playerState.player, finalizeResult.spellData);
+    if (craftResult.success && craftResult.updatedPlayer) {
+      playerState.setPlayer(() => craftResult.updatedPlayer!);
+      gameState.showMessageModal('Spell Crafted!', `Successfully crafted spell: ${craftResult.spell?.name}`, 'success');
+      gameState.setGameState('HOME');
     } else {
-      gameState.showMessageModal('Spell Design Error', result.error || 'Failed to finalize spell design', 'error');
+      gameState.showMessageModal('Spell Crafting Error', craftResult.error || 'Failed to craft spell', 'error');
     }
   }, [playerState, gameState]);
 

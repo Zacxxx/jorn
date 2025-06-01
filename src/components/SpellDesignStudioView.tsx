@@ -273,6 +273,38 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
 
   const availableResourceItems = Object.values(MASTER_ITEM_DEFINITIONS).filter(item => item.itemType === 'Resource') as MasterResourceItem[];
 
+  // Calculate total costs for preview
+  const calculateTotalCosts = () => {
+    let totalGold = 0;
+    let totalEssence = 0;
+    let totalResourceCosts: ResourceCost[] = [...manuallyInvestedResources];
+
+    // Add component usage costs
+    selectedComponentIds.forEach(componentId => {
+      const component = availableComponents.find(c => c.id === componentId);
+      if (component) {
+        totalGold += component.usageGoldCost || 0;
+        totalEssence += component.usageEssenceCost || 0;
+        
+        // Add component base resource costs
+        if (component.baseResourceCost) {
+          totalResourceCosts = mergeResourceCosts(totalResourceCosts, component.baseResourceCost);
+        }
+      }
+    });
+
+    return {
+      gold: totalGold,
+      essence: totalEssence,
+      resources: totalResourceCosts
+    };
+  };
+
+  const totalCostsPreview = calculateTotalCosts();
+  const canAffordCosts = player.gold >= totalCostsPreview.gold && 
+                        player.essence >= totalCostsPreview.essence &&
+                        totalCostsPreview.resources.every(cost => (player.inventory[cost.itemId] || 0) >= cost.quantity);
+
   const saveCurrentPrompt = () => {
     if (!playerPrompt.trim()) {
       setError('Cannot save empty prompt');
@@ -556,10 +588,18 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
         </div>
 
         {/* Cost Calculator */}
-        <div className={`bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border ${canAffordCraft ? 'border-green-500/60' : 'border-red-500/60'} p-6`}>
+        <div className={`bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border ${canAffordCosts ? 'border-green-500/60' : 'border-red-500/60'} p-6`}>
           <div className="flex items-center space-x-3 mb-4">
-            <GoldCoinIcon className={`w-6 h-6 ${canAffordCraft ? 'text-green-400' : 'text-red-400'}`} />
-            <h3 className={`text-xl font-semibold ${canAffordCraft ? 'text-green-300' : 'text-red-300'}`}>Crafting Cost</h3>
+            <GoldCoinIcon className={`w-6 h-6 ${canAffordCosts ? 'text-green-400' : 'text-red-400'}`} />
+            <h3 className={`text-xl font-semibold ${canAffordCosts ? 'text-green-300' : 'text-red-300'}`}>Crafting Cost Preview</h3>
+          </div>
+          
+          <div className="mb-3 p-3 bg-blue-900/20 border border-blue-700/50 rounded-md">
+            <div className="text-xs text-blue-300 font-medium mb-1">ℹ️ Cost Information:</div>
+            <p className="text-xs text-blue-200">
+              This shows the guaranteed costs (components + your invested resources). 
+              The AI may request additional resources but will only use what you actually have in your inventory.
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -569,8 +609,8 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
                   <GoldCoinIcon className="w-4 h-4 text-yellow-400" />
                   <span className="text-slate-300">Gold:</span>
                 </div>
-                <span className={`font-medium ${player.gold >= totalCosts.goldCost ? 'text-green-400' : 'text-red-400'}`}>
-                  {totalCosts.goldCost} / {player.gold}
+                <span className={`font-medium ${player.gold >= totalCostsPreview.gold ? 'text-green-400' : 'text-red-400'}`}>
+                  {totalCostsPreview.gold} / {player.gold}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -578,17 +618,17 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
                   <EssenceIcon className="w-4 h-4 text-purple-400" />
                   <span className="text-slate-300">Essence:</span>
                 </div>
-                <span className={`font-medium ${player.essence >= totalCosts.essenceCost ? 'text-green-400' : 'text-red-400'}`}>
-                  {totalCosts.essenceCost} / {player.essence}
+                <span className={`font-medium ${player.essence >= totalCostsPreview.essence ? 'text-green-400' : 'text-red-400'}`}>
+                  {totalCostsPreview.essence} / {player.essence}
                 </span>
               </div>
             </div>
             
-            {totalCosts.resourceCosts.length > 0 && (
+            {totalCostsPreview.resources.length > 0 && (
               <div className="md:col-span-2">
                 <div className="text-sm text-slate-400 mb-2">Required Resources:</div>
                 <div className="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto">
-                  {totalCosts.resourceCosts.map(cost => {
+                  {totalCostsPreview.resources.map(cost => {
                     const item = MASTER_ITEM_DEFINITIONS[cost.itemId];
                     const hasEnough = (player.inventory[cost.itemId] || 0) >= cost.quantity;
                     return (
@@ -603,9 +643,9 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
             )}
           </div>
           
-          {!canAffordCraft && (
+          {!canAffordCosts && (
             <div className="mt-3 p-3 bg-red-900/30 border border-red-700/50 rounded-md">
-              <p className="text-red-300 text-sm">⚠️ Insufficient resources to craft this spell!</p>
+              <p className="text-red-300 text-sm">⚠️ Insufficient resources for guaranteed costs!</p>
             </div>
           )}
         </div>
@@ -730,7 +770,7 @@ const SpellDesignStudioView: React.FC<SpellDesignStudioViewProps> = ({
           <ActionButton type="button" onClick={onReturnHome} variant="secondary" size="lg" className="w-full sm:w-auto">
             Cancel
           </ActionButton>
-          <ActionButton type="submit" isLoading={isLoading} disabled={!canCraftMoreSpells || isLoading || selectedComponentIds.length === 0 || !canAffordCraft} variant="primary" size="lg" className="w-full sm:w-auto">
+          <ActionButton type="submit" isLoading={isLoading} disabled={!canCraftMoreSpells || isLoading || selectedComponentIds.length === 0 || !canAffordCosts} variant="primary" size="lg" className="w-full sm:w-auto">
             {isLoading ? 'Generating...' : 'Finalize Design with AI'}
           </ActionButton>
         </div>

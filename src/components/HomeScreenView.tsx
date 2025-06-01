@@ -158,7 +158,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       img.onerror = () => {
         setCombatGifError(true);
       };
-      img.src = '/assets/activity-card/quests.gif';
+      img.src = '/assets/activity-card/battle.gif';
     }
   }, [isCombatHovered, combatGifLoaded, combatGifError]);
 
@@ -804,7 +804,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               
               {/* GIF animation - only visible when hovered and loaded */}
               <img
-                src={isCombatHovered ? '/assets/activity-card/quests.gif' : ''}
+                src={isCombatHovered ? '/assets/activity-card/battle-2.gif' : ''}
                 alt="Combat animation"
                 className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
                   isCombatHovered && combatGifLoaded && !combatGifError ? 'opacity-70 scale-110' : 'opacity-0'

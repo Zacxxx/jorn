@@ -588,8 +588,8 @@ export const handleEnemyDefeat = (context: EnemyDefeatContext): void => {
     prev.map(e => e.id === defeatedEnemy.id ? { ...e, hp: 0, isDefeated: true } : e)
   );
 
-  // Check for victory using living enemies
-  const livingEnemies = currentEnemiesList.filter(e => e.id !== defeatedEnemy.id && e.hp > 0 && !e.isDefeated);
+  // Check for victory using living enemies from the current list, excluding the just-defeated enemy
+  const livingEnemies = currentEnemiesList.filter(e => e.id !== defeatedEnemy.id && e.hp > 0);
   if (livingEnemies.length === 0) {
     setTimeout(() => {
       addLog('System', 'Victory! All enemies defeated.', 'success');

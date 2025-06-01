@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:spell-crafting": "node test-spell-crafting.cjs",
+    "test:resource-manager": "node test-resource-manager.cjs",
+    "test:debug": "npm run test:spell-crafting && npm run test:resource-manager"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
