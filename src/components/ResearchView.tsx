@@ -3,6 +3,7 @@ import ActionButton from './ActionButton';
 import { Player, SpellComponent, SpellComponentCategory, ElementName, TagName } from '../types';
 import { BookIcon, FlaskIcon, FilterListIcon, SearchIcon } from './IconComponents';
 import SpellComponentCard from './SpellComponentCard';
+import { RESEARCH_SEARCH_BASE_GOLD_COST, RESEARCH_SEARCH_BASE_ESSENCE_COST } from '../../constants';
 import { ALL_ELEMENTS } from './gameplay/elements/element-list';
 import { ALL_TAG_NAMES } from './gameplay/tags';
 
@@ -17,6 +18,7 @@ const SPELL_COMPONENT_CATEGORIES: SpellComponentCategory[] = ['DamageSource', 'D
 
 
 const ResearchView: React.FC<ResearchViewProps> = ({ player, onReturnHome, onOpenTheorizeLab, onShowMessage }) => {
+  const canAffordResearch = player.gold >= RESEARCH_SEARCH_BASE_GOLD_COST && player.essence >= RESEARCH_SEARCH_BASE_ESSENCE_COST;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SpellComponentCategory | 'All'>('All');
   const [selectedTier, setSelectedTier] = useState<number | 'All'>('All');
@@ -102,7 +104,13 @@ const ResearchView: React.FC<ResearchViewProps> = ({ player, onReturnHome, onOpe
       
       {/* Action Buttons */}
       <div className="mt-4 sm:mt-6 pt-3 border-t border-slate-600 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3">
-        <ActionButton onClick={onOpenTheorizeLab} variant="primary" size="md" icon={<FlaskIcon className="w-4 h-4"/>} className="w-full sm:w-auto">
+        <ActionButton
+          onClick={onOpenTheorizeLab}
+          variant="primary"
+          size="md"
+          icon={<FlaskIcon className="w-4 h-4"/>}
+          className={`w-full sm:w-auto ${canAffordResearch ? 'glow-effect' : ''}`}
+        >
           Theorize New Component
         </ActionButton>
         <ActionButton onClick={handleResearchArea} variant="info" size="md" icon={<SearchIcon className="w-4 h-4"/>} className="w-full sm:w-auto">

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
-import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, StarIcon } from '../src/components/IconComponents'; 
+import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, StarIcon } from '../src/components/IconComponents';
+import { canCraftTrait } from '../game-core/traits/TraitManager';
 
 interface HeaderProps {
   player: Player;
@@ -30,6 +31,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   // Show health/mana bars on desktop when not in combat
   const showHealthManaBar = effectivePlayerStats && gameState !== 'IN_COMBAT';
+  const shouldHeroButtonGlow = player ? canCraftTrait(player) : false;
 
   return (
     <header className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-[1000] shadow-lg">
@@ -37,8 +39,8 @@ const Header: React.FC<HeaderProps> = ({
         {/* Left Side - Character Info */}
         <div className="flex items-center gap-2 sm:gap-3"> {/* MOD: Reduced gap for overall left side on mobile */}
           {/* Character Avatar and Info */}
-          <div 
-            className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-slate-800/50 rounded-xl px-2 py-2 sm:px-3 transition-all duration-200 group" // MOD: Reduced padding and gap for mobile
+          <div
+            className={`flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-slate-800/50 rounded-xl px-2 py-2 sm:px-3 transition-all duration-200 group ${shouldHeroButtonGlow ? 'glow-effect' : ''}`} // MOD: Reduced padding and gap for mobile
             onClick={onOpenCharacterSheet}
             title="Open Character Sheet"
           >

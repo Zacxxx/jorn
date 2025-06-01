@@ -19,6 +19,7 @@ import { HomesteadProject } from '../src/types';
 
 // Import all view components
 import MultiplayerView from '../src/components/MultiplayerView';
+import { CraftingHubModal } from '../src/components/CraftingHubModal'; // Import CraftingHubModal
 import HomeScreenView from '../src/components/HomeScreenView';
 import CampView from '../src/CampView';
 import HomesteadView from '../src/components/HomesteadView';
@@ -477,6 +478,21 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onReturnHome={onNavigateHome} 
           onFindEnemy={onFindEnemy} 
           isLoading={isLoading}
+        />
+      );
+
+    case 'CRAFTING_HUB':
+      return (
+        <CraftingHubModal
+          isOpen={true}
+          onClose={() => onSetGameState('HOME')} // Or onNavigateHome
+          player={player}
+          isLoading={isLoading}
+          onInitiateAppItemCraft={onInitiateItemCraft}
+          onOpenSpellDesignStudio={onOpenSpellDesignStudio}
+          onOpenTheorizeLab={onOpenTheorizeComponentLab} // Renamed from onOpenResearchLab
+          onOpenRecipeDiscovery={() => onSetGameState('RECIPE_DISCOVERY')}
+          onOpenCraftingWorkshop={() => onSetGameState('CRAFTING_WORKSHOP')}
         />
       );
 

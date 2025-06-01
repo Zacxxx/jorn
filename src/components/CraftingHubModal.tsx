@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { ItemType } from '../types';
+import { ItemType, Player, CraftingRecipe } from '../types'; // Added CraftingRecipe
 import Modal from './Modal';
+import { calculateMaxRegisteredSpells } from '../../game-core/player/PlayerStats';
+import { canCraftRecipe, getDiscoveredRecipes, hasRequiredIngredients } from '../../services/craftingService'; // Added crafting service imports
 import ItemCraftingForm from './ItemCraftingForm';
 import ActionButton from './ActionButton';
 import { PotionGenericIcon, GearIcon, WandIcon, FlaskIcon, BookIcon, SearchIcon } from './IconComponents';
@@ -10,6 +12,7 @@ interface CraftingHubModalProps {
   onClose: () => void;
   onInitiateAppItemCraft: (prompt: string, itemType: ItemType) => Promise<void>;
   isLoading: boolean;
+  player: Player; // Added player prop
   onOpenSpellDesignStudio: () => void; 
   onOpenTheorizeLab: () => void;
   onOpenRecipeDiscovery: () => void;
@@ -23,6 +26,7 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
     onClose, 
     onInitiateAppItemCraft, 
     isLoading,
+    player, // Destructure player
     onOpenSpellDesignStudio,
     onOpenTheorizeLab,
     onOpenRecipeDiscovery,
@@ -30,6 +34,18 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
 }) => {
   const [activeMainView, setActiveMainView] = useState<CraftingHubMainView>('Spells');
   const [activeItemCraftType, setActiveItemCraftType] = useState<ItemType>('Consumable');
+
+  const canCraftNewSpell = player ? calculateMaxRegisteredSpells(player.level) > player.spells.length : false;
+
+  // Part 1: AI Item Crafting Glow Condition
+  const canAttemptAICraft = true; // As per instructions, default to true
+
+  // Part 2: Recipe-Based Crafting Glow Condition
+  const discoveredRecipes = player ? getDiscoveredRecipes() : [];
+  const canCraftAnyRecipe = player ? discoveredRecipes.some(recipe =>
+    canCraftRecipe(recipe, player.level, player.currentLocationId, []) && // Assuming no specific skills needed for now
+    hasRequiredIngredients(recipe, player.inventory)
+  ) : false;
 
   const handleItemCraftSubmit = async (prompt: string) => {
     await onInitiateAppItemCraft(prompt, activeItemCraftType);
@@ -78,7 +94,13 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
           <div className="space-y-4 text-center">
             <p className="text-slate-300">Design powerful spells or research new components.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <ActionButton onClick={onOpenSpellDesignStudio} variant="primary" size="lg" icon={<WandIcon className="w-5 h-5"/>}>
+                <ActionButton
+                  onClick={onOpenSpellDesignStudio}
+                  variant="primary"
+                  size="lg"
+                  icon={<WandIcon className="w-5 h-5"/>}
+                  className={canCraftNewSpell ? 'glow-effect' : ''}
+                >
                     Go to Spell Design Studio
                 </ActionButton>
                 <ActionButton onClick={onOpenTheorizeLab} variant="info" size="lg" icon={<FlaskIcon className="w-5 h-5"/>}>
@@ -94,6 +116,7 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
                 onClick={() => setActiveItemCraftType('Consumable')}
                 variant={activeItemCraftType === 'Consumable' ? 'primary' : 'secondary'}
                 icon={<PotionGenericIcon className="w-5 h-5"/>}
+                className={activeMainView === 'Items' && canAttemptAICraft ? 'glow-effect' : ''}
               >
                 Consumables
               </ActionButton>
@@ -101,6 +124,7 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
                 onClick={() => setActiveItemCraftType('Equipment')}
                 variant={activeItemCraftType === 'Equipment' ? 'primary' : 'secondary'}
                 icon={<GearIcon className="w-5 h-5"/>}
+                className={activeMainView === 'Items' && canAttemptAICraft ? 'glow-effect' : ''}
               >
                 Equipment
               </ActionButton>
@@ -116,10 +140,22 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
           <div className="space-y-4 text-center">
             <p className="text-slate-300">Discover new crafting recipes and create items using traditional methods.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <ActionButton onClick={onOpenRecipeDiscovery} variant="success" size="lg" icon={<SearchIcon className="w-5 h-5"/>}>
+                <ActionButton
+                  onClick={onOpenRecipeDiscovery}
+                  variant="success"
+                  size="lg"
+                  icon={<SearchIcon className="w-5 h-5"/>}
+                  className={canCraftAnyRecipe ? 'glow-effect' : ''}
+                >
                     Recipe Discovery Workshop
                 </ActionButton>
-                <ActionButton onClick={onOpenCraftingWorkshop} variant="warning" size="lg" icon={<GearIcon className="w-5 h-5"/>}>
+                <ActionButton
+                  onClick={onOpenCraftingWorkshop}
+                  variant="warning"
+                  size="lg"
+                  icon={<GearIcon className="w-5 h-5"/>}
+                  className={canCraftAnyRecipe ? 'glow-effect' : ''}
+                >
                     Crafting Workshop
                 </ActionButton>
             </div>

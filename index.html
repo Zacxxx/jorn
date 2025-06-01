@@ -209,6 +209,17 @@
         animation: fadeIn 0.5s ease-out forwards;
       }
 
+      @keyframes glow {
+        0% { box-shadow: 0 0 5px rgba(72, 187, 255, 0.7), 0 0 10px rgba(72, 187, 255, 0.7); }
+        50% { box-shadow: 0 0 20px rgba(72, 187, 255, 1), 0 0 30px rgba(72, 187, 255, 1); }
+        100% { box-shadow: 0 0 5px rgba(72, 187, 255, 0.7), 0 0 10px rgba(72, 187, 255, 0.7); }
+      }
+
+      .glow-effect {
+        animation: glow 2s infinite ease-in-out;
+        border-radius: 8px; /* Or a more suitable border-radius based on target elements */
+      }
+
     </style>
     <script type="module" src="/index.tsx"></script>
   <script type="importmap">
