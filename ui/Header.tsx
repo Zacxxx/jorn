@@ -18,41 +18,9 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
   return (
     <header className="bg-slate-800/95 shadow-xl border-b-2 border-sky-600/60 sticky top-0 z-[1000] backdrop-blur-md">
       <div className="container mx-auto px-3 sm:px-4 py-2.5 flex justify-between items-center max-w-6xl">
+        {/* Left Side - Character Info and Combat Button */}
         <div className="flex items-center space-x-3">
-          <button
-              onClick={onNavigateHome}
-              className="header-title-responsive font-bold text-sky-300 tracking-tight hover:text-sky-200 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-md px-1 -ml-1"
-              style={{fontFamily: "'Inter Tight', sans-serif"}}
-              title="Go to Home Screen"
-          >
-            Jorn
-          </button>
-          
-          {/* Return to Combat Button - Show when in any combat */}
-          {isInAnyCombat && onReturnToCombat && (
-            <ActionButton
-              onClick={isInCombatButNotOnCombatScreen ? onReturnToCombat : undefined}
-              size="sm"
-              variant={isInCombatButNotOnCombatScreen ? "danger" : "secondary"}
-              icon={<SwordsIcon className="w-4 h-4 md:w-5 md:h-5" />}
-              className={`!px-2 !py-1 sm:!px-2.5 sm:!py-1.5 md:!px-3 md:!py-2 ${
-                isInCombatButNotOnCombatScreen 
-                  ? 'shadow-red-500/40 hover:shadow-red-500/60 animate-pulse border-red-400/60 bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 cursor-pointer' 
-                  : 'shadow-slate-500/20 border-slate-500/40 bg-gradient-to-r from-slate-600/60 to-slate-700/60 cursor-default opacity-60'
-              }`}
-              title={isInCombatButNotOnCombatScreen ? "Return to Active Combat" : "Currently in Combat"}
-              disabled={!isInCombatButNotOnCombatScreen}
-            >
-              <span className="header-action-button-text-responsive font-semibold">
-                {isInCombatButNotOnCombatScreen ? "Return to Combat" : "In Combat"}
-              </span>
-            </ActionButton>
-          )}
-        </div>
-        
-        {/* Character Info Section - Replaces XP bar and money counts */}
-        <div className="flex items-center gap-3">
-          {/* Character Avatar and Info */}
+          {/* Character Avatar and Info - Moved from right side */}
           <div 
             className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/40 rounded-lg p-1.5 transition-all duration-200 border border-transparent hover:border-slate-600/50"
             onClick={onOpenCharacterSheet}
@@ -93,7 +61,43 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
               </div>
             </div>
           </div>
-
+          
+          {/* Return to Combat Button - Show when in any combat */}
+          {isInAnyCombat && onReturnToCombat && (
+            <ActionButton
+              onClick={isInCombatButNotOnCombatScreen ? onReturnToCombat : undefined}
+              size="sm"
+              variant={isInCombatButNotOnCombatScreen ? "danger" : "secondary"}
+              icon={<SwordsIcon className="w-4 h-4 md:w-5 md:h-5" />}
+              className={`!px-2 !py-1 sm:!px-2.5 sm:!py-1.5 md:!px-3 md:!py-2 ${
+                isInCombatButNotOnCombatScreen 
+                  ? 'shadow-red-500/40 hover:shadow-red-500/60 animate-pulse border-red-400/60 bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 cursor-pointer' 
+                  : 'shadow-slate-500/20 border-slate-500/40 bg-gradient-to-r from-slate-600/60 to-slate-700/60 cursor-default opacity-60'
+              }`}
+              title={isInCombatButNotOnCombatScreen ? "Return to Active Combat" : "Currently in Combat"}
+              disabled={!isInCombatButNotOnCombatScreen}
+            >
+              <span className="header-action-button-text-responsive font-semibold">
+                {isInCombatButNotOnCombatScreen ? "Return to Combat" : "In Combat"}
+              </span>
+            </ActionButton>
+          )}
+        </div>
+        
+        {/* Center - Game Title */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <button
+              onClick={onNavigateHome}
+              className="header-title-responsive font-bold text-sky-300 tracking-tight hover:text-sky-200 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 rounded-md px-2 py-1"
+              style={{fontFamily: "'Inter Tight', sans-serif"}}
+              title="Go to Home Screen"
+          >
+            Jorn
+          </button>
+        </div>
+        
+        {/* Right Side - Action Buttons */}
+        <div className="flex items-center gap-3">
           {/* Action Buttons */}
           <ActionButton
             onClick={onOpenGameMenu}
