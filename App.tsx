@@ -97,16 +97,24 @@ export const App: React.FC = () => {
                 }
               }
             }));
-            
+
             gameState.addLog('System', `${enemy.name} defeated! Gained ${goldReward} gold and ${essenceReward} essence.`, 'success');
-            gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== enemy.id));
             
-            // Check for victory
-            const remainingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
-            if (remainingEnemies.length === 0) {
-              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-              gameState.setGameState('HOME');
-            }
+            // Remove defeated enemy and check for victory
+            gameState.setCurrentEnemies(prev => {
+              const updatedEnemies = prev.filter(e => e.id !== enemy.id);
+              
+              // Check if all enemies defeated after this update
+              if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
+                setTimeout(() => {
+                  gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+                  gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+                  gameState.setGameState('GAME_OVER_VICTORY');
+                }, 100);
+              }
+              
+              return updatedEnemies;
+            });
           }
         };
         
@@ -332,7 +340,7 @@ export const App: React.FC = () => {
     
     // Clear defending status
     playerState.setPlayer(prev => ({ 
-      ...prev,
+        ...prev,
       activeStatusEffects: prev.activeStatusEffects.filter(eff => eff.name !== 'Defending') 
     }));
     
@@ -747,7 +755,7 @@ export const App: React.FC = () => {
     
     // Apply defending status effect
     playerState.setPlayer(prev => ({
-      ...prev,
+                    ...prev,
       activeStatusEffects: [
         ...prev.activeStatusEffects.filter(eff => eff.name !== 'Defending'),
         {
@@ -963,7 +971,7 @@ export const App: React.FC = () => {
         gameState.setPendingItemCraftData(null);
         gameState.showMessageModal('Item Crafted!', `Successfully crafted item: ${result.item?.name}`, 'success');
         gameState.setGameState('HOME');
-    } else {
+        } else {
         gameState.showMessageModal('Item Crafting Error', result.error || 'Failed to craft item', 'error');
       }
     }

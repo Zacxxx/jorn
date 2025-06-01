@@ -2,7 +2,7 @@ import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
 import ActivityCard from './ActivityCard';
-import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon } from './IconComponents';
+import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon, PlusIcon } from './IconComponents';
 import { getLocation } from '../services/locationService';
 
 // Conditional import for PlayerStatsDisplay to avoid type conflicts
@@ -13,6 +13,40 @@ try {
   console.warn('PlayerStatsDisplay not available:', error);
 }
 
+// Rest preferences storage
+const REST_PREFERENCES_KEY = 'jorn-rest-preferences';
+
+interface RestPreferences {
+  preferredRestType: 'short' | 'long' | 'custom';
+  customDuration: number;
+}
+
+const DEFAULT_REST_PREFERENCES: RestPreferences = {
+  preferredRestType: 'long',
+  customDuration: 4
+};
+
+const loadRestPreferences = (): RestPreferences => {
+  try {
+    const stored = localStorage.getItem(REST_PREFERENCES_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { ...DEFAULT_REST_PREFERENCES, ...parsed };
+    }
+  } catch (error) {
+    console.warn('Failed to load rest preferences:', error);
+  }
+  return { ...DEFAULT_REST_PREFERENCES };
+};
+
+const saveRestPreferences = (preferences: RestPreferences): void => {
+  try {
+    localStorage.setItem(REST_PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch (error) {
+    console.error('Failed to save rest preferences:', error);
+  }
+};
+
 interface HomeScreenViewProps {
   player: Player;
   effectiveStats: PlayerEffectiveStats;
@@ -21,6 +55,7 @@ interface HomeScreenViewProps {
   onExploreMap: () => void;
   onOpenResearchArchives: () => void; 
   onOpenCamp: () => void;
+  onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
   onAccessSettlement: () => void;
   onOpenCraftingHub: () => void;
   onOpenHomestead: () => void;
@@ -36,6 +71,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onExploreMap,
   onOpenResearchArchives,
   onOpenCamp,
+  onRestComplete,
   onAccessSettlement,
   onOpenCraftingHub,
   onOpenHomestead,
@@ -47,10 +83,97 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     'camp', 'research', 'crafting', 'npcs', 'quests', 'trading'
   ]);
 
+  // Rest preferences state
+  const [restPreferences, setRestPreferences] = React.useState<RestPreferences>(loadRestPreferences);
+  const [showRestDropdown, setShowRestDropdown] = React.useState(false);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showRestDropdown) {
+        const target = event.target as Element;
+        if (!target.closest('.rest-dropdown-container')) {
+          setShowRestDropdown(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showRestDropdown]);
+
+  // Update rest preferences and save to localStorage
+  const updateRestPreferences = (newPreferences: Partial<RestPreferences>) => {
+    const updated = { ...restPreferences, ...newPreferences };
+    setRestPreferences(updated);
+    saveRestPreferences(updated);
+  };
+
+  // Handle quick rest (using preferred settings)
+  const handleQuickRest = () => {
+    const { preferredRestType, customDuration } = restPreferences;
+    const duration = preferredRestType === 'custom' ? customDuration : undefined;
+    onRestComplete(preferredRestType === 'custom' ? 'long' : preferredRestType, duration);
+  };
+
+  // Handle rest type selection from dropdown
+  const handleRestTypeSelect = (restType: 'short' | 'long' | 'custom', customDuration?: number) => {
+    const preferences: Partial<RestPreferences> = { preferredRestType: restType };
+    if (customDuration !== undefined) {
+      preferences.customDuration = customDuration;
+    }
+    updateRestPreferences(preferences);
+    
+    const duration = restType === 'custom' ? (customDuration || restPreferences.customDuration) : undefined;
+    onRestComplete(restType === 'custom' ? 'long' : restType, duration);
+    setShowRestDropdown(false);
+  };
+
+  // Calculate rest benefits for display
+  const getRestBenefits = (restType: 'short' | 'long' | 'custom', customDuration?: number) => {
+    const duration = customDuration || restPreferences.customDuration;
+    
+    switch (restType) {
+      case 'short':
+        return {
+          hp: Math.min(Math.floor(effectiveStats.maxHp * 0.25), effectiveStats.maxHp - player.hp),
+          mp: Math.min(Math.floor(effectiveStats.maxMp * 0.5), effectiveStats.maxMp - player.mp),
+          ep: Math.min(Math.floor(effectiveStats.maxEp * 0.75), effectiveStats.maxEp - player.ep),
+          duration: '1h'
+        };
+      case 'long':
+        return {
+          hp: effectiveStats.maxHp - player.hp,
+          mp: effectiveStats.maxMp - player.mp,
+          ep: effectiveStats.maxEp - player.ep,
+          duration: '8h'
+        };
+      case 'custom':
+        return {
+          hp: Math.min(Math.floor(effectiveStats.maxHp * (duration / 8)), effectiveStats.maxHp - player.hp),
+          mp: Math.min(Math.floor(effectiveStats.maxMp * (duration / 8)), effectiveStats.maxMp - player.mp),
+          ep: Math.min(Math.floor(effectiveStats.maxEp * (duration / 8)), effectiveStats.maxEp - player.ep),
+          duration: `${duration}h`
+        };
+      default:
+        return { hp: 0, mp: 0, ep: 0, duration: '0h' };
+    }
+  };
+
   const currentLocation = getLocation(player.currentLocationId);
   const locationName = currentLocation?.name || 'Unknown Location';
   const locationDescription = currentLocation?.description || 'A mysterious place...';
   const isInSettlement = currentLocation?.type === 'settlement';
+
+  // Check if player needs rest
+  const needsRest = player.hp < effectiveStats.maxHp || 
+                   player.mp < effectiveStats.maxMp || 
+                   player.ep < effectiveStats.maxEp;
+
+  // Get current rest benefits for display
+  const currentRestBenefits = getRestBenefits(restPreferences.preferredRestType, restPreferences.customDuration);
 
   // Activity cards data
   const activityCards = [
@@ -330,12 +453,127 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               </ActionButton>
               
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <ActionButton onClick={onNavigateToMultiplayer} variant="primary" size="xs sm:size-sm" icon={<UserIcon />}>
+                <ActionButton onClick={onNavigateToMultiplayer} variant="primary" size="sm" icon={<UserIcon />}>
                   Multiplayer
                 </ActionButton>
-                <ActionButton onClick={onOpenCamp} variant="secondary" size="xs sm:size-sm" icon={<TentIcon />}>
-                  Rest at Camp
-                </ActionButton>
+                
+                {/* Enhanced Rest Button with Dropdown */}
+                <div className="relative rest-dropdown-container">
+                  <div className="flex">
+                    {/* Main Rest Button */}
+                    <ActionButton 
+                      onClick={handleQuickRest} 
+                      variant="secondary" 
+                      size="sm" 
+                      icon={<TentIcon />}
+                      disabled={!needsRest}
+                      className="flex-1 rounded-r-none border-r-0"
+                      title={`Quick ${restPreferences.preferredRestType} rest (${currentRestBenefits.duration})`}
+                    >
+                      <span className="hidden sm:inline">Rest</span>
+                      <span className="sm:hidden">Rest</span>
+                    </ActionButton>
+                    
+                    {/* Dropdown Arrow Button */}
+                    <ActionButton
+                      onClick={() => setShowRestDropdown(!showRestDropdown)}
+                      variant="secondary"
+                      size="sm"
+                      className="px-2 rounded-l-none border-l border-slate-600/50"
+                      title="Rest options"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </ActionButton>
+                  </div>
+                  
+                  {/* Dropdown Menu */}
+                  {showRestDropdown && (
+                    <div className="absolute bottom-full left-0 right-0 mb-1 bg-slate-800/95 backdrop-blur-xl rounded-lg border border-slate-600/50 shadow-2xl z-50">
+                      <div className="p-2 space-y-1">
+                        {/* Short Rest Option */}
+                        <button
+                          onClick={() => handleRestTypeSelect('short')}
+                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                            restPreferences.preferredRestType === 'short'
+                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                              : 'hover:bg-slate-700/50 text-slate-300'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Short Rest</span>
+                            <span className="text-xs text-slate-400">1h</span>
+                          </div>
+                          <div className="text-xs text-slate-400 mt-1">
+                            +{getRestBenefits('short').hp} HP, +{getRestBenefits('short').mp} MP, +{getRestBenefits('short').ep} EP
+                          </div>
+                        </button>
+                        
+                        {/* Long Rest Option */}
+                        <button
+                          onClick={() => handleRestTypeSelect('long')}
+                          className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                            restPreferences.preferredRestType === 'long'
+                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                              : 'hover:bg-slate-700/50 text-slate-300'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Long Rest</span>
+                            <span className="text-xs text-slate-400">8h</span>
+                          </div>
+                          <div className="text-xs text-slate-400 mt-1">
+                            +{getRestBenefits('long').hp} HP, +{getRestBenefits('long').mp} MP, +{getRestBenefits('long').ep} EP
+                          </div>
+                        </button>
+                        
+                        {/* Custom Rest Options */}
+                        <div className="border-t border-slate-600/50 pt-1 mt-1">
+                          <div className="px-3 py-1 text-xs text-slate-400 font-medium">Custom Duration</div>
+                          {[2, 4, 6].map(hours => (
+                            <button
+                              key={hours}
+                              onClick={() => handleRestTypeSelect('custom', hours)}
+                              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                                restPreferences.preferredRestType === 'custom' && restPreferences.customDuration === hours
+                                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                  : 'hover:bg-slate-700/50 text-slate-300'
+                              }`}
+                            >
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium">{hours}h Rest</span>
+                                <span className="text-xs text-slate-400">{hours}h</span>
+                              </div>
+                              <div className="text-xs text-slate-400 mt-1">
+                                +{getRestBenefits('custom', hours).hp} HP, +{getRestBenefits('custom', hours).mp} MP, +{getRestBenefits('custom', hours).ep} EP
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {/* Full Camp Option */}
+                        <div className="border-t border-slate-600/50 pt-1 mt-1">
+                          <button
+                            onClick={() => {
+                              onOpenCamp();
+                              setShowRestDropdown(false);
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-slate-700/50 text-slate-300 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <TentIcon className="w-4 h-4" />
+                              <span className="font-medium">Full Camp Menu</span>
+                            </div>
+                            <div className="text-xs text-slate-400 mt-1">
+                              Advanced rest options & activities
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

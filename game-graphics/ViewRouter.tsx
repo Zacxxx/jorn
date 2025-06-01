@@ -233,11 +233,12 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onExploreMap={onExploreMap} 
           onOpenResearchArchives={onOpenResearchArchives} 
           onOpenCamp={onOpenCamp} 
+          onRestComplete={onRestComplete}
           onOpenHomestead={onOpenHomestead} 
           onAccessSettlement={onAccessSettlement} 
           onOpenCraftingHub={onOpenCraftingHub} 
           onOpenNPCs={onOpenNPCs} 
-          onNavigateToMultiplayer={onNavigateToMultiplayer} // Add this line
+          onNavigateToMultiplayer={onNavigateToMultiplayer}
         />
       );
 

@@ -83,16 +83,13 @@ interface EnhancedCombatActionSlotProps {
     actionItem: CombatActionItemType;
     player: Player; 
     onClick: (item: CombatActionItemType) => void;
-    onLongPress: (item: CombatActionItemType) => void;
     isDisabledByGameLogic: boolean; 
 }
 
 const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({ 
-  actionItem, player, onClick, onLongPress, isDisabledByGameLogic 
+  actionItem, player, onClick, isDisabledByGameLogic 
 }) => {
     const { name, iconName } = actionItem;
-    const [isPressed, setIsPressed] = useState(false);
-    const [pressTimer, setPressTimer] = useState<NodeJS.Timeout | null>(null);
     
     let costText = "";
     let costColor = "text-slate-400";
@@ -123,29 +120,8 @@ const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({
     
     const finalDisabled = isDisabledByGameLogic || !isAffordable;
 
-    const handlePressStart = () => {
-        if (finalDisabled) return;
-        setIsPressed(true);
-        const timer = setTimeout(() => {
-            onLongPress(actionItem);
-            setIsPressed(false);
-        }, 500); // 500ms for long press
-        setPressTimer(timer);
-    };
-
-    const handlePressEnd = () => {
-        setIsPressed(false);
-        if (pressTimer) {
-            clearTimeout(pressTimer);
-            setPressTimer(null);
-        }
-    };
-
     const handleClick = () => {
-        if (pressTimer) {
-            clearTimeout(pressTimer);
-            setPressTimer(null);
-            setIsPressed(false);
+        if (!finalDisabled) {
             onClick(actionItem);
         }
     };
@@ -159,18 +135,13 @@ const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({
     return (
         <button
             onClick={handleClick}
-            onMouseDown={handlePressStart}
-            onMouseUp={handlePressEnd}
-            onMouseLeave={handlePressEnd}
-            onTouchStart={handlePressStart}
-            onTouchEnd={handlePressEnd}
             disabled={finalDisabled}
             className={`
                 relative w-full h-20 bg-gradient-to-br ${bgGradient} backdrop-blur-md
                 border ${borderColor} rounded-lg transition-all duration-200 group
                 ${finalDisabled 
                     ? 'opacity-40 cursor-not-allowed' 
-                    : `hover:${borderColor.replace('/40', '/70')} cursor-pointer ${isPressed ? 'scale-95 bg-opacity-80' : 'hover:scale-105'}`
+                    : `hover:${borderColor.replace('/40', '/70')} cursor-pointer hover:scale-105`
                 }
                 flex flex-col items-center justify-center p-2 shadow-lg overflow-hidden
             `}
@@ -197,76 +168,7 @@ const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({
                     LOW
                 </div>
             )}
-            
-            {/* Long press indicator */}
-            {isPressed && (
-                <div className="absolute inset-0 bg-white/20 rounded-lg flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
-                </div>
-            )}
         </button>
-    );
-};
-
-// Combat Action Tooltip/Modal for Long Press
-interface CombatActionModalProps {
-    actionItem: CombatActionItemType | null;
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-const CombatActionModal: React.FC<CombatActionModalProps> = ({ actionItem, isOpen, onClose }) => {
-    if (!actionItem) return null;
-
-    const { name, iconName, description } = actionItem;
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title={name} size="md">
-            <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                    <GetSpellIcon iconName={iconName} className="w-12 h-12 flex-shrink-0" />
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-100">{name}</h3>
-                        <p className="text-sm text-slate-400 italic">{description}</p>
-                    </div>
-                </div>
-                
-                <div className="space-y-2 text-sm">
-                    {'manaCost' in actionItem && (
-                        <div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-300">MP Cost:</span>
-                                <span className="font-bold text-blue-300">{actionItem.manaCost}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-300">Damage:</span>
-                                <span className="font-bold text-red-300">{actionItem.damage} ({actionItem.damageType})</span>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {'epCost' in actionItem && (
-                        <div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-300">EP Cost:</span>
-                                <span className="font-bold text-yellow-300">{actionItem.epCost}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-slate-300">Effect:</span>
-                                <span className="font-bold text-lime-300">Special Ability</span>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {'itemType' in actionItem && actionItem.itemType === 'Consumable' && (
-                        <div className="flex justify-between">
-                            <span className="text-slate-300">Type:</span>
-                            <span className="font-bold text-green-300">Consumable</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </Modal>
     );
 };
 
@@ -425,7 +327,7 @@ interface EnhancedPlayerDisplayProps {
 }
 
 const EnhancedPlayerDisplay: React.FC<EnhancedPlayerDisplayProps> = ({ player, effectiveStats, onInfoClick }) => {
-  return (
+    return (
     <div className="flex flex-col items-center relative">
       {/* Player Sprite - Clean without overlay */}
       <div className="relative mb-2">
@@ -456,8 +358,8 @@ const EnhancedPlayerDisplay: React.FC<EnhancedPlayerDisplayProps> = ({ player, e
           )}
         </div>
       )}
-    </div>
-  );
+        </div>
+    );
 };
 
 const CombatView: React.FC<CombatViewProps> = ({
@@ -471,8 +373,6 @@ const CombatView: React.FC<CombatViewProps> = ({
   const [freestyleActionText, setFreestyleActionText] = useState('');
   const [showEnemyDetailsModal, setShowEnemyDetailsModal] = useState<Enemy | null>(null);
   const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
-  const [selectedActionItem, setSelectedActionItem] = useState<CombatActionItemType | null>(null);
-  const [showActionModal, setShowActionModal] = useState(false);
   const [showMobileDynamicModal, setShowMobileDynamicModal] = useState(false);
   
   // Pagination states for swipeable spell/ability/item grids
@@ -500,11 +400,6 @@ const CombatView: React.FC<CombatViewProps> = ({
     if (window.innerWidth < 768) {
       setShowMobileDynamicModal(true);
     }
-  };
-
-  const handleLongPress = (item: CombatActionItemType) => {
-    setSelectedActionItem(item);
-    setShowActionModal(true);
   };
 
   const getEnemyGridLayout = () => {
@@ -581,7 +476,6 @@ const CombatView: React.FC<CombatViewProps> = ({
                   setShowMobileDynamicModal(false);
                 }
               }}
-              onLongPress={handleLongPress}
               isDisabledByGameLogic={!canPlayerAct} 
             />
           ))}
@@ -651,7 +545,7 @@ const CombatView: React.FC<CombatViewProps> = ({
                  "No items available"}
               </p>
             </div>
-          </div>
+            </div>
         );
       }
       
@@ -666,7 +560,7 @@ const CombatView: React.FC<CombatViewProps> = ({
           onPageChange={setCurrentPage}
           type={type}
         />
-      );
+        );
     };
 
     switch (activeDynamicView) {
@@ -754,9 +648,9 @@ const CombatView: React.FC<CombatViewProps> = ({
                   className="w-full h-full p-3 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm resize-none shadow-lg" 
                   disabled={!canPlayerAct} 
                 />
-              </form>
+                </form>
             </div>
-          </div>
+            </div>
         );
       case 'spells': return renderActionGrid(preparedSpells, 'spell');
       case 'abilities': return renderActionGrid(abilities, 'ability');
@@ -913,24 +807,24 @@ const CombatView: React.FC<CombatViewProps> = ({
             <div className={`${getEnemyGridLayout()} px-4 md:px-8`}>
               {currentEnemies.map(enemy => (
                 <EnhancedEnemyDisplay
-                  key={enemy.id}
-                  enemy={enemy}
-                  isTargeted={targetEnemyId === enemy.id}
-                  onClick={() => onSetTargetEnemy(enemy.id)}
-                  onInfoClick={() => setShowEnemyDetailsModal(enemy)}
+                    key={enemy.id}
+                    enemy={enemy}
+                    isTargeted={targetEnemyId === enemy.id}
+                    onClick={() => onSetTargetEnemy(enemy.id)}
+                    onInfoClick={() => setShowEnemyDetailsModal(enemy)}
                 />
-              ))}
+                ))}
             </div>
           </div>
 
           {/* Player Area - Bottom */}
           <div className="absolute bottom-8 md:bottom-12 left-1/2 transform -translate-x-1/2 z-20">
             <EnhancedPlayerDisplay 
-              player={player}
-              effectiveStats={effectivePlayerStats}
-              onInfoClick={() => setShowPlayerDetailsModal(true)}
-            />
-          </div>
+                    player={player}
+                    effectiveStats={effectivePlayerStats}
+                    onInfoClick={() => setShowPlayerDetailsModal(true)}
+                />
+            </div>
           
           {/* Battle effects */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900/60 to-transparent pointer-events-none" />
@@ -951,24 +845,24 @@ const CombatView: React.FC<CombatViewProps> = ({
             {/* Dynamic Area */}
             <div className="w-1/2">
               <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
-                {renderDynamicAreaContent()}
+            {renderDynamicAreaContent()}
               </div>
-            </div>
+        </div>
 
             {/* Action Categories */}
             <div className="w-1/4">
               <div className="grid grid-rows-5 gap-1 h-full">
-                {actionCategories.map(cat => (
-                  <ActionCategoryButton
-                    key={cat.view}
-                    label={cat.label}
-                    icon={cat.icon}
-                    isActive={activeDynamicView === cat.view}
-                    onClick={() => handleCategoryChange(cat.view)}
-                    disabled={cat.view !== 'log' && !canPlayerAct}
+           {actionCategories.map(cat => (
+              <ActionCategoryButton
+                key={cat.view}
+                label={cat.label}
+                icon={cat.icon}
+                isActive={activeDynamicView === cat.view}
+                onClick={() => handleCategoryChange(cat.view)}
+                disabled={cat.view !== 'log' && !canPlayerAct}
                     count={cat.count}
-                  />
-                ))}
+              />
+            ))}
               </div>
             </div>
           </div>
@@ -1015,22 +909,14 @@ const CombatView: React.FC<CombatViewProps> = ({
       {/* Modals */}
       {showEnemyDetailsModal && (
         <Modal isOpen={true} onClose={() => setShowEnemyDetailsModal(null)} title={showEnemyDetailsModal.name} size="lg">
-          <EnemyDisplay enemy={showEnemyDetailsModal} />
+            <EnemyDisplay enemy={showEnemyDetailsModal} />
         </Modal>
       )}
       {showPlayerDetailsModal && (
         <Modal isOpen={true} onClose={() => setShowPlayerDetailsModal(false)} title={`${player.name || "Hero"} - Stats`} size="lg">
-          <PlayerStatsDisplay player={player} effectiveStats={effectivePlayerStats} />
+            <PlayerStatsDisplay player={player} effectiveStats={effectivePlayerStats} />
         </Modal>
       )}
-      <CombatActionModal 
-        actionItem={selectedActionItem} 
-        isOpen={showActionModal} 
-        onClose={() => {
-          setShowActionModal(false);
-          setSelectedActionItem(null);
-        }} 
-      />
       
       {/* Stun Overlay */}
       {playerActionSkippedByStun && isPlayerTurn && (
