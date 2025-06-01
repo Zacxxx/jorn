@@ -623,15 +623,21 @@ export const App: React.FC = () => {
         
         gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
         
-        // Remove defeated enemy
-        gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== enemy.id));
-        
-        // Check if all enemies defeated
-        const remainingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
-        if (remainingEnemies.length === 0) {
-          gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-          gameState.setGameState('HOME');
-        }
+        // Remove defeated enemy and check for victory
+        gameState.setCurrentEnemies(prev => {
+          const updatedEnemies = prev.filter(e => e.id !== enemy.id);
+          
+          // Check if all enemies defeated after this update
+          if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
+            setTimeout(() => {
+              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+              gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+              gameState.setGameState('GAME_OVER_VICTORY');
+            }, 100);
+          }
+          
+          return updatedEnemies;
+        });
       }
     };
     
@@ -675,7 +681,7 @@ export const App: React.FC = () => {
         setModalContent: gameState.setModalContent,
         setGameState: (state: string) => gameState.setGameState(state as GameState),
         handleEnemyDefeat: (enemy: Enemy) => {
-          // Handle enemy defeat logic (same as above)
+          // Handle enemy defeat logic
           const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
           const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
           
@@ -693,13 +699,22 @@ export const App: React.FC = () => {
           }));
           
           gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-          gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== enemy.id));
           
-          const remainingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
-          if (remainingEnemies.length === 0) {
-            gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-            gameState.setGameState('HOME');
-          }
+          // Remove defeated enemy and check for victory
+          gameState.setCurrentEnemies(prev => {
+            const updatedEnemies = prev.filter(e => e.id !== enemy.id);
+            
+            // Check if all enemies defeated after this update
+            if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
+              setTimeout(() => {
+                gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+                gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+                gameState.setGameState('GAME_OVER_VICTORY');
+              }, 100);
+            }
+            
+            return updatedEnemies;
+          });
         }
       };
       
@@ -798,10 +813,20 @@ export const App: React.FC = () => {
               if(newHp <= 0) {
                 // Handle enemy defeat
                 gameState.addLog('System', `${enemy.name} defeated!`, 'success');
-                gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== targetId));
-                if (gameState.currentEnemies.filter(e => e.id !== targetId).length === 0) {
-                  gameState.setGameState('HOME');
-                }
+                gameState.setCurrentEnemies(prev => {
+                  const updatedEnemies = prev.filter(e => e.id !== targetId);
+                  
+                  // Check if all enemies defeated after this update
+                  if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
+                    setTimeout(() => {
+                      gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+                      gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+                      gameState.setGameState('GAME_OVER_VICTORY');
+                    }, 100);
+                  }
+                  
+                  return updatedEnemies;
+                });
               }
             } 
           } 
@@ -874,10 +899,20 @@ export const App: React.FC = () => {
             
             if (newHp <= 0) {
               gameState.addLog('System', `${targetEnemy.name} defeated!`, 'success');
-              gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== targetId));
-              if (gameState.currentEnemies.filter(e => e.id !== targetId).length === 0) {
-                gameState.setGameState('HOME');
-              }
+              gameState.setCurrentEnemies(prev => {
+                const updatedEnemies = prev.filter(e => e.id !== targetId);
+                
+                // Check if all enemies defeated after this update
+                if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
+                  setTimeout(() => {
+                    gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+                    gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+                    gameState.setGameState('GAME_OVER_VICTORY');
+                  }, 100);
+                }
+                
+                return updatedEnemies;
+              });
             }
           }
         }
@@ -1034,6 +1069,11 @@ export const App: React.FC = () => {
     
     // Utility functions
     showMessageModal: gameState.showMessageModal,
+    
+    // Combat state helpers
+    isInCombatButNotOnCombatScreen: gameState.isInCombatButNotOnCombatScreen(),
+    isInAnyCombat: gameState.isInAnyCombat(),
+    onReturnToCombat: () => gameState.setGameState('IN_COMBAT'),
     
     // All ViewRouter props
     isLoading: gameState.isLoading,

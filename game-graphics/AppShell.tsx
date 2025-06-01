@@ -100,6 +100,11 @@ export interface AppShellProps {
   debugMode: boolean;
   autoSave: boolean;
   
+  // Combat state helpers
+  isInCombatButNotOnCombatScreen?: boolean;
+  isInAnyCombat?: boolean;
+  onReturnToCombat?: () => void;
+  
   // All ViewRouter props
   [key: string]: any;
 }
@@ -180,6 +185,11 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     debugMode,
     autoSave,
     
+    // Combat state helpers
+    isInCombatButNotOnCombatScreen,
+    isInAnyCombat,
+    onReturnToCombat,
+    
     // All other props for ViewRouter
     ...viewRouterProps
   } = props;
@@ -225,6 +235,7 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     onOpenHomestead: (props as any).onOpenHomestead,
     onAccessSettlement: (props as any).onAccessSettlement,
     onOpenNPCs: (props as any).onOpenNPCs,
+    onNavigateToMultiplayer: (props as any).onOpenMultiplayer || (() => {}),
     onNavigateHome: onNavigateHome,
     onOpenCraftingHub: onOpenCraftingHub,
     onRestComplete: (props as any).onRestComplete,
@@ -287,7 +298,9 @@ const AppShell: React.FC<AppShellProps> = (props) => {
         onOpenQuestsPage={() => onOpenCharacterSheet('Quests')}
         onOpenEncyclopedia={() => onOpenCharacterSheet('Encyclopedia')}
         onOpenGameMenu={onOpenGameMenu}
-        useLegacyFooter={useLegacyFooter}
+        isInCombatButNotOnCombatScreen={isInCombatButNotOnCombatScreen}
+        isInAnyCombat={isInAnyCombat}
+        onReturnToCombat={onReturnToCombat}
       >
         <ViewRouter {...routerProps} />
       </MainLayout>

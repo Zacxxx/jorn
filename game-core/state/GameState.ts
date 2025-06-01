@@ -106,6 +106,10 @@ export interface GameStateManager {
   // Utility methods
   addLog: (actor: 'Player' | 'Enemy' | 'System', message: string, type: 'action' | 'damage' | 'heal' | 'status' | 'error' | 'info' | 'success' | 'warning' | 'resource' | 'speed') => void;
   showMessageModal: (title: string, message: string, type?: 'info' | 'error' | 'success') => void;
+  
+  // Combat status helpers
+  isInCombatButNotOnCombatScreen: () => boolean;
+  isInAnyCombat: () => boolean;
 }
 
 /**
@@ -259,6 +263,21 @@ export const useGameState = (): GameStateManager => {
     
     showMessageModal: (title: string, message: string, type: 'info' | 'error' | 'success' = 'info') => {
       setModalContent({ title, message, type });
+    },
+    
+    // Combat status helpers
+    isInCombatButNotOnCombatScreen: () => {
+      // Player is in combat but not on combat screen if:
+      // 1. There are current enemies with HP > 0
+      // 2. The game state is not 'IN_COMBAT'
+      const hasLivingEnemies = currentEnemies.length > 0 && currentEnemies.some(enemy => enemy.hp > 0);
+      const notOnCombatScreen = gameState !== 'IN_COMBAT';
+      return hasLivingEnemies && notOnCombatScreen;
+    },
+    isInAnyCombat: () => {
+      // Player is in any combat if there are current enemies with HP > 0
+      // regardless of current screen/game state
+      return currentEnemies.length > 0 && currentEnemies.some(enemy => enemy.hp > 0);
     },
   };
 }; 

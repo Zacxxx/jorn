@@ -15,6 +15,9 @@ interface MainLayoutProps {
   onOpenQuestsPage: () => void;
   onOpenEncyclopedia: () => void;
   onOpenGameMenu: () => void;
+  isInCombatButNotOnCombatScreen?: boolean;
+  isInAnyCombat?: boolean;
+  onReturnToCombat?: () => void;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({
@@ -30,6 +33,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   onOpenQuestsPage,
   onOpenEncyclopedia,
   onOpenGameMenu,
+  isInCombatButNotOnCombatScreen,
+  isInAnyCombat,
+  onReturnToCombat,
 }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 flex flex-col" style={{fontFamily: "'Inter', sans-serif"}}>
@@ -39,6 +45,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         onNavigateHome={onNavigateHome}
         onOpenMobileMenu={onOpenMobileMenu}
         onOpenGameMenu={onOpenGameMenu}
+        isInCombatButNotOnCombatScreen={isInCombatButNotOnCombatScreen}
+        onReturnToCombat={onReturnToCombat}
       />
       <main className="flex-grow container mx-auto p-3 sm:p-4 md:p-6 max-w-6xl">
         {children}
