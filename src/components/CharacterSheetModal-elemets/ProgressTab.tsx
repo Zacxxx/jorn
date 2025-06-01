@@ -13,6 +13,8 @@ const ProgressTab: React.FC<ProgressTabProps> = ({
   player,
   onOpenCharacterCreation
 }) => {
+  console.log('ProgressTab rendering with player:', player.name);
+  
   const currentClass = player.classId ? getClassById(player.classId) : null;
   const currentSpecialization = player.classId && player.specializationId 
     ? getSpecializationById(player.classId, player.specializationId) 
@@ -20,6 +22,11 @@ const ProgressTab: React.FC<ProgressTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Debug indicator */}
+      <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-2 text-red-300 text-sm">
+        🔧 DEBUG: Progress Tab is rendering! Player: {player.name || 'Unknown'}
+      </div>
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

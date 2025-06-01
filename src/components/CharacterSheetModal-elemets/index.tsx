@@ -212,13 +212,43 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
     { id: 'Encyclopedia', label: 'Encyclopedia', icon: <CollectionIcon /> },
   ];
 
+  console.log('CharacterSheetModal - activeTab:', activeTab);
+  console.log('CharacterSheetModal - TABS:', TABS.map(t => t.id));
+
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} title="Character Sheet" size="5xl">
       <div className="flex flex-col">
+        {/* Debug info */}
+        <div className="bg-yellow-500/20 border border-yellow-500/50 rounded p-2 mb-2 text-yellow-300 text-xs">
+          🔧 DEBUG: Active tab: {activeTab} | Available tabs: {TABS.map(t => t.id).join(', ')}
+        </div>
+        
         <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-wrap gap-1 overflow-x-auto styled-scrollbar-thin-x">
-          {TABS.map(tab => (
-            <SheetTabButton key={tab.id} icon={tab.icon} label={tab.label} isActive={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} />
-          ))}
+          {/* Simplified tab rendering for debugging */}
+          <button 
+            onClick={() => setActiveTab('Main')}
+            className={`p-2 rounded ${activeTab === 'Main' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
+          >
+            Main
+          </button>
+          <button 
+            onClick={() => setActiveTab('Progress')}
+            className={`p-2 rounded ${activeTab === 'Progress' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
+          >
+            Progress
+          </button>
+          <button 
+            onClick={() => setActiveTab('Inventory')}
+            className={`p-2 rounded ${activeTab === 'Inventory' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
+          >
+            Inventory
+          </button>
+          <button 
+            onClick={() => setActiveTab('Spells')}
+            className={`p-2 rounded ${activeTab === 'Spells' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
+          >
+            Spells
+          </button>
         </div>
 
         <div className="flex-grow overflow-y-auto styled-scrollbar p-1">
