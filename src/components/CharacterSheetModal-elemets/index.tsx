@@ -224,31 +224,15 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
         </div>
         
         <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-wrap gap-1 overflow-x-auto styled-scrollbar-thin-x">
-          {/* Simplified tab rendering for debugging */}
-          <button 
-            onClick={() => setActiveTab('Main')}
-            className={`p-2 rounded ${activeTab === 'Main' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
-          >
-            Main
-          </button>
-          <button 
-            onClick={() => setActiveTab('Progress')}
-            className={`p-2 rounded ${activeTab === 'Progress' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
-          >
-            Progress
-          </button>
-          <button 
-            onClick={() => setActiveTab('Inventory')}
-            className={`p-2 rounded ${activeTab === 'Inventory' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
-          >
-            Inventory
-          </button>
-          <button 
-            onClick={() => setActiveTab('Spells')}
-            className={`p-2 rounded ${activeTab === 'Spells' ? 'bg-blue-500' : 'bg-gray-600'} text-white`}
-          >
-            Spells
-          </button>
+          {TABS.map((tab) => (
+            <SheetTabButton
+              key={tab.id}
+              label={tab.label}
+              icon={tab.icon}
+              isActive={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            />
+          ))}
         </div>
 
         <div className="flex-grow overflow-y-auto styled-scrollbar p-1">
