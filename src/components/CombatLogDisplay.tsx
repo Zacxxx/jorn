@@ -37,8 +37,8 @@ const CombatLogDisplay: React.FC<CombatLogDisplayProps> = ({ logs }) => {
       <div ref={logContainerRef} className="flex-grow overflow-y-auto space-y-1 pr-1 styled-scrollbar">
         {logs.length === 0 && <p className="text-slate-500 italic text-xs sm:text-sm p-2 sm:p-3 text-center">The battle has not begun...</p>}
         {logs.map((log) => (
-          <p key={log.id} className={`battle-log-text leading-snug p-0.5 sm:p-1 rounded ${getLogColor(log.actor, log.type)} ${log.type === 'damage' ? 'bg-red-900/10' : log.type === 'status' ? 'bg-yellow-900/10' : 'hover:bg-slate-700/20'}`}>
-            <span className="font-mono text-[0.6rem] sm:text-xs mr-1 text-slate-500 select-none">T{log.turn}:</span>
+          <p key={log.id} className={`battle-log-text text-xs leading-snug p-0.5 sm:p-1 rounded ${getLogColor(log.actor, log.type)} ${log.type === 'damage' ? 'bg-red-900/10' : log.type === 'status' ? 'bg-yellow-900/10' : 'hover:bg-slate-700/20'}`}>
+            <span className="font-mono text-xs mr-1 text-slate-500 select-none">T{log.turn}:</span>
             {log.actor !== 'System' && <span className="font-semibold">{log.actor} </span>}
             {log.message}
           </p>

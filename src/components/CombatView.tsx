@@ -527,7 +527,7 @@ const CombatView: React.FC<CombatViewProps> = ({
       }
       
       return (
-        <div className="grid grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-3 h-full overflow-y-auto">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-3 h-full overflow-y-auto">
           {items.map(item => (
             <EnhancedCombatActionSlot 
               key={item.id} 
@@ -555,9 +555,9 @@ const CombatView: React.FC<CombatViewProps> = ({
     switch (activeDynamicView) {
       case 'actions':
         return (
-          <div className="p-2 h-full flex gap-3">
+          <div className="p-2 h-full flex flex-col md:flex-row gap-3">
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-2 w-48">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-2 gap-2 w-full md:w-48">
               <ActionButton 
                 onClick={() => { 
                   if(targetEnemyId) { 
@@ -605,7 +605,7 @@ const CombatView: React.FC<CombatViewProps> = ({
             </div>
             
             {/* Custom Action */}
-            <div className="flex-1">
+            <div className="flex-1 w-full">
               <form onSubmit={handleFreestyleSubmit} className="h-full">
                 <textarea 
                   value={freestyleActionText} 
@@ -693,9 +693,9 @@ const CombatView: React.FC<CombatViewProps> = ({
       </div>
 
       {/* Bottom Panel - Actions */}
-      <div className="flex-shrink-0 grid grid-cols-12 gap-4 p-4">
+      <div className="flex-shrink-0 flex flex-col lg:flex-row gap-4 p-4">
         {/* Player Stats */}
-        <div className="col-span-3 h-36">
+        <div className="lg:w-1/4 w-full lg:min-h-36"> {/* md and below: full width, lg and up: 25% width */}
           <EnhancedStatusDisplay 
             player={player} 
             effectiveStats={effectivePlayerStats} 
@@ -704,14 +704,14 @@ const CombatView: React.FC<CombatViewProps> = ({
         </div>
 
         {/* Dynamic Area */}
-        <div className="col-span-6 h-36">
+        <div className="lg:w-1/2 w-full lg:min-h-36"> {/* md and below: full width, lg and up: 50% width */}
           <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
             {renderDynamicAreaContent()}
           </div>
         </div>
 
         {/* Action Categories */}
-        <div className="col-span-3 h-36">
+        <div className="lg:w-1/4 w-full lg:min-h-36"> {/* md and below: full width, lg and up: 25% width */}
           <div className="grid grid-rows-5 gap-1 h-full">
            {actionCategories.map(cat => (
               <ActionCategoryButton
