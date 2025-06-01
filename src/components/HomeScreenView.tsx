@@ -290,7 +290,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       {PlayerStatsDisplay && (
         <div className="mb-4">
           <PlayerStatsDisplay player={player} effectiveStats={effectiveStats} />
-        </div>
+      </div>
       )}
       
       {/* Main Bento Box Layout */}
@@ -312,16 +312,16 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                   <p className="text-xs sm:text-sm text-slate-300">{currentLocation?.type} • Danger Level {currentLocation?.dangerLevel || '?'}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
                 {isInSettlement && (
                   <ActionButton onClick={onAccessSettlement} variant="primary" size="sm" icon={<BuildingIcon />}>
                     Settlement
                   </ActionButton>
                 )}
                 <ActionButton onClick={onExploreMap} variant="success" size="sm" icon={<MapIcon />}>
-                  Map
-                </ActionButton>
-              </div>
+            Map
+          </ActionButton>
+        </div>
             </div>
 
             {/* Bottom Section - Location Details and Homestead */}
@@ -347,28 +347,28 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                       <span className="text-slate-400">Danger:</span>
                       <span className="text-slate-200">Level {currentLocation?.dangerLevel || '?'}</span>
                     </div>
-                    {isInSettlement && currentLocation?.settlement && (
+            {isInSettlement && currentLocation?.settlement && (
                       <div className="flex justify-between">
                         <span className="text-slate-400">NPCs:</span>
                         <span className="text-slate-200">{currentLocation.settlement.npcs.length} available</span>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-              {/* Homestead Section */}
+          {/* Homestead Section */}
               <div className="col-span-1 lg:col-span-6 bg-gradient-to-r from-amber-500/20 to-amber-600/20 rounded-lg p-3 border border-amber-500/30">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                   <div className="flex items-center space-x-3 mb-2 sm:mb-0">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
                       <HomeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-                    </div>
+            </div>
                     <div>
                       <h4 className="text-sm sm:text-base font-semibold text-amber-300">Homestead</h4>
                       <p className="text-2xs sm:text-xs text-slate-300">Your base of operations</p>
-                    </div>
-                  </div>
+              </div>
+            </div>
                   <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
                     <div className="grid grid-cols-2 gap-1 text-2xs sm:text-xs flex-grow sm:flex-grow-0">
                       <div className="bg-slate-800/30 rounded px-1 sm:px-2 py-1 text-center">
@@ -383,7 +383,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                     <ActionButton onClick={onOpenHomestead} variant="secondary" size="sm" icon={<HomeIcon />}>
                       Visit
                     </ActionButton>
-                  </div>
+                      </div>
                 </div>
               </div>
             </div>
@@ -396,7 +396,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               const activity = activityCards.find(card => card.id === activityId);
               if (!activity) return null;
               
-              return (
+                      return (
                 <div key={activity.id} className="w-full h-full"> {/* Ensure cards take full width/height of grid cell */}
                   <ActivityCard
                     id={activity.id}
@@ -412,10 +412,10 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                     backgroundImage={activity.backgroundImage}
                     gifBackgroundImage={activity.gifBackgroundImage}
                   />
+                        </div>
+                      );
+                  })}
                 </div>
-              );
-            })}
-          </div>
 
           {/* Center Column - BATTLE SECTION (Hero/Focus Area) */}
           {/* Mobile: order-1, Desktop: order-none (implicit third) */}
@@ -428,8 +428,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               <div className="text-center">
                 <h2 className="text-2xl sm:text-3xl font-bold text-red-300">COMBAT</h2>
                 <p className="text-base sm:text-lg text-slate-300">Test Your Skills</p>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Battle Info */}
             <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-xl p-3 sm:p-4 border border-slate-600/50 shadow-inner mb-4 sm:mb-6 flex-1">
@@ -451,17 +451,17 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                   <div className="text-slate-400">Risk</div>
                   <div className="text-red-300 font-semibold">Moderate</div>
                 </div>
-              </div>
-            </div>
+        </div>
+      </div>
 
             {/* Battle Actions */}
             <div className="space-y-3">
-              <ActionButton 
-                onClick={onFindEnemy} 
-                variant="danger" 
-                size="lg" 
-                isLoading={isLoading} 
-                icon={<SkullIcon />} 
+        <ActionButton 
+          onClick={onFindEnemy} 
+          variant="danger" 
+          size="lg" 
+          isLoading={isLoading} 
+          icon={<SkullIcon />} 
                 className="w-full text-lg sm:text-xl py-3 sm:py-4 hover:scale-105 transition-transform duration-200 font-bold"
               >
                 SEEK BATTLE
@@ -470,29 +470,29 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <ActionButton onClick={onNavigateToMultiplayer} variant="primary" size="sm" icon={<UserIcon />}>
                   Multiplayer
-                </ActionButton>
+        </ActionButton>
                 
                 {/* Enhanced Rest Button with Dropdown */}
                 <div className="relative rest-dropdown-container">
                   <div className="flex">
                     {/* Main Rest Button */}
-                    <ActionButton 
+        <ActionButton 
                       onClick={handleQuickRest} 
-                      variant="secondary" 
+          variant="secondary"
                       size="sm" 
-                      icon={<TentIcon />}
+          icon={<TentIcon />} 
                       disabled={!needsRest}
                       className="flex-1 rounded-r-none border-r-0"
                       title={`Quick ${restPreferences.preferredRestType} rest (${currentRestBenefits.duration})`}
-                    >
+        >
                       <span className="hidden sm:inline">Rest</span>
                       <span className="sm:hidden">Rest</span>
-                    </ActionButton>
+        </ActionButton>
                     
                     {/* Dropdown Arrow Button */}
-                    <ActionButton
+        <ActionButton 
                       onClick={() => setShowRestDropdown(!showRestDropdown)}
-                      variant="secondary"
+          variant="secondary"
                       size="sm"
                       className="px-2 rounded-l-none border-l border-slate-600/50"
                       title="Rest options"
@@ -500,7 +500,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-                    </ActionButton>
+        </ActionButton>
                   </div>
                   
                   {/* Dropdown Menu */}
@@ -627,4 +627,4 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   );
 };
 
-export default HomeScreenView; 
+export default HomeScreenView;

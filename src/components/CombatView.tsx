@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats } from '../../types';
+import { Player, Enemy, CombatActionLog, Spell, GameState, Consumable, Ability, PlayerEffectiveStats } from '../types';
 import { GetSpellIcon, WandIcon, PotionGenericIcon, SwordsIcon, ShieldIcon, BookIcon, FleeIcon, StarIcon, HealIcon, LightningBoltIcon } from './IconComponents';
 import ActionButton from './ActionButton';
 import LoadingSpinner from './LoadingSpinner';
@@ -61,8 +61,8 @@ const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon
 
   return (
     <button
-      onClick={onClick}
-      disabled={disabled}
+    onClick={onClick}
+    disabled={disabled}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`
@@ -90,9 +90,10 @@ const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon
         <div className="relative z-10 absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
         {count > 99 ? '99+' : count}
       </div>
-    )}
-  </button>
-);
+      )}
+    </button>
+  );
+};
 
 // Enhanced Combat Action Slot with Long Press Support
 interface EnhancedCombatActionSlotProps {
@@ -925,9 +926,9 @@ const CombatView: React.FC<CombatViewProps> = ({
             {/* Dynamic Area */}
             <div className="w-1/2">
               <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
-            {renderDynamicAreaContent()}
+                {renderDynamicAreaContent()}
               </div>
-        </div>
+            </div>
 
             {/* Action Categories */}
             <div className="w-1/4">
