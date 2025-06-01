@@ -8,6 +8,7 @@ import {
   HeroBackIcon,
   PlusIcon
 } from './components/IconComponents';
+import SpriteAnimation from './components/SpriteAnimation';
 
 interface CampViewProps {
   player: Player;
@@ -78,6 +79,7 @@ const CampView: React.FC<CampViewProps> = ({
         <div className="flex items-center space-x-3">
           <TentIcon className="w-8 h-8 text-amber-400" />
           <h1 className="text-3xl font-bold text-sky-300">Camp</h1>
+          <SpriteAnimation imageUrl="assets/activity-card/camp.gif" altText="Camp Animation" />
         </div>
         <ActionButton onClick={onReturnHome} variant="secondary" size="sm">
           Return Home
