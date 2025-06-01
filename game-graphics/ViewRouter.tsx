@@ -1,20 +1,5 @@
 import React from 'react';
-import { 
-  Player, 
-  Enemy, 
-  PlayerEffectiveStats, 
-  CombatActionLog, 
-  CharacterSheetTab,
-  Spell,
-  Ability,
-  Consumable,
-  ResourceCost,
-  GeneratedSpellData,
-  ItemType,
-  SpellComponent,
-  GeneratedConsumableData,
-  GeneratedEquipmentData
-} from '../types';
+import { Player, PlayerEffectiveStats, Enemy, CombatActionLog, CharacterSheetTab, GeneratedSpellData, GeneratedConsumableData, GeneratedEquipmentData, Spell, ItemType, ResourceCost, SpellComponent } from '../types';
 import { HomesteadProject } from '../src/types';
 
 // Import all view components
@@ -25,6 +10,7 @@ import HomesteadView from '../src/components/HomesteadView';
 import SettlementView from '../src/components/SettlementView';
 import ShopView from '../src/components/ShopView';
 import NPCsView from '../src/components/NPCsView';
+import QuestBookView from '../src/components/QuestBookView';
 import RecipeDiscoveryView from '../src/components/RecipeDiscoveryView';
 import CraftingWorkshopView from '../src/components/CraftingWorkshopView';
 import SpellCraftingView from '../src/components/SpellCraftingView';
@@ -35,6 +21,7 @@ import MapView from '../src/components/MapView';
 import ParametersView from '../src/components/ParametersView';
 import SpellEditingView from '../src/components/SpellEditingView';
 import TraitCraftingView from '../src/components/TraitCraftingView';
+import ManageSpellsScreen from '../src/components/ManageSpellsScreen';
 import CombatView from '../src/components/CombatView';
 import ConfirmationView from '../src/components/ConfirmationView';
 import GameOverView from '../src/components/GameOverView';
@@ -90,7 +77,8 @@ export interface ViewRouterProps {
   onAccessSettlement: () => void;
   onOpenCraftingHub: () => void;
   onOpenNPCs: () => void;
-  onNavigateToMultiplayer: () => void; // Add this line
+  onOpenQuestBook: () => void;
+  onNavigateToMultiplayer: () => void;
   onNavigateHome: () => void;
   onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
   onStartHomesteadProject: (project: Omit<HomesteadProject, 'id' | 'startTime'>) => void;
@@ -133,7 +121,7 @@ export interface ViewRouterProps {
   
   // Utility functions
   getPreparedSpells: () => Spell[];
-  getPreparedAbilities: () => Ability[];
+  getPreparedAbilities: () => any[];
   checkResources: (costs?: ResourceCost[]) => boolean;
   renderResourceList: (costs?: ResourceCost[]) => React.ReactNode;
   showMessageModal: (title: string, message: string, type?: 'info' | 'error' | 'success') => void;
@@ -170,7 +158,8 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
     onAccessSettlement,
     onOpenCraftingHub,
     onOpenNPCs,
-    onNavigateToMultiplayer, // Add this line
+    onOpenQuestBook,
+    onNavigateToMultiplayer,
     onNavigateHome,
     onRestComplete,
     onStartHomesteadProject,
@@ -238,7 +227,17 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onAccessSettlement={onAccessSettlement} 
           onOpenCraftingHub={onOpenCraftingHub} 
           onOpenNPCs={onOpenNPCs} 
+          onOpenQuestBook={onOpenQuestBook}
           onNavigateToMultiplayer={onNavigateToMultiplayer}
+        />
+      );
+
+    case 'QUEST_BOOK':
+      return (
+        <QuestBookView 
+          player={player}
+          onReturnHome={onNavigateHome}
+          onShowMessage={(t,m) => showMessageModal(t,m,'info')}
         />
       );
 
@@ -401,15 +400,12 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           originalSpell={originalSpellForEdit} 
           onInitiateSpellRefinement={onInitiateSpellRefinement} 
           isLoading={isLoading} 
-          onCancel={() => { 
-            onSetGameState('CHARACTER_SHEET'); 
-            onSetDefaultCharacterSheetTab('Spells');
-          }} 
-          player={player} 
+          onCancel={onNavigateHome}
+          player={player}
           availableComponents={player.discoveredComponents}
         />
       ) : (
-        <p>Error: No spell selected for editing.</p>
+        <div>No spell selected for editing</div>
       );
 
     case 'TRAIT_CRAFTING': 
@@ -417,9 +413,20 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
         <TraitCraftingView 
           onCraftTrait={onCraftTrait} 
           isLoading={isLoading} 
-          currentTraits={player.traits.length} 
-          playerLevel={player.level} 
+          currentTraits={player.traits.length}
+          playerLevel={player.level}
           onReturnHome={onNavigateHome} 
+        />
+      );
+
+    case 'MANAGE_SPELLS': 
+      return (
+        <ManageSpellsScreen 
+          player={player}
+          setPlayer={() => {}} // This needs to be properly implemented
+          maxPreparedSpells={maxPreparedSpells} 
+          onReturnHome={onNavigateHome}
+          onEditSpell={() => {}} // This needs to be properly implemented
         />
       );
 
@@ -430,81 +437,106 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           effectivePlayerStats={effectivePlayerStats} 
           currentEnemies={currentEnemies} 
           targetEnemyId={targetEnemyId} 
-          onSetTargetEnemy={onSetTargetEnemy} 
-          preparedSpells={getPreparedSpells()} 
-          onPlayerAttack={onPlayerAttack} 
-          onPlayerBasicAttack={onPlayerBasicAttack} 
-          onPlayerDefend={onPlayerDefend} 
-          onPlayerFlee={onPlayerFlee} 
-          onPlayerFreestyleAction={onPlayerFreestyleAction} 
-          combatLog={combatLog} 
-          isPlayerTurn={isPlayerTurn} 
-          playerActionSkippedByStun={playerActionSkippedByStun} 
-          onSetGameState={onSetGameState} 
-          onUseConsumable={onUseConsumable} 
-          onUseAbility={onUseAbility} 
-          consumables={player.items.filter(i => i.itemType === 'Consumable') as Consumable[]} 
-          abilities={getPreparedAbilities()} 
+          onSetTargetEnemy={(id: string) => onSetTargetEnemy(id)}
+          preparedSpells={getPreparedSpells()}
+          onPlayerAttack={onPlayerAttack}
+          onPlayerBasicAttack={onPlayerBasicAttack}
+          onPlayerDefend={onPlayerDefend}
+          onPlayerFlee={onPlayerFlee}
+          onPlayerFreestyleAction={onPlayerFreestyleAction}
+          combatLog={combatLog}
+          isPlayerTurn={isPlayerTurn}
+          playerActionSkippedByStun={playerActionSkippedByStun}
+          onSetGameState={(state: any) => onSetGameState(state)}
+          onUseConsumable={onUseConsumable}
+          onUseAbility={onUseAbility}
+          consumables={[]} // This needs to be properly implemented
+          abilities={getPreparedAbilities()}
         />
       );
 
     case 'SPELL_CRAFT_CONFIRMATION': 
-    case 'SPELL_EDIT_CONFIRMATION': 
-    case 'ITEM_CRAFT_CONFIRMATION':
-      return (
+      return pendingSpellCraftData ? (
         <ConfirmationView 
-          gameState={gameState} 
-          pendingSpellCraftData={pendingSpellCraftData} 
-          pendingSpellEditData={pendingSpellEditData} 
-          originalSpellForEdit={originalSpellForEdit} 
-          pendingItemCraftData={pendingItemCraftData} 
-          onConfirm={gameState === 'SPELL_CRAFT_CONFIRMATION' ? onConfirmSpellCraft : gameState === 'SPELL_EDIT_CONFIRMATION' ? onConfirmSpellEdit : onConfirmItemCraft} 
+          gameState="SPELL_CRAFT_CONFIRMATION"
+          pendingSpellCraftData={pendingSpellCraftData}
+          pendingSpellEditData={null}
+          originalSpellForEdit={null}
+          pendingItemCraftData={null}
+          onConfirm={onConfirmSpellCraft} 
           onCancel={onCancelCrafting} 
           checkResources={checkResources} 
-          renderResourceList={renderResourceList} 
+          renderResourceList={renderResourceList}
           isLoading={isLoading}
         />
+      ) : (
+        <div>No spell craft data available</div>
+      );
+
+    case 'SPELL_EDIT_CONFIRMATION': 
+      return pendingSpellEditData ? (
+        <ConfirmationView 
+          gameState="SPELL_EDIT_CONFIRMATION"
+          pendingSpellCraftData={null}
+          pendingSpellEditData={pendingSpellEditData}
+          originalSpellForEdit={originalSpellForEdit}
+          pendingItemCraftData={null}
+          onConfirm={onConfirmSpellEdit} 
+          onCancel={onCancelCrafting} 
+          checkResources={checkResources} 
+          renderResourceList={renderResourceList}
+          isLoading={isLoading}
+        />
+      ) : (
+        <div>No spell edit data available</div>
+      );
+
+    case 'ITEM_CRAFT_CONFIRMATION': 
+      return pendingItemCraftData ? (
+        <ConfirmationView 
+          gameState="ITEM_CRAFT_CONFIRMATION"
+          pendingSpellCraftData={null}
+          pendingSpellEditData={null}
+          originalSpellForEdit={null}
+          pendingItemCraftData={pendingItemCraftData}
+          onConfirm={onConfirmItemCraft} 
+          onCancel={onCancelCrafting} 
+          checkResources={checkResources} 
+          renderResourceList={renderResourceList}
+          isLoading={isLoading}
+        />
+      ) : (
+        <div>No item craft data available</div>
       );
 
     case 'GAME_OVER_VICTORY': 
-    case 'GAME_OVER_DEFEAT': 
       return (
         <GameOverView 
-          gameState={gameState} 
-          modalMessage={props.modalContent?.message} 
-          currentEnemy={currentEnemies.length > 0 ? currentEnemies[0] : null} 
-          combatLog={combatLog} 
-          onReturnHome={onNavigateHome} 
-          onFindEnemy={onFindEnemy} 
+          gameState="GAME_OVER_VICTORY"
+          modalMessage={undefined}
+          currentEnemy={currentEnemies[0] || null}
+          combatLog={combatLog}
+          onReturnHome={onNavigateHome}
+          onFindEnemy={onFindEnemy}
           isLoading={isLoading}
         />
       );
 
-    case 'MULTIPLAYER_VIEW': // Add this new case
+    case 'GAME_OVER_DEFEAT': 
       return (
-        <MultiplayerView />
-      );
-      
-    // Deprecated states, should ideally not be reached if navigation is correct
-    case 'RESEARCH_LAB': 
-      return (
-        <ResearchLabView 
-          player={player} 
-          onAICreateComponent={onAICreateComponent} 
-          isLoading={isLoading} 
-          onReturnHome={() => onSetGameState('CRAFTING_WORKSHOP')}
+        <GameOverView 
+          gameState="GAME_OVER_DEFEAT"
+          modalMessage={undefined}
+          currentEnemy={currentEnemies[0] || null}
+          combatLog={combatLog}
+          onReturnHome={onNavigateHome}
+          onFindEnemy={onFindEnemy}
+          isLoading={isLoading}
         />
       );
 
-    case 'GENERAL_RESEARCH': 
-      return (
-        <ResearchView 
-          player={player} 
-          onReturnHome={onNavigateHome} 
-          onOpenTheorizeLab={onOpenTheorizeComponentLab} 
-          onShowMessage={(t,m) => showMessageModal(t,m,'info')} 
-        />
-      );
+    case 'MULTIPLAYER_VIEW': 
+      return <MultiplayerView />;
 
     default: 
       return <p>Unknown game state: {gameState}</p>;

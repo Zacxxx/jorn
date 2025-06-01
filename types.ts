@@ -532,6 +532,7 @@ export type GameState =
   | 'RECIPE_DISCOVERY'
   | 'CRAFTING_WORKSHOP'
   | 'CAMP'
+  | 'QUEST_BOOK'
   | 'PARAMETERS'; 
 
 
@@ -642,16 +643,55 @@ export interface Quest {
   title: string;
   description: string;
   objectives: string[];
-  status: 'active' | 'completed' | 'failed';
+  status: 'active' | 'completed' | 'failed' | 'available' | 'locked';
   isMainQuest: boolean;
   iconName: SpellIconName;
+  
+  // Enhanced quest properties
+  category: 'main' | 'side' | 'daily' | 'guild' | 'exploration' | 'crafting' | 'combat' | 'social';
+  difficulty: 'trivial' | 'easy' | 'normal' | 'hard' | 'epic' | 'legendary';
+  estimatedTime: string; // e.g., "30 minutes", "2 hours", "Multiple sessions"
+  location?: string;
+  questGiver?: string;
+  level?: number; // Recommended level
+  
+  // Progress tracking
+  progress?: {
+    current: number;
+    total: number;
+    description?: string;
+  };
+  
+  // Quest chain information
+  chainId?: string;
+  chainPosition?: number;
+  chainTotal?: number;
+  prerequisiteQuests?: string[];
+  unlocksQuests?: string[];
+  
+  // Timestamps
+  dateAccepted?: number; // timestamp
+  dateCompleted?: number; // timestamp
+  deadline?: string;
+  
+  // Enhanced rewards
   rewards?: {
     xp?: number;
     gold?: number;
     essence?: number;
-    items?: Array<{itemId: string, quantity: number}>; 
-    generatedLootChestLevel?: number; 
-  }
+    items?: Array<{itemId: string, quantity: number}>;
+    generatedLootChestLevel?: number;
+    reputation?: Array<{faction: string, amount: number}>;
+    unlocks?: Array<{type: 'location' | 'npc' | 'quest' | 'feature', id: string}>;
+  };
+  
+  // Quest notes and journal entries
+  notes?: string[];
+  journalEntries?: Array<{
+    timestamp: string;
+    entry: string;
+    type: 'progress' | 'discovery' | 'dialogue' | 'completion';
+  }>;
 }
 
 export interface GeneratedQuestData {
@@ -659,6 +699,18 @@ export interface GeneratedQuestData {
   description: string;
   objectives: string[];
   iconName: SpellIconName;
+}
+
+export interface LootTableEntry {
+    itemId: string; 
+    quantityMin: number;
+    quantityMax: number;
+    weight: number; 
+}
+
+export interface LootTable {
+    id: string;
+    entries: LootTableEntry[];
 }
 
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';
@@ -681,16 +733,4 @@ export interface Character {
   race: string;
   class: string;
   level: number;
-}
-
-export interface LootTableEntry {
-    itemId: string; 
-    quantityMin: number;
-    quantityMax: number;
-    weight: number; 
-}
-
-export interface LootTable {
-    id: string;
-    entries: LootTableEntry[];
 }

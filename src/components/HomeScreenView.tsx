@@ -60,6 +60,7 @@ interface HomeScreenViewProps {
   onOpenCraftingHub: () => void;
   onOpenHomestead: () => void;
   onOpenNPCs: () => void;
+  onOpenQuestBook: () => void;
   onNavigateToMultiplayer: () => void;
 }
 
@@ -76,6 +77,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenCraftingHub,
   onOpenHomestead,
   onOpenNPCs,
+  onOpenQuestBook,
   onNavigateToMultiplayer,
 }) => {
   // State for activity card ordering
@@ -86,6 +88,19 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   // Rest preferences state
   const [restPreferences, setRestPreferences] = React.useState<RestPreferences>(loadRestPreferences);
   const [showRestDropdown, setShowRestDropdown] = React.useState(false);
+
+  // Calculate quest statistics
+  const questStats = React.useMemo(() => {
+    const activeQuests = player.quests.filter(q => q.status === 'active').length;
+    const completedQuests = player.quests.filter(q => q.status === 'completed').length;
+    const failedQuests = player.quests.filter(q => q.status === 'failed').length;
+    
+    return {
+      active: activeQuests,
+      completed: completedQuests,
+      failed: failedQuests
+    };
+  }, [player.quests]);
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -239,13 +254,13 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     },
     {
       id: 'quests',
-      title: 'Quest Log',
+      title: 'Quest Book',
       shortTitle: 'Quests',
       description: 'Track your active quests and view completed adventures.',
       icon: <BookIcon />,
       variant: 'warning' as const,
-      onClick: onOpenNPCs,
-      benefits: ['Active: 3', 'Completed: 12', 'New Available: 2'],
+      onClick: onOpenQuestBook,
+      benefits: [`Active: ${questStats.active}`, `Completed: ${questStats.completed}`, `Failed: ${questStats.failed}`],
       color: 'from-yellow-500/20 to-yellow-600/20',
       borderColor: 'border-yellow-500/30',
       iconColor: 'text-yellow-400',

@@ -220,6 +220,10 @@ export const App: React.FC = () => {
     NavigationController.navigateToCraftingHub(context);
   }, [createNavigationContext]);
 
+  const handleOpenQuestBook = useCallback(() => {
+    gameState.setGameState('QUEST_BOOK');
+  }, [gameState]);
+
   // Equipment handlers using our extracted ItemManagement
   const handleEquipItem = useCallback((itemId: string, slot: DetailedEquipmentSlot) => {
     const result = ItemManagementUtils.equipItem(playerState.player, itemId, slot);
@@ -1060,6 +1064,7 @@ export const App: React.FC = () => {
     onNavigateHome: handleNavigateHome,
     onOpenMobileMenu: () => gameState.setIsMobileMenuOpen(true),
     onOpenCraftingHub: handleOpenCraftingHub,
+    onOpenQuestBook: handleOpenQuestBook,
     
     // Modal handlers
     onOpenCharacterSheet: handleOpenCharacterSheet,

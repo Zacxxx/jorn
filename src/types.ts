@@ -164,7 +164,7 @@ export type GameState =
   | 'SPELL_EDIT_CONFIRMATION' | 'ITEM_CRAFTING' | 'ITEM_CRAFT_CONFIRMATION' | 'SELECTING_POTION'
   | 'CHARACTER_SHEET' | 'SELECTING_ABILITY' | 'CRAFTING_HUB' | 'EXPLORING_MAP' | 'CAMP'
   | 'SETTLEMENT_VIEW' | 'SHOP_VIEW' | 'TAVERN_VIEW' | 'NPC_DIALOGUE' | 'HOMESTEAD_VIEW'
-  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP' | 'NPCS_VIEW' | 'MULTIPLAYER_VIEW';
+  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP' | 'NPCS_VIEW' | 'MULTIPLAYER_VIEW' | 'QUEST_BOOK';
 export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia';
 export type InventoryFilterType = 'All' | ItemType;
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';
@@ -311,16 +311,47 @@ export interface Quest {
   title: string;
   description: string;
   objectives: string[];
-  status: 'active' | 'completed' | 'failed';
+  status: 'active' | 'completed' | 'failed' | 'available' | 'locked';
   isMainQuest: boolean;
   iconName: SpellIconName;
+  
+  // Enhanced quest properties
+  category: 'main' | 'side' | 'daily' | 'guild' | 'exploration' | 'crafting' | 'combat' | 'social';
+  difficulty: 'trivial' | 'easy' | 'normal' | 'hard' | 'epic' | 'legendary';
+  estimatedTime: string; // e.g., "30 minutes", "2 hours", "Multiple sessions"
+  location?: string;
+  questGiver?: string;
+  level?: number; // Recommended level
+  
+  // Progress tracking
+  progress?: {
+    current: number;
+    total: number;
+    description?: string;
+  };
+  
+  // Quest chain information
+  chainId?: string;
+  chainPosition?: number;
+  chainTotal?: number;
+  prerequisiteQuestIds?: string[];
+  
+  // Rewards
   rewards?: {
     xp?: number;
     gold?: number;
     essence?: number;
     items?: Array<{itemId: string, quantity: number}>;
     generatedLootChestLevel?: number;
-  }
+    title?: string;
+    unlockQuestIds?: string[];
+  };
+  
+  // Metadata
+  dateStarted?: number; // timestamp
+  dateCompleted?: number; // timestamp
+  notes?: string[];
+  tags?: string[];
 }
 
 // Items
