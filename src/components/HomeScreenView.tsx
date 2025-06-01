@@ -96,6 +96,25 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   const [restPreferences, setRestPreferences] = React.useState<RestPreferences>(loadRestPreferences);
   const [showRestDropdown, setShowRestDropdown] = React.useState(false);
 
+  // Combat area hover state
+  const [isCombatHovered, setIsCombatHovered] = React.useState(false);
+  const [combatGifLoaded, setCombatGifLoaded] = React.useState(false);
+  const [combatGifError, setCombatGifError] = React.useState(false);
+
+  // Battle dropdown state
+  const [showBattleDropdown, setShowBattleDropdown] = React.useState(false);
+  const [selectedBattleType, setSelectedBattleType] = React.useState<'normal' | 'elite' | 'boss' | 'arena'>('normal');
+
+  // Exploration area hover state
+  const [isExplorationHovered, setIsExplorationHovered] = React.useState(false);
+  const [explorationGifLoaded, setExplorationGifLoaded] = React.useState(false);
+  const [explorationGifError, setExplorationGifError] = React.useState(false);
+
+  // Homestead area hover state
+  const [isHomesteadHovered, setIsHomesteadHovered] = React.useState(false);
+  const [homesteadGifLoaded, setHomesteadGifLoaded] = React.useState(false);
+  const [homesteadGifError, setHomesteadGifError] = React.useState(false);
+
   // Calculate quest statistics
   const questStats = React.useMemo(() => {
     const activeQuests = player.quests.filter(q => q.status === 'active').length;
@@ -112,11 +131,14 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   // Close dropdown when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (showRestDropdown) {
-        const target = event.target as Element;
-        if (!target.closest('.rest-dropdown-container')) {
-          setShowRestDropdown(false);
-        }
+      const target = event.target as Element;
+      
+      if (showRestDropdown && !target.closest('.rest-dropdown-container')) {
+        setShowRestDropdown(false);
+      }
+      
+      if (showBattleDropdown && !target.closest('.battle-dropdown-container')) {
+        setShowBattleDropdown(false);
       }
     };
 
@@ -124,7 +146,49 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showRestDropdown]);
+  }, [showRestDropdown, showBattleDropdown]);
+
+  // Preload combat GIF when hovering starts
+  React.useEffect(() => {
+    if (isCombatHovered && !combatGifLoaded && !combatGifError) {
+      const img = new Image();
+      img.onload = () => {
+        setCombatGifLoaded(true);
+      };
+      img.onerror = () => {
+        setCombatGifError(true);
+      };
+      img.src = '/assets/activity-card/quests.gif';
+    }
+  }, [isCombatHovered, combatGifLoaded, combatGifError]);
+
+  // Preload exploration GIF when hovering starts
+  React.useEffect(() => {
+    if (isExplorationHovered && !explorationGifLoaded && !explorationGifError) {
+      const img = new Image();
+      img.onload = () => {
+        setExplorationGifLoaded(true);
+      };
+      img.onerror = () => {
+        setExplorationGifError(true);
+      };
+      img.src = '/assets/activity-card/research.gif';
+    }
+  }, [isExplorationHovered, explorationGifLoaded, explorationGifError]);
+
+  // Preload homestead GIF when hovering starts
+  React.useEffect(() => {
+    if (isHomesteadHovered && !homesteadGifLoaded && !homesteadGifError) {
+      const img = new Image();
+      img.onload = () => {
+        setHomesteadGifLoaded(true);
+      };
+      img.onerror = () => {
+        setHomesteadGifError(true);
+      };
+      img.src = '/assets/activity-card/camp.gif';
+    }
+  }, [isHomesteadHovered, homesteadGifLoaded, homesteadGifError]);
 
   // Set video playback rate to be very slow
   React.useEffect(() => {
@@ -174,6 +238,60 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     onRestComplete(restType === 'custom' ? 'long' : restType, duration);
     setShowRestDropdown(false);
   };
+
+  // Handle battle type selection
+  const handleBattleTypeSelect = (battleType: 'normal' | 'elite' | 'boss' | 'arena') => {
+    setSelectedBattleType(battleType);
+    setShowBattleDropdown(false);
+  };
+
+  // Handle battle launch with selected type
+  const handleLaunchBattle = () => {
+    // For now, just call the original onFindEnemy function
+    // In the future, this could pass the battle type to the parent
+    console.log('Launching battle type:', selectedBattleType);
+    onFindEnemy();
+  };
+
+  // Get battle type information
+  const getBattleTypeInfo = (battleType: 'normal' | 'elite' | 'boss' | 'arena') => {
+    switch (battleType) {
+      case 'normal':
+        return {
+          name: 'Normal Battle',
+          description: 'Standard encounter',
+          difficulty: 'Normal',
+          rewards: 'Standard XP & Loot',
+          color: 'text-green-300'
+        };
+      case 'elite':
+        return {
+          name: 'Elite Battle',
+          description: 'Challenging encounter',
+          difficulty: 'Hard',
+          rewards: 'Bonus XP & Rare Loot',
+          color: 'text-blue-300'
+        };
+      case 'boss':
+        return {
+          name: 'Boss Battle',
+          description: 'Epic encounter',
+          difficulty: 'Very Hard',
+          rewards: 'High XP & Epic Loot',
+          color: 'text-purple-300'
+        };
+      case 'arena':
+        return {
+          name: 'Arena Battle',
+          description: 'Endless waves',
+          difficulty: 'Scaling',
+          rewards: 'Progressive Rewards',
+          color: 'text-orange-300'
+        };
+    }
+  };
+
+  const currentBattleInfo = getBattleTypeInfo(selectedBattleType);
 
   // Calculate rest benefits for display
   const getRestBenefits = (restType: 'short' | 'long' | 'custom', customDuration?: number) => {
@@ -268,7 +386,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     },
     {
       id: 'npcs',
-      title: 'NPCs & Quests',
+      title: 'NPCs',
       shortTitle: 'NPCs',
       description: 'Interact with characters and embark on exciting quests.',
       icon: <UserIcon />,
@@ -390,90 +508,244 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           
           {/* Top Row - Location Info with Details and Homestead (spans full width) */}
           {/* Mobile: order-2, Desktop: order-none (implicit first) */}
-          <div className="order-2 md:order-none col-span-full md:col-span-12 md:row-span-2 bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-xl shadow-xl border border-green-700/60 p-4">
+          <div 
+            className="order-2 md:order-none col-span-full md:col-span-12 md:row-span-2 bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-xl shadow-xl border border-green-700/60 p-4 relative overflow-hidden transition-all duration-300 hover:shadow-3xl"
+            onMouseEnter={() => setIsExplorationHovered(true)}
+            onMouseLeave={() => setIsExplorationHovered(false)}
+          >
+            {/* Background Animation Layer */}
+            <div className={`absolute inset-0 transition-all duration-500 rounded-xl overflow-hidden ${
+              isExplorationHovered ? 'opacity-20' : 'opacity-0'
+            }`}>
+              {/* Static preview image - always visible when hovered */}
+              <img
+                src="/assets/activity-card/research.svg"
+                alt="Exploration preview"
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                  isExplorationHovered && explorationGifLoaded && !explorationGifError && !isHomesteadHovered ? 'opacity-0' : 'opacity-60'
+                }`}
+                style={{
+                  filter: 'brightness(0.6) contrast(0.9) hue-rotate(-30deg)',
+                }}
+              />
+              
+              {/* GIF animation - only visible when hovered and loaded */}
+              <img
+                src={isExplorationHovered && !isHomesteadHovered ? '/assets/activity-card/research.gif' : ''}
+                alt="Exploration animation"
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                  isExplorationHovered && explorationGifLoaded && !explorationGifError && !isHomesteadHovered ? 'opacity-70 scale-110' : 'opacity-0'
+                }`}
+                style={{
+                  filter: isExplorationHovered && explorationGifLoaded && !isHomesteadHovered ? 'brightness(0.8) contrast(1.1) saturate(1.2) hue-rotate(-30deg)' : 'brightness(0.6) contrast(0.9)',
+                }}
+                onLoad={() => setExplorationGifLoaded(true)}
+                onError={() => setExplorationGifError(true)}
+              />
+              
+              {/* Loading indicator for GIF */}
+              {isExplorationHovered && !explorationGifLoaded && !explorationGifError && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-green-300/30 border-t-green-300/80 rounded-full animate-spin"></div>
+                </div>
+              )}
+              
+              {/* Exploration-specific overlay effects */}
+              <div className={`absolute inset-0 bg-gradient-to-t from-green-900/60 via-transparent to-green-900/40 transition-all duration-500 ${
+                isExplorationHovered ? 'opacity-70' : 'opacity-90'
+              }`} />
+              <div className={`absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 transition-opacity duration-500 ${
+                isExplorationHovered ? 'opacity-100' : 'opacity-0'
+              }`} />
+            </div>
+
             {/* Top Section - Main Location Info */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+            <div className={`relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 transition-all duration-300 ${
+              isExplorationHovered ? 'drop-shadow-lg' : ''
+            }`}>
               <div className="flex items-center space-x-4 mb-2 sm:mb-0">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center">
-                  {isInSettlement ? <BuildingIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" /> : <MapIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />}
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                  isExplorationHovered ? 'shadow-lg shadow-green-500/30' : ''
+                }`}>
+                  {isInSettlement ? <BuildingIcon className={`w-5 h-5 sm:w-6 sm:h-6 text-green-400 transition-all duration-300 ${
+                    isExplorationHovered ? 'text-green-300' : ''
+                  }`} /> : <MapIcon className={`w-5 h-5 sm:w-6 sm:h-6 text-green-400 transition-all duration-300 ${
+                    isExplorationHovered ? 'text-green-300' : ''
+                  }`} />}
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-green-300">{locationName}</h3>
-                  <p className="text-xs sm:text-sm text-slate-300">{currentLocation?.type} • Danger Level {currentLocation?.dangerLevel || '?'}</p>
+                  <h3 className={`text-lg sm:text-xl font-bold text-green-300 transition-all duration-300 ${
+                    isExplorationHovered ? 'text-white drop-shadow-md' : ''
+                  }`}>{locationName}</h3>
+                  <p className={`text-xs sm:text-sm text-slate-300 transition-all duration-300 ${
+                    isExplorationHovered ? 'text-slate-200 drop-shadow-sm' : ''
+                  }`}>{currentLocation?.type} • Danger Level {currentLocation?.dangerLevel || '?'}</p>
                 </div>
               </div>
-          <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                 {isInSettlement && (
                   <ActionButton onClick={onAccessSettlement} variant="primary" size="sm" icon={<BuildingIcon />}>
                     Settlement
                   </ActionButton>
                 )}
                 <ActionButton onClick={onExploreMap} variant="success" size="sm" icon={<MapIcon />}>
-            Map
-          </ActionButton>
-        </div>
+                  Map
+                </ActionButton>
+              </div>
             </div>
 
             {/* Bottom Section - Location Details and Homestead */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
               {/* Location Details */}
-              <div className="col-span-1 lg:col-span-6 bg-gradient-to-r from-slate-700/40 to-slate-800/40 rounded-lg p-3 border border-slate-600/30">
-                <h4 className="text-base font-semibold text-slate-200 mb-3">Location Details</h4>
+              <div className={`col-span-1 lg:col-span-6 bg-gradient-to-r from-slate-700/40 to-slate-800/40 rounded-lg p-3 border border-slate-600/30 transition-all duration-300 ${
+                isExplorationHovered ? 'bg-gradient-to-r from-slate-700/60 to-slate-800/60 border-slate-500/50' : ''
+              }`}>
+                <h4 className={`text-base font-semibold text-slate-200 mb-3 transition-all duration-300 ${
+                  isExplorationHovered ? 'text-white drop-shadow-sm' : ''
+                }`}>Location Details</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Type:</span>
-                      <span className="text-slate-200 capitalize">{currentLocation?.type || 'Unknown'}</span>
+                      <span className={`text-slate-400 transition-all duration-300 ${
+                        isExplorationHovered ? 'text-slate-300' : ''
+                      }`}>Type:</span>
+                      <span className={`text-slate-200 capitalize transition-all duration-300 ${
+                        isExplorationHovered ? 'text-white drop-shadow-sm' : ''
+                      }`}>{currentLocation?.type || 'Unknown'}</span>
                     </div>
                     {isInSettlement && currentLocation?.settlement && (
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Population:</span>
-                        <span className="text-slate-200">{currentLocation.settlement.population.toLocaleString()}</span>
+                        <span className={`text-slate-400 transition-all duration-300 ${
+                          isExplorationHovered ? 'text-slate-300' : ''
+                        }`}>Population:</span>
+                        <span className={`text-slate-200 transition-all duration-300 ${
+                          isExplorationHovered ? 'text-white drop-shadow-sm' : ''
+                        }`}>{currentLocation.settlement.population.toLocaleString()}</span>
                       </div>
                     )}
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Danger:</span>
-                      <span className="text-slate-200">Level {currentLocation?.dangerLevel || '?'}</span>
+                      <span className={`text-slate-400 transition-all duration-300 ${
+                        isExplorationHovered ? 'text-slate-300' : ''
+                      }`}>Danger:</span>
+                      <span className={`text-slate-200 transition-all duration-300 ${
+                        isExplorationHovered ? 'text-white drop-shadow-sm' : ''
+                      }`}>Level {currentLocation?.dangerLevel || '?'}</span>
                     </div>
-            {isInSettlement && currentLocation?.settlement && (
+                    {isInSettlement && currentLocation?.settlement && (
                       <div className="flex justify-between">
-                        <span className="text-slate-400">NPCs:</span>
-                        <span className="text-slate-200">{currentLocation.settlement.npcs.length} available</span>
+                        <span className={`text-slate-400 transition-all duration-300 ${
+                          isExplorationHovered ? 'text-slate-300' : ''
+                        }`}>NPCs:</span>
+                        <span className={`text-slate-200 transition-all duration-300 ${
+                          isExplorationHovered ? 'text-white drop-shadow-sm' : ''
+                        }`}>{currentLocation.settlement.npcs.length} available</span>
                       </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-          {/* Homestead Section */}
-              <div className="col-span-1 lg:col-span-6 bg-gradient-to-r from-amber-500/20 to-amber-600/20 rounded-lg p-3 border border-amber-500/30">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-                  <div className="flex items-center space-x-3 mb-2 sm:mb-0">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center">
-                      <HomeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-            </div>
-                    <div>
-                      <h4 className="text-sm sm:text-base font-semibold text-amber-300">Homestead</h4>
-                      <p className="text-2xs sm:text-xs text-slate-300">Your base of operations</p>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+
+              {/* Homestead Section */}
+              <div 
+                className="col-span-1 lg:col-span-6 bg-gradient-to-r from-amber-500/20 to-amber-600/20 rounded-lg p-3 border border-amber-500/30 relative overflow-hidden transition-all duration-300 hover:shadow-2xl"
+                onMouseEnter={() => setIsHomesteadHovered(true)}
+                onMouseLeave={() => setIsHomesteadHovered(false)}
+              >
+                {/* Background Animation Layer */}
+                <div className={`absolute inset-0 transition-all duration-500 rounded-lg overflow-hidden ${
+                  isHomesteadHovered ? 'opacity-40' : 'opacity-0'
+                }`}>
+                  {/* Static preview image - always visible when hovered */}
+                  <img
+                    src="/assets/activity-card/camp.svg"
+                    alt="Homestead preview"
+                    className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                      isHomesteadHovered && homesteadGifLoaded && !homesteadGifError ? 'opacity-0' : 'opacity-80'
+                    }`}
+                    style={{
+                      filter: 'brightness(0.7) contrast(1.0) hue-rotate(10deg)',
+                    }}
+                  />
+                  
+                  {/* GIF animation - only visible when hovered and loaded */}
+                  <img
+                    src={isHomesteadHovered ? '/assets/activity-card/camp.gif' : ''}
+                    alt="Homestead animation"
+                    className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                      isHomesteadHovered && homesteadGifLoaded && !homesteadGifError ? 'opacity-85 scale-110' : 'opacity-0'
+                    }`}
+                    style={{
+                      filter: isHomesteadHovered && homesteadGifLoaded ? 'brightness(0.9) contrast(1.2) saturate(1.3) hue-rotate(10deg)' : 'brightness(0.6) contrast(0.9)',
+                    }}
+                    onLoad={() => setHomesteadGifLoaded(true)}
+                    onError={() => setHomesteadGifError(true)}
+                  />
+                  
+                  {/* Loading indicator for GIF */}
+                  {isHomesteadHovered && !homesteadGifLoaded && !homesteadGifError && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-amber-300/30 border-t-amber-300/80 rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                  
+                  {/* Homestead-specific overlay effects */}
+                  <div className={`absolute inset-0 bg-gradient-to-t from-amber-900/50 via-transparent to-amber-900/30 transition-all duration-500 ${
+                    isHomesteadHovered ? 'opacity-60' : 'opacity-80'
+                  }`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br from-amber-500/15 to-orange-500/15 transition-opacity duration-500 ${
+                    isHomesteadHovered ? 'opacity-100' : 'opacity-0'
+                  }`} />
+                </div>
+
+                <div className={`relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between transition-all duration-300 ${
+                  isHomesteadHovered ? 'drop-shadow-lg' : ''
+                }`}>
+                  <div className="flex items-center space-x-3 mb-2 sm:mb-0">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                      isHomesteadHovered ? 'shadow-lg shadow-amber-500/30' : ''
+                    }`}>
+                      <HomeIcon className={`w-4 h-4 sm:w-5 sm:h-5 text-amber-400 transition-all duration-300 ${
+                        isHomesteadHovered ? 'text-amber-300' : ''
+                      }`} />
+                    </div>
+                    <div>
+                      <h4 className={`text-sm sm:text-base font-semibold text-amber-300 transition-all duration-300 ${
+                        isHomesteadHovered ? 'text-white drop-shadow-md' : ''
+                      }`}>Homestead</h4>
+                      <p className={`text-2xs sm:text-xs text-slate-300 transition-all duration-300 ${
+                        isHomesteadHovered ? 'text-slate-200 drop-shadow-sm' : ''
+                      }`}>Your base of operations</p>
+                    </div>
+                  </div>
                   <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
                     <div className="grid grid-cols-2 gap-1 text-2xs sm:text-xs flex-grow sm:flex-grow-0">
-                      <div className="bg-slate-800/30 rounded px-1 sm:px-2 py-1 text-center">
-                        <div className="text-slate-400">Garden</div>
-                        <div className="text-amber-300 font-medium">Lv.1</div>
+                      <div className={`bg-slate-800/30 rounded px-1 sm:px-2 py-1 text-center transition-all duration-300 ${
+                        isHomesteadHovered ? 'bg-slate-800/50' : ''
+                      }`}>
+                        <div className={`text-slate-400 transition-all duration-300 ${
+                          isHomesteadHovered ? 'text-slate-300' : ''
+                        }`}>Garden</div>
+                        <div className={`text-amber-300 font-medium transition-all duration-300 ${
+                          isHomesteadHovered ? 'text-amber-200 drop-shadow-sm' : ''
+                        }`}>Lv.1</div>
                       </div>
-                      <div className="bg-slate-800/30 rounded px-2 py-1 text-center">
-                        <div className="text-slate-400">Workshop</div>
-                        <div className="text-amber-300 font-medium">Lv.1</div>
+                      <div className={`bg-slate-800/30 rounded px-2 py-1 text-center transition-all duration-300 ${
+                        isHomesteadHovered ? 'bg-slate-800/50' : ''
+                      }`}>
+                        <div className={`text-slate-400 transition-all duration-300 ${
+                          isHomesteadHovered ? 'text-slate-300' : ''
+                        }`}>Workshop</div>
+                        <div className={`text-amber-300 font-medium transition-all duration-300 ${
+                          isHomesteadHovered ? 'text-amber-200 drop-shadow-sm' : ''
+                        }`}>Lv.1</div>
                       </div>
                     </div>
                     <ActionButton onClick={onOpenHomestead} variant="secondary" size="sm" icon={<HomeIcon />}>
                       Visit
                     </ActionButton>
-                      </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -486,7 +758,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               const activity = activityCards.find(card => card.id === activityId);
               if (!activity) return null;
               
-                      return (
+              return (
                 <div key={activity.id} className="w-full h-full"> {/* Ensure cards take full width/height of grid cell */}
                   <ActivityCard
                     id={activity.id}
@@ -502,87 +774,288 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                     backgroundImage={activity.backgroundImage}
                     gifBackgroundImage={activity.gifBackgroundImage}
                   />
-                        </div>
-                      );
-                  })}
                 </div>
+              );
+            })}
+          </div>
 
           {/* Center Column - BATTLE SECTION (Hero/Focus Area) */}
           {/* Mobile: order-1, Desktop: order-none (implicit third) */}
-          <div className="order-1 md:order-none col-span-full md:col-span-6 md:row-span-4 bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-xl shadow-2xl border border-red-700/60 p-4 sm:p-6 flex flex-col">
+          <div 
+            className="order-1 md:order-none col-span-full md:col-span-6 md:row-span-4 bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-xl shadow-2xl border border-red-700/60 p-4 sm:p-6 flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-3xl"
+            onMouseEnter={() => setIsCombatHovered(true)}
+            onMouseLeave={() => setIsCombatHovered(false)}
+          >
+            {/* Background Animation Layer */}
+            <div className={`absolute inset-0 transition-all duration-500 rounded-xl overflow-hidden ${
+              isCombatHovered ? 'opacity-30' : 'opacity-0'
+            }`}>
+              {/* Static preview image - always visible when hovered */}
+              <img
+                src="/assets/activity-card/quests.svg"
+                alt="Combat preview"
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                  isCombatHovered && combatGifLoaded && !combatGifError ? 'opacity-0' : 'opacity-60'
+                }`}
+                style={{
+                  filter: 'brightness(0.6) contrast(0.9) hue-rotate(15deg)',
+                }}
+              />
+              
+              {/* GIF animation - only visible when hovered and loaded */}
+              <img
+                src={isCombatHovered ? '/assets/activity-card/quests.gif' : ''}
+                alt="Combat animation"
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                  isCombatHovered && combatGifLoaded && !combatGifError ? 'opacity-70 scale-110' : 'opacity-0'
+                }`}
+                style={{
+                  filter: isCombatHovered && combatGifLoaded ? 'brightness(0.8) contrast(1.1) saturate(1.2) hue-rotate(15deg)' : 'brightness(0.6) contrast(0.9)',
+                }}
+                onLoad={() => setCombatGifLoaded(true)}
+                onError={() => setCombatGifError(true)}
+              />
+              
+              {/* Loading indicator for GIF */}
+              {isCombatHovered && !combatGifLoaded && !combatGifError && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-red-300/30 border-t-red-300/80 rounded-full animate-spin"></div>
+                </div>
+              )}
+              
+              {/* Combat-specific overlay effects */}
+              <div className={`absolute inset-0 bg-gradient-to-t from-red-900/60 via-transparent to-red-900/40 transition-all duration-500 ${
+                isCombatHovered ? 'opacity-70' : 'opacity-90'
+              }`} />
+              <div className={`absolute inset-0 bg-gradient-to-br from-red-500/10 to-orange-500/10 transition-opacity duration-500 ${
+                isCombatHovered ? 'opacity-100' : 'opacity-0'
+              }`} />
+            </div>
+
             {/* Battle Header */}
-            <div className="flex items-center justify-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl flex items-center justify-center">
-                <SkullIcon className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
+            <div className={`relative z-10 flex items-center justify-center space-x-3 sm:space-x-4 mb-4 sm:mb-6 transition-all duration-300 ${
+              isCombatHovered ? 'drop-shadow-lg' : ''
+            }`}>
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                isCombatHovered ? 'shadow-lg shadow-red-500/30' : ''
+              }`}>
+                <SkullIcon className={`w-6 h-6 sm:w-8 sm:h-8 text-red-400 transition-all duration-300 ${
+                  isCombatHovered ? 'text-red-300' : ''
+                }`} />
               </div>
               <div className="text-center">
-                <h2 className="text-2xl sm:text-3xl font-bold text-red-300">COMBAT</h2>
-                <p className="text-base sm:text-lg text-slate-300">Test Your Skills</p>
-          </div>
-        </div>
+                <h2 className={`text-2xl sm:text-3xl font-bold text-red-300 transition-all duration-300 ${
+                  isCombatHovered ? 'text-white drop-shadow-md' : ''
+                }`}>COMBAT</h2>
+                <p className={`text-base sm:text-lg text-slate-300 transition-all duration-300 ${
+                  isCombatHovered ? 'text-slate-200 drop-shadow-sm' : ''
+                }`}>Test Your Skills</p>
+              </div>
+            </div>
 
             {/* Battle Info */}
-            <div className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-xl p-3 sm:p-4 border border-slate-600/50 shadow-inner mb-4 sm:mb-6 flex-1">
+            <div className={`relative z-10 bg-gradient-to-r from-slate-700/60 to-slate-800/60 rounded-xl p-3 sm:p-4 border border-slate-600/50 shadow-inner mb-4 sm:mb-6 flex-1 transition-all duration-300 ${
+              isCombatHovered ? 'bg-gradient-to-r from-slate-700/80 to-slate-800/80 border-slate-500/60' : ''
+            }`}>
               <div className="text-center mb-3 sm:mb-4">
-                <h3 className="text-lg sm:text-xl font-semibold text-slate-200 mb-1 sm:mb-2">Battle in {locationName}</h3>
-                <p className="text-xs sm:text-sm text-slate-300">Danger Level: {currentLocation?.dangerLevel || '?'}</p>
+                <h3 className={`text-lg sm:text-xl font-semibold text-slate-200 mb-1 sm:mb-2 transition-all duration-300 ${
+                  isCombatHovered ? 'text-white drop-shadow-sm' : ''
+                }`}>
+                  {currentBattleInfo.name} in {locationName}
+                </h3>
+                <p className={`text-xs sm:text-sm text-slate-300 transition-all duration-300 ${
+                  isCombatHovered ? 'text-slate-200' : ''
+                }`}>
+                  Difficulty: <span className={currentBattleInfo.color}>{currentBattleInfo.difficulty}</span> | Danger Level: {currentLocation?.dangerLevel || '?'}
+                </p>
               </div>
               
               <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center text-xs sm:text-sm">
-                <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3">
-                  <div className="text-slate-400">Experience</div>
-                  <div className="text-green-300 font-semibold">High Gain</div>
+                <div className={`bg-slate-800/50 rounded-lg p-2 sm:p-3 transition-all duration-300 ${
+                  isCombatHovered ? 'bg-slate-800/70' : ''
+                }`}>
+                  <div className={`text-slate-400 transition-all duration-300 ${
+                    isCombatHovered ? 'text-slate-300' : ''
+                  }`}>Experience</div>
+                  <div className={`text-green-300 font-semibold transition-all duration-300 ${
+                    isCombatHovered ? 'text-green-200 drop-shadow-sm' : ''
+                  }`}>High Gain</div>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3">
-                  <div className="text-slate-400">Loot</div>
-                  <div className="text-blue-300 font-semibold">Valuable</div>
+                <div className={`bg-slate-800/50 rounded-lg p-2 sm:p-3 transition-all duration-300 ${
+                  isCombatHovered ? 'bg-slate-800/70' : ''
+                }`}>
+                  <div className={`text-slate-400 transition-all duration-300 ${
+                    isCombatHovered ? 'text-slate-300' : ''
+                  }`}>Loot</div>
+                  <div className={`text-blue-300 font-semibold transition-all duration-300 ${
+                    isCombatHovered ? 'text-blue-200 drop-shadow-sm' : ''
+                  }`}>Valuable</div>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3">
-                  <div className="text-slate-400">Risk</div>
-                  <div className="text-red-300 font-semibold">Moderate</div>
+                <div className={`bg-slate-800/50 rounded-lg p-2 sm:p-3 transition-all duration-300 ${
+                  isCombatHovered ? 'bg-slate-800/70' : ''
+                }`}>
+                  <div className={`text-slate-400 transition-all duration-300 ${
+                    isCombatHovered ? 'text-slate-300' : ''
+                  }`}>Risk</div>
+                  <div className={`text-red-300 font-semibold transition-all duration-300 ${
+                    isCombatHovered ? 'text-red-200 drop-shadow-sm' : ''
+                  }`}>Moderate</div>
                 </div>
-        </div>
-      </div>
+              </div>
+            </div>
 
             {/* Battle Actions */}
-            <div className="space-y-3">
-        <ActionButton 
-          onClick={onFindEnemy} 
-          variant="danger" 
-          size="lg" 
-          isLoading={isLoading} 
-          icon={<SkullIcon />} 
-                className="w-full text-lg sm:text-xl py-3 sm:py-4 hover:scale-105 transition-transform duration-200 font-bold"
-              >
-                SEEK BATTLE
-              </ActionButton>
+            <div className="relative z-10 space-y-3">
+              {/* Enhanced Battle Button with Dropdown */}
+              <div className="relative battle-dropdown-container">
+                <div className="flex">
+                  {/* Main Battle Button */}
+                  <ActionButton 
+                    onClick={handleLaunchBattle} 
+                    variant="danger" 
+                    size="lg" 
+                    isLoading={isLoading} 
+                    icon={<SkullIcon />} 
+                    className="flex-1 text-lg sm:text-xl py-3 sm:py-4 hover:scale-105 transition-transform duration-200 font-bold rounded-r-none border-r-0"
+                    title={`Launch ${currentBattleInfo.name}`}
+                  >
+                    SEEK BATTLE
+                  </ActionButton>
+                  
+                  {/* Dropdown Arrow Button */}
+                  <ActionButton 
+                    onClick={() => setShowBattleDropdown(!showBattleDropdown)}
+                    variant="danger"
+                    size="lg"
+                    className="px-3 sm:px-4 py-3 sm:py-4 rounded-l-none border-l border-red-600/50 hover:scale-105 transition-transform duration-200"
+                    title="Battle options"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </ActionButton>
+                </div>
+                
+                {/* Dropdown Menu */}
+                {showBattleDropdown && (
+                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-black/40 backdrop-blur-3xl rounded-lg border border-white/30 shadow-2xl shadow-black/40 z-[1001] overflow-hidden">
+                    {/* Extra blur overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-2xl"></div>
+                    <div className="relative p-2 space-y-1">
+                      {/* Normal Battle Option */}
+                      <button
+                        onClick={() => handleBattleTypeSelect('normal')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200 flex items-center gap-2 backdrop-blur-sm ${
+                          selectedBattleType === 'normal'
+                            ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                            : 'text-white/90 hover:text-white hover:bg-white/15'
+                        }`}
+                      >
+                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Normal Battle</span>
+                            <span className="text-xs text-white/60">Standard</span>
+                          </div>
+                          <div className="text-xs text-white/60 mt-1">
+                            Standard XP & Loot | Balanced difficulty
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {/* Elite Battle Option */}
+                      <button
+                        onClick={() => handleBattleTypeSelect('elite')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200 flex items-center gap-2 backdrop-blur-sm ${
+                          selectedBattleType === 'elite'
+                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                            : 'text-white/90 hover:text-white hover:bg-white/15'
+                        }`}
+                      >
+                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Elite Battle</span>
+                            <span className="text-xs text-white/60">Hard</span>
+                          </div>
+                          <div className="text-xs text-white/60 mt-1">
+                            Bonus XP & Rare Loot | Challenging encounter
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {/* Boss Battle Option */}
+                      <button
+                        onClick={() => handleBattleTypeSelect('boss')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200 flex items-center gap-2 backdrop-blur-sm ${
+                          selectedBattleType === 'boss'
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                            : 'text-white/90 hover:text-white hover:bg-white/15'
+                        }`}
+                      >
+                        <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Boss Battle</span>
+                            <span className="text-xs text-white/60">Very Hard</span>
+                          </div>
+                          <div className="text-xs text-white/60 mt-1">
+                            High XP & Epic Loot | Epic encounter
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {/* Arena Battle Option */}
+                      <button
+                        onClick={() => handleBattleTypeSelect('arena')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200 flex items-center gap-2 backdrop-blur-sm ${
+                          selectedBattleType === 'arena'
+                            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                            : 'text-white/90 hover:text-white hover:bg-white/15'
+                        }`}
+                      >
+                        <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Arena Battle</span>
+                            <span className="text-xs text-white/60">Scaling</span>
+                          </div>
+                          <div className="text-xs text-white/60 mt-1">
+                            Progressive Rewards | Endless waves
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <ActionButton onClick={onNavigateToMultiplayer} variant="primary" size="sm" icon={<UserIcon />}>
                   Multiplayer
-        </ActionButton>
+                </ActionButton>
                 
                 {/* Enhanced Rest Button with Dropdown */}
                 <div className="relative rest-dropdown-container">
                   <div className="flex">
                     {/* Main Rest Button */}
-        <ActionButton 
+                    <ActionButton 
                       onClick={handleQuickRest} 
-          variant="secondary"
+                      variant="secondary"
                       size="sm" 
-          icon={<TentIcon />} 
+                      icon={<TentIcon />} 
                       disabled={!needsRest}
                       className="flex-1 rounded-r-none border-r-0"
                       title={`Quick ${restPreferences.preferredRestType} rest (${currentRestBenefits.duration})`}
-        >
+                    >
                       <span className="hidden sm:inline">Rest</span>
                       <span className="sm:hidden">Rest</span>
-        </ActionButton>
+                    </ActionButton>
                     
                     {/* Dropdown Arrow Button */}
-        <ActionButton 
+                    <ActionButton 
                       onClick={() => setShowRestDropdown(!showRestDropdown)}
-          variant="secondary"
+                      variant="secondary"
                       size="sm"
                       className="px-2 rounded-l-none border-l border-slate-600/50"
                       title="Rest options"
@@ -590,7 +1063,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-        </ActionButton>
+                    </ActionButton>
                   </div>
                   
                   {/* Dropdown Menu */}

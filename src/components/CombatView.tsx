@@ -66,9 +66,9 @@ const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`
-        relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 border-2 h-full group overflow-hidden
+        relative flex flex-row items-center justify-start p-3 rounded-lg transition-all duration-200 border-2 h-full group overflow-hidden
         ${isActive
-          ? 'bg-gradient-to-br from-cyan-600/40 to-blue-600/40 border-cyan-400/60 text-cyan-200 shadow-lg shadow-cyan-500/20'
+          ? 'bg-gradient-to-r from-cyan-600/40 to-blue-600/40 border-cyan-400/60 text-cyan-200 shadow-lg shadow-cyan-500/20'
           : disabled
             ? 'bg-slate-800/40 border-slate-700/40 text-slate-500 cursor-not-allowed opacity-50'
             : 'bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/60 hover:border-slate-500/60 hover:text-slate-200'
@@ -82,12 +82,12 @@ const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon
           isHovered && !disabled ? 'opacity-10 scale-110' : 'opacity-0 scale-100'
         }`}
       />
-      <div className="relative z-10 w-5 h-5 mb-1 flex-shrink-0">
+      <div className="relative z-10 w-5 h-5 mr-3 flex-shrink-0">
         {icon}
       </div>
-      <span className="relative z-10 text-xs font-semibold truncate w-full text-center">{label}</span>
+      <span className="relative z-10 text-sm font-semibold truncate flex-1 text-left">{label}</span>
       {count !== undefined && count > 0 && (
-        <div className="relative z-10 absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
+        <div className="relative z-10 bg-cyan-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg ml-2 flex-shrink-0">
         {count > 99 ? '99+' : count}
       </div>
       )}
@@ -332,9 +332,9 @@ const EnhancedEnemyDisplay: React.FC<EnhancedEnemyDisplayProps> = ({ enemy, isTa
           title={`Target ${enemy.name}`}
         />
         
-        {/* Targeting Indicator */}
+        {/* Targeting Indicator - Bottom line only */}
         {isTargeted && (
-          <div className="absolute -inset-2 border-4 border-red-400/80 rounded-xl animate-pulse pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 border-b-4 border-red-400/80 animate-pulse pointer-events-none" />
         )}
       </div>
 
@@ -644,8 +644,8 @@ const CombatView: React.FC<CombatViewProps> = ({
       case 'actions':
         return (
           <div className="p-3 h-full flex flex-col gap-3">
-            {/* Quick Actions - 2x2 grid */}
-            <div className="grid grid-cols-2 gap-2 flex-1">
+            {/* Quick Actions - 2x2 grid with proper sizing */}
+            <div className="grid grid-cols-2 gap-3 flex-1">
               <ActionButton 
                 onClick={() => { 
                   if(targetEnemyId) { 
@@ -657,10 +657,10 @@ const CombatView: React.FC<CombatViewProps> = ({
                   }
                 }} 
                 variant="danger" 
-                size="md"
+                size="lg"
                 icon={<SwordsIcon className="w-5 h-5"/>} 
                 disabled={!targetEnemyId || !canPlayerAct} 
-                className="h-full text-sm font-bold px-2 flex flex-col items-center justify-center gap-1"
+                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2"
               >
                 ATTACK
               </ActionButton>
@@ -673,10 +673,10 @@ const CombatView: React.FC<CombatViewProps> = ({
                   }
                 }} 
                 variant="info" 
-                size="md"
+                size="lg"
                 icon={<ShieldIcon className="w-5 h-5"/>} 
                 disabled={!canPlayerAct} 
-                className="h-full text-sm font-bold px-2 flex flex-col items-center justify-center gap-1"
+                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2"
               >
                 DEFEND
               </ActionButton>
@@ -689,18 +689,18 @@ const CombatView: React.FC<CombatViewProps> = ({
                   }
                 }} 
                 variant="warning" 
-                size="md"
+                size="lg"
                 icon={<FleeIcon className="w-5 h-5"/>} 
                 disabled={!canPlayerAct} 
-                className="h-full text-sm font-bold px-2 flex flex-col items-center justify-center gap-1"
+                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2"
               >
                 FLEE
               </ActionButton>
               <ActionButton 
                 type="submit" 
                 variant="secondary" 
-                size="md"
-                className="h-full text-sm font-bold px-2 flex flex-col items-center justify-center gap-1" 
+                size="lg"
+                className="h-full text-sm font-bold px-3 py-2 flex flex-col items-center justify-center gap-2" 
                 disabled={!canPlayerAct || !freestyleActionText.trim()} 
                 onClick={() => {
                   handleFreestyleSubmit(new Event('submit') as any);
@@ -714,15 +714,15 @@ const CombatView: React.FC<CombatViewProps> = ({
               </ActionButton>
             </div>
             
-            {/* Custom Action */}
-            <div className="h-20">
+            {/* Custom Action - Compact sizing */}
+            <div className="h-14 flex-shrink-0">
               <form onSubmit={handleFreestyleSubmit} className="h-full">
                 <textarea 
                   value={freestyleActionText} 
                   onChange={(e) => setFreestyleActionText(e.target.value)} 
                   placeholder="Describe your custom action..." 
-                  rows={3}
-                  className="w-full h-full p-3 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm resize-none shadow-lg" 
+                  rows={2}
+                  className="w-full h-full p-2 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm resize-none shadow-lg" 
                   disabled={!canPlayerAct} 
                 />
                 </form>
@@ -883,8 +883,8 @@ const CombatView: React.FC<CombatViewProps> = ({
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
           
-          {/* Enemies Section - Top of battlefield */}
-          <div className="absolute top-16 md:top-28 left-1/2 transform -translate-x-1/2 z-30 w-full">
+          {/* Enemies Section - Moved down from top */}
+          <div className="absolute top-24 md:top-40 left-1/2 transform -translate-x-1/2 z-30 w-full">
             <div className={`${getEnemyGridLayout()} px-4 md:px-8`}>
               {currentEnemies.map(enemy => (
                 <EnhancedEnemyDisplay
@@ -913,7 +913,7 @@ const CombatView: React.FC<CombatViewProps> = ({
 
         {/* Desktop Bottom Panel */}
         <div className="flex-shrink-0 p-2 md:p-4">
-          <div className="flex flex-row gap-4 h-36">
+          <div className="flex flex-row gap-4 h-44">
             {/* Player Stats */}
             <div className="w-1/4">
               <EnhancedStatusDisplay 
@@ -930,20 +930,52 @@ const CombatView: React.FC<CombatViewProps> = ({
               </div>
             </div>
 
-            {/* Action Categories */}
+            {/* Action Categories - Vertical List Layout */}
             <div className="w-1/4">
-              <div className="grid grid-rows-5 gap-1 h-full">
-           {actionCategories.map(cat => (
-              <ActionCategoryButton
-                key={cat.view}
-                label={cat.label}
-                icon={cat.icon}
-                isActive={activeDynamicView === cat.view}
-                onClick={() => handleCategoryChange(cat.view)}
-                disabled={cat.view !== 'log' && !canPlayerAct}
-                    count={cat.count}
-              />
-            ))}
+              <div className="flex flex-col gap-2 h-full">
+                <ActionCategoryButton
+                  key="actions"
+                  label="Actions"
+                  icon={<SwordsIcon className="w-full h-full" />}
+                  isActive={activeDynamicView === 'actions'}
+                  onClick={() => handleCategoryChange('actions')}
+                  disabled={!canPlayerAct}
+                />
+                <ActionCategoryButton
+                  key="spells"
+                  label="Spells"
+                  icon={<WandIcon className="w-full h-full" />}
+                  isActive={activeDynamicView === 'spells'}
+                  onClick={() => handleCategoryChange('spells')}
+                  disabled={!canPlayerAct}
+                  count={preparedSpells.length}
+                />
+                <ActionCategoryButton
+                  key="abilities"
+                  label="Abilities"
+                  icon={<StarIcon className="w-full h-full" />}
+                  isActive={activeDynamicView === 'abilities'}
+                  onClick={() => handleCategoryChange('abilities')}
+                  disabled={!canPlayerAct}
+                  count={abilities.length}
+                />
+                <ActionCategoryButton
+                  key="items"
+                  label="Items"
+                  icon={<PotionGenericIcon className="w-full h-full" />}
+                  isActive={activeDynamicView === 'items'}
+                  onClick={() => handleCategoryChange('items')}
+                  disabled={!canPlayerAct}
+                  count={consumables.length}
+                />
+                <ActionCategoryButton
+                  key="log"
+                  label="Log"
+                  icon={<BookIcon className="w-full h-full" />}
+                  isActive={activeDynamicView === 'log'}
+                  onClick={() => handleCategoryChange('log')}
+                  disabled={false}
+                />
               </div>
             </div>
           </div>
