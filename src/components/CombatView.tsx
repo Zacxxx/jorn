@@ -553,24 +553,24 @@ const CombatView: React.FC<CombatViewProps> = ({
       const renderDesktopGrid = () => (
         <div className="h-full p-3 overflow-y-auto">
           <div className="grid grid-cols-3 gap-2">
-            {items.map(item => (
+                {items.map(item => (
               <EnhancedCombatActionSlot 
                 key={item.id} 
                 actionItem={item} 
                 player={player}
-                onClick={(action) => {
-                  if (!canPlayerAct) return;
+                        onClick={(action) => {
+                            if (!canPlayerAct) return;
                   if (type === 'spell') { 
                     if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); 
                     else alert("Select a target first!"); 
                   }
-                  else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
-                  else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
-                }}
-                isDisabledByGameLogic={!canPlayerAct} 
-              />
-            ))}
-          </div>
+                            else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
+                            else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
+                        }}
+                        isDisabledByGameLogic={!canPlayerAct} 
+                    />
+                ))}
+            </div>
         </div>
       );
       
@@ -599,7 +599,7 @@ const CombatView: React.FC<CombatViewProps> = ({
             {renderMobileGrid()}
           </div>
         </>
-      );
+        );
     };
 
     switch (activeDynamicView) {
@@ -688,7 +688,7 @@ const CombatView: React.FC<CombatViewProps> = ({
                   disabled={!canPlayerAct} 
                 />
                 </form>
-            </div>
+                </div>
             </div>
         );
       case 'spells': return renderActionGrid(preparedSpells, 'spell');
@@ -888,24 +888,24 @@ const CombatView: React.FC<CombatViewProps> = ({
             {/* Dynamic Area */}
             <div className="w-1/2">
               <div className="h-full bg-slate-800/40 backdrop-blur-xl rounded-lg border border-slate-600/40 overflow-hidden shadow-xl">
-                {renderDynamicAreaContent()}
+            {renderDynamicAreaContent()}
               </div>
-            </div>
+        </div>
 
             {/* Action Categories */}
             <div className="w-1/4">
               <div className="grid grid-rows-5 gap-1 h-full">
-                {actionCategories.map(cat => (
-                  <ActionCategoryButton
-                    key={cat.view}
-                    label={cat.label}
-                    icon={cat.icon}
-                    isActive={activeDynamicView === cat.view}
-                    onClick={() => handleCategoryChange(cat.view)}
-                    disabled={cat.view !== 'log' && !canPlayerAct}
+           {actionCategories.map(cat => (
+              <ActionCategoryButton
+                key={cat.view}
+                label={cat.label}
+                icon={cat.icon}
+                isActive={activeDynamicView === cat.view}
+                onClick={() => handleCategoryChange(cat.view)}
+                disabled={cat.view !== 'log' && !canPlayerAct}
                     count={cat.count}
-                  />
-                ))}
+              />
+            ))}
               </div>
             </div>
           </div>
