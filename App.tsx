@@ -20,7 +20,7 @@ import { MASTER_ITEM_DEFINITIONS } from './services/itemService';
 import AppShell from './game-graphics/AppShell';
 
 // Import types
-import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName } from './types';
+import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState } from './types';
 
 /**
  * Main App Component
@@ -489,34 +489,301 @@ export const App: React.FC = () => {
   }, [gameState]);
 
   const handlePlayerAttack = useCallback((spell: Spell, targetId: string) => {
-    // Use CombatEngine to handle attack
-    console.log('Player attack:', spell.name, 'target:', targetId);
-  }, []);
+    const context = {
+      player: playerState.player,
+      currentEnemies: gameState.currentEnemies,
+      effectivePlayerStats,
+      setPlayer: playerState.setPlayer,
+      setCurrentEnemies: gameState.setCurrentEnemies,
+      addLog: gameState.addLog,
+      setModalContent: gameState.setModalContent,
+      setGameState: (state: string) => gameState.setGameState(state as GameState),
+      handleEnemyDefeat: (enemy: Enemy) => {
+        // Handle enemy defeat logic
+        const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
+        const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
+        
+        playerState.setPlayer(prev => ({
+          ...prev,
+          gold: prev.gold + goldGained,
+          essence: prev.essence + essenceGained,
+          bestiary: {
+            ...prev.bestiary,
+            [enemy.id]: {
+              ...prev.bestiary[enemy.id],
+              vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
+            }
+          }
+        }));
+        
+        gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
+        
+        // Remove defeated enemy
+        gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== enemy.id));
+        
+        // Check if all enemies defeated
+        const remainingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
+        if (remainingEnemies.length === 0) {
+          gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+          gameState.setGameState('HOME');
+        }
+      }
+    };
+    
+    // Import and use CombatEngine
+    import('./game-core/combat/CombatEngine').then(({ CombatEngineUtils }) => {
+      const success = CombatEngineUtils.executePlayerAttack(spell, targetId, context);
+      if (success) {
+        gameState.setIsPlayerTurn(false);
+      }
+    }).catch(error => {
+      console.error('Failed to load CombatEngine:', error);
+      gameState.addLog('System', 'Combat system error occurred.', 'error');
+    });
+  }, [playerState, gameState, effectivePlayerStats]);
 
   const handlePlayerBasicAttack = useCallback((targetId: string) => {
-    // Use CombatEngine to handle basic attack
-    console.log('Player basic attack target:', targetId);
-  }, []);
+    const targetEnemy = gameState.currentEnemies.find(e => e.id === targetId);
+    if (!targetEnemy) return;
+    
+    gameState.addLog('Player', `attacks ${targetEnemy.name} with a basic strike.`, 'action');
+    
+    const effectiveness = targetEnemy.weakness === 'PhysicalNeutral' ? 'weak' : 
+                         targetEnemy.resistance === 'PhysicalNeutral' ? 'resistant' : 'normal';
+    
+    // Import and use CombatEngine for damage calculation
+    import('./game-core/combat/CombatEngine').then(({ CombatEngineUtils }) => {
+      const calculatedDamage = CombatEngineUtils.calculateDamage(
+        5, 
+        effectivePlayerStats.physicalPower, 
+        targetEnemy.body, 
+        effectiveness
+      );
+      
+      const context = {
+        player: playerState.player,
+        currentEnemies: gameState.currentEnemies,
+        effectivePlayerStats,
+        setPlayer: playerState.setPlayer,
+        setCurrentEnemies: gameState.setCurrentEnemies,
+        addLog: gameState.addLog,
+        setModalContent: gameState.setModalContent,
+        setGameState: (state: string) => gameState.setGameState(state as GameState),
+        handleEnemyDefeat: (enemy: Enemy) => {
+          // Handle enemy defeat logic (same as above)
+          const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
+          const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
+          
+          playerState.setPlayer(prev => ({
+            ...prev,
+            gold: prev.gold + goldGained,
+            essence: prev.essence + essenceGained,
+            bestiary: {
+              ...prev.bestiary,
+              [enemy.id]: {
+                ...prev.bestiary[enemy.id],
+                vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
+              }
+            }
+          }));
+          
+          gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
+          gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== enemy.id));
+          
+          const remainingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
+          if (remainingEnemies.length === 0) {
+            gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+            gameState.setGameState('HOME');
+          }
+        }
+      };
+      
+      const { actualDamageDealt, updatedTargetHp } = CombatEngineUtils.applyDamageAndReflection(
+        targetEnemy, 
+        calculatedDamage, 
+        playerState.player, 
+        context, 
+        false
+      );
+      
+      gameState.addLog('Player', `deals ${actualDamageDealt} physical damage to ${targetEnemy.name}.`, 'damage');
+      gameState.setCurrentEnemies(prev => 
+        prev.map(e => e.id === targetId ? { ...e, hp: Math.max(0, updatedTargetHp) } : e)
+      );
+      
+      if (updatedTargetHp <= 0) {
+        context.handleEnemyDefeat({ ...targetEnemy, hp: updatedTargetHp });
+      }
+      
+      gameState.setIsPlayerTurn(false);
+    }).catch(error => {
+      console.error('Failed to load CombatEngine:', error);
+      gameState.addLog('System', 'Combat system error occurred.', 'error');
+    });
+  }, [playerState, gameState, effectivePlayerStats]);
 
   const handlePlayerDefend = useCallback(() => {
-    // Use CombatEngine to handle defend
-    console.log('Player defend');
-  }, []);
+    gameState.addLog('Player', 'takes a defensive stance.', 'action');
+    
+    // Apply defending status effect
+    playerState.setPlayer(prev => ({
+      ...prev,
+      activeStatusEffects: [
+        ...prev.activeStatusEffects.filter(eff => eff.name !== 'Defending'),
+        {
+          id: `defending-${Date.now()}`,
+          name: 'Defending',
+          duration: 1,
+          magnitude: 0.5, // 50% damage reduction
+          sourceSpellId: 'defend-action',
+          inflictedTurn: gameState.turn || 1,
+          iconName: 'Shield'
+        }
+      ]
+    }));
+    
+    gameState.setIsPlayerTurn(false);
+  }, [playerState, gameState]);
 
   const handlePlayerFlee = useCallback(() => {
-    // Use CombatEngine to handle flee
-    console.log('Player flee');
-  }, []);
+    // Check if player is rooted
+    const isRooted = playerState.player.activeStatusEffects.some(eff => eff.name === 'Rooted');
+    if (isRooted) {
+      gameState.addLog('Player', 'cannot flee while rooted!', 'error');
+      return;
+    }
+    
+    const fleeChance = 0.75; // 75% base flee chance
+    if (Math.random() < fleeChance) {
+      gameState.addLog('Player', 'successfully flees from combat!', 'success');
+      gameState.setGameState('HOME');
+      gameState.setCurrentEnemies([]);
+      gameState.setTargetEnemyId(null);
+    } else {
+      gameState.addLog('Player', 'failed to flee!', 'error');
+      gameState.setIsPlayerTurn(false);
+    }
+  }, [playerState, gameState]);
 
   const handlePlayerFreestyleAction = useCallback(async (actionText: string, targetId: string | null) => {
-    // Use CombatEngine to handle freestyle action
-    console.log('Player freestyle action:', actionText, 'target:', targetId);
-  }, []);
+    gameState.addLog('Player', `attempts: "${actionText}"${targetId ? ` on ${gameState.currentEnemies.find(e => e.id === targetId)?.name}` : ''}.`, 'action');
+    gameState.setModalContent({
+      title: "Freestyle Action", 
+      message: "AI is processing your freestyle action... (This feature is conceptual and results are simulated)", 
+      type: "info"
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
+    
+    const outcomes = [
+      { 
+        success: true, 
+        message: `The action seems to have a minor positive effect! (+5 HP)`, 
+        effect: () => playerState.setPlayer(p => ({...p, hp: Math.min(effectivePlayerStats.maxHp, p.hp + 5)}))
+      },
+      { 
+        success: true, 
+        message: `The action confuses the enemy slightly! (${targetId ? gameState.currentEnemies.find(e => e.id === targetId)?.name : 'Target'} takes 3 damage)`, 
+        effect: () => { 
+          if(targetId) { 
+            const enemy = gameState.currentEnemies.find(e => e.id === targetId); 
+            if(enemy) { 
+              const newHp = Math.max(0, enemy.hp - 3); 
+              gameState.setCurrentEnemies(es => es.map(e => e.id === targetId ? {...e, hp: newHp} : e)); 
+              if(newHp <= 0) {
+                // Handle enemy defeat
+                gameState.addLog('System', `${enemy.name} defeated!`, 'success');
+                gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== targetId));
+                if (gameState.currentEnemies.filter(e => e.id !== targetId).length === 0) {
+                  gameState.setGameState('HOME');
+                }
+              }
+            } 
+          } 
+        } 
+      },
+      { 
+        success: false, 
+        message: `The action fizzles with no noticeable effect.`, 
+        effect: () => {}
+      },
+      { 
+        success: false, 
+        message: `The action backfires slightly! (-2 MP)`, 
+        effect: () => playerState.setPlayer(p => ({...p, mp: Math.max(0, p.mp - 2)}))
+      },
+    ];
+    
+    const randomOutcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+    gameState.addLog('System', randomOutcome.message, randomOutcome.success ? 'info' : 'status');
+    randomOutcome.effect();
+    gameState.setModalContent(null);
+    gameState.setIsPlayerTurn(false);
+  }, [playerState, gameState, effectivePlayerStats]);
 
   const handleUseAbility = useCallback((abilityId: string, targetId: string | null) => {
-    // Use AbilityManager to handle ability use
-    console.log('Use ability:', abilityId, 'target:', targetId);
-  }, []);
+    const ability = playerState.player.abilities.find(a => a.id === abilityId);
+    if (!ability) {
+      gameState.addLog('Player', 'ability not found.', 'error');
+      return;
+    }
+    
+    if (playerState.player.ep < ability.epCost) {
+      gameState.addLog('Player', `cannot use ${ability.name} (insufficient EP).`, 'error');
+      return;
+    }
+    
+    // Check for status effects that prevent ability use
+    if (playerState.player.activeStatusEffects.some(eff => ['Stun', 'Sleep'].includes(eff.name))) {
+      const statusEffect = playerState.player.activeStatusEffects.find(eff => ['Stun', 'Sleep'].includes(eff.name));
+      gameState.addLog('Player', `cannot use abilities due to ${statusEffect?.name}!`, 'status');
+      return;
+    }
+    
+    // Deduct EP cost
+    playerState.setPlayer(prev => ({ ...prev, ep: prev.ep - ability.epCost }));
+    
+    gameState.addLog('Player', `uses ${ability.name}!`, 'action');
+    
+    // Simple ability effect simulation
+    switch (ability.effectType) {
+      case 'SELF_HEAL':
+        const healAmount = 15 + Math.floor(effectivePlayerStats.mind * 0.5);
+        playerState.setPlayer(prev => ({ 
+          ...prev, 
+          hp: Math.min(effectivePlayerStats.maxHp, prev.hp + healAmount) 
+        }));
+        gameState.addLog('Player', `heals ${healAmount} HP.`, 'heal');
+        break;
+        
+      case 'ENEMY_DEBUFF':
+        if (targetId) {
+          const targetEnemy = gameState.currentEnemies.find(e => e.id === targetId);
+          if (targetEnemy) {
+            const damage = 10 + Math.floor(effectivePlayerStats.body * 0.8);
+            const newHp = Math.max(0, targetEnemy.hp - damage);
+            gameState.setCurrentEnemies(prev => 
+              prev.map(e => e.id === targetId ? { ...e, hp: newHp } : e)
+            );
+            gameState.addLog('Player', `deals ${damage} ability damage to ${targetEnemy.name}.`, 'damage');
+            
+            if (newHp <= 0) {
+              gameState.addLog('System', `${targetEnemy.name} defeated!`, 'success');
+              gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== targetId));
+              if (gameState.currentEnemies.filter(e => e.id !== targetId).length === 0) {
+                gameState.setGameState('HOME');
+              }
+            }
+          }
+        }
+        break;
+        
+      default:
+        gameState.addLog('System', `${ability.name} effect applied.`, 'info');
+    }
+    
+    gameState.setIsPlayerTurn(false);
+  }, [playerState, gameState, effectivePlayerStats]);
 
   // Confirmation handlers
   const handleConfirmSpellCraft = useCallback(() => {
