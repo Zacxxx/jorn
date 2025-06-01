@@ -15,8 +15,6 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigateHome, onOpenMobileMenu, onOpenGameMenu, isInCombatButNotOnCombatScreen = false, isInAnyCombat, onReturnToCombat }) => {
-  const xpPercentage = player.xpToNextLevel > 0 ? (player.xp / player.xpToNextLevel) * 100 : 0;
-
   return (
     <header className="bg-slate-800/95 shadow-xl border-b-2 border-sky-600/60 sticky top-0 z-[1000] backdrop-blur-md">
       <div className="container mx-auto px-3 sm:px-4 py-2.5 flex justify-between items-center max-w-6xl">
@@ -51,41 +49,52 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
             </ActionButton>
           )}
         </div>
-        <div className="flex items-center space-x-1.5 xs:space-x-2 md:space-x-3">
-          {/* Level and XP */}
-          <div className="header-stat-text-responsive text-slate-300 bg-slate-700/60 px-1.5 py-1 md:px-2.5 md:py-1.5 rounded-lg shadow-md border border-slate-600/70">
-            <div className="flex items-center">
-              <span className="font-semibold text-green-400 mr-1 xs:mr-1.5">Lvl {player.level}</span>
-              <div className="hidden sm:block w-12 md:w-20 h-2.5 bg-slate-600/80 rounded-full overflow-hidden shadow-inner border border-slate-500/50" title={`XP: ${player.xp} / ${player.xpToNextLevel}`}>
-                <div
-                  className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-full transition-all duration-300 ease-out shadow-sm"
-                  style={{ width: `${xpPercentage}%` }}
-                ></div>
+        
+        {/* Character Info Section - Replaces XP bar and money counts */}
+        <div className="flex items-center gap-3">
+          {/* Character Avatar and Info */}
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/40 rounded-lg p-1.5 transition-all duration-200 border border-transparent hover:border-slate-600/50"
+            onClick={onOpenCharacterSheet}
+            title="Open Character Sheet"
+          >
+            {/* Avatar */}
+            <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-white/30 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0 shadow-lg">
+              <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white/60" />
+            </div>
+            
+            {/* Character Details */}
+            <div className="flex-1 min-w-0">
+              {/* Character Name */}
+              <h3 className="text-white text-sm sm:text-base font-bold mb-0 truncate">{player.name || 'Player'}</h3>
+              
+              {/* Character Info Row */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs">
+                {/* Level - Always visible */}
+                <span className="text-blue-400 font-semibold">Lvl {player.level}</span>
+                
+                {/* Title - Hidden on very small screens */}
+                <span className="hidden xs:inline text-purple-400 font-medium">The Brave</span>
+                
+                {/* Location - Hidden on small screens */}
+                <span className="hidden sm:inline text-green-400 truncate max-w-20 lg:max-w-none">{player.currentLocationId || 'Unknown'}</span>
+                
+                {/* Gold - Always visible but compact on mobile */}
+                <div className="flex items-center gap-1">
+                  <GoldCoinIcon className="w-3 h-3 text-yellow-300" />
+                  <span className="text-yellow-400 font-semibold">{player.gold.toLocaleString()}</span>
+                </div>
+                
+                {/* Essence - Always visible but compact on mobile */}
+                <div className="flex items-center gap-1">
+                  <EssenceIcon className="w-3 h-3 text-purple-300" />
+                  <span className="text-cyan-400 font-semibold">{player.essence.toLocaleString()}</span>
+                </div>
               </div>
             </div>
           </div>
-          {/* Gold */}
-          <div className="header-stat-text-responsive text-slate-300 bg-yellow-700/50 px-1.5 py-1 md:px-2.5 md:py-1.5 rounded-lg shadow-md border border-yellow-600/70 flex items-center" title={`Gold: ${player.gold}`}>
-            <GoldCoinIcon className="w-3 h-3 xs:w-3.5 xs:h-3.5 md:w-4 md:h-4 text-yellow-300 mr-0.5 xs:mr-1" />
-            <span className="font-semibold text-yellow-200">{player.gold}</span>
-          </div>
-          {/* Essence */}
-          <div className="header-stat-text-responsive text-slate-300 bg-purple-700/50 px-1.5 py-1 md:px-2.5 md:py-1.5 rounded-lg shadow-md border border-purple-600/70 flex items-center" title={`Essence: ${player.essence}`}>
-            <EssenceIcon className="w-3 h-3 xs:w-3.5 xs:h-3.5 md:w-4 md:h-4 text-purple-300 mr-0.5 xs:mr-1" />
-            <span className="font-semibold text-purple-200">{player.essence}</span>
-          </div>
 
-          <ActionButton
-            onClick={onOpenCharacterSheet}
-            size="sm" 
-            variant="primary"
-            icon={<UserIcon className="w-4 h-4 md:w-5 md:h-5"/>}
-            className="!px-2 !py-1 sm:!px-2.5 sm:!py-1.5 md:!px-3 md:!py-2 shadow-sky-500/30 hover:shadow-sky-500/50"
-            title="Open Character Sheet"
-          >
-            <span className="hidden sm:inline header-action-button-text-responsive">Character</span>
-            <span className="sm:hidden header-action-button-text-responsive">Hero</span>
-          </ActionButton>
+          {/* Action Buttons */}
           <ActionButton
             onClick={onOpenGameMenu}
             size="sm"
@@ -95,8 +104,8 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
             title="Open Game Menu"
           >
             <span className="hidden sm:inline header-action-button-text-responsive">Menu</span>
-            <span className="sm:hidden header-action-button-text-responsive">Menu</span>
           </ActionButton>
+          
           {/* Mobile Menu Button */}
           {onOpenMobileMenu && (
             <ActionButton
