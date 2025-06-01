@@ -519,6 +519,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onReturnHome={onNavigateHome}
           onFindEnemy={onFindEnemy}
           isLoading={isLoading}
+          currentEnemies={currentEnemies}
         />
       );
 
@@ -532,6 +533,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onReturnHome={onNavigateHome}
           onFindEnemy={onFindEnemy}
           isLoading={isLoading}
+          currentEnemies={currentEnemies}
         />
       );
 

@@ -549,18 +549,57 @@ const CombatView: React.FC<CombatViewProps> = ({
         );
       }
       
-      // Use swipeable pagination for mobile
-      const currentPage = type === 'spell' ? spellPage : type === 'ability' ? abilityPage : itemPage;
-      const setCurrentPage = type === 'spell' ? setSpellPage : type === 'ability' ? setAbilityPage : setItemPage;
+      // Desktop layout - show all items in a scrollable grid
+      const renderDesktopGrid = () => (
+        <div className="h-full p-3 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-2">
+            {items.map(item => (
+              <EnhancedCombatActionSlot 
+                key={item.id} 
+                actionItem={item} 
+                player={player}
+                onClick={(action) => {
+                  if (!canPlayerAct) return;
+                  if (type === 'spell') { 
+                    if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); 
+                    else alert("Select a target first!"); 
+                  }
+                  else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
+                  else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
+                }}
+                isDisabledByGameLogic={!canPlayerAct} 
+              />
+            ))}
+          </div>
+        </div>
+      );
       
-      return (
-        <SwipeablePagination
-          items={items}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          type={type}
-        />
+      // Mobile layout - use swipeable pagination
+      const renderMobileGrid = () => {
+        const currentPage = type === 'spell' ? spellPage : type === 'ability' ? abilityPage : itemPage;
+        const setCurrentPage = type === 'spell' ? setSpellPage : type === 'ability' ? setAbilityPage : setItemPage;
+        
+        return (
+          <SwipeablePagination
+            items={items}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            type={type}
+          />
         );
+      };
+      
+      // Return desktop grid for desktop, mobile grid for mobile
+      return (
+        <>
+          <div className="hidden md:block h-full">
+            {renderDesktopGrid()}
+          </div>
+          <div className="md:hidden h-full">
+            {renderMobileGrid()}
+          </div>
+        </>
+      );
     };
 
     switch (activeDynamicView) {

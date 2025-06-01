@@ -107,14 +107,14 @@ export const App: React.FC = () => {
             return { actualDamageDealt: actualDamage, updatedTargetHp: updatedHp };
           },
           handleEnemyDefeat: (enemy: Enemy) => {
-            // Handle enemy defeat
-            const goldReward = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-            const essenceReward = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
+            // Handle enemy defeat logic
+            const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
+            const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
             
             playerState.setPlayer(prev => ({
               ...prev,
-              gold: prev.gold + goldReward,
-              essence: prev.essence + essenceReward,
+              gold: prev.gold + goldGained,
+              essence: prev.essence + essenceGained,
               bestiary: {
                 ...prev.bestiary,
                 [enemy.id]: {
@@ -124,23 +124,21 @@ export const App: React.FC = () => {
               }
             }));
 
-            gameState.addLog('System', `${enemy.name} defeated! Gained ${goldReward} gold and ${essenceReward} essence.`, 'success');
+            gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
             
-            // Remove defeated enemy and check for victory
-            gameState.setCurrentEnemies(prev => {
-              const updatedEnemies = prev.filter(e => e.id !== enemy.id);
-              
-              // Check if all enemies defeated after this update
-              if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                setTimeout(() => {
-                  gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                  gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                  gameState.setGameState('GAME_OVER_VICTORY');
-                }, 100);
-              }
-              
-              return updatedEnemies;
-            });
+            // Mark enemy as defeated instead of removing them
+            gameState.setCurrentEnemies(prev => 
+              prev.map(e => e.id === enemy.id ? { ...e, hp: 0, isDefeated: true } : e)
+            );
+            
+            // Check if all enemies defeated after this update
+            const livingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id || e.hp > 0);
+            if (livingEnemies.length === 0) {
+              // Use immediate execution instead of setTimeout to avoid timing issues
+              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+              gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+              gameState.setGameState('GAME_OVER_VICTORY');
+            }
           }
         };
         
@@ -631,67 +629,66 @@ export const App: React.FC = () => {
     gameState.setTargetEnemyId(id);
   }, [gameState]);
 
-  const handlePlayerAttack = useCallback((spell: Spell, targetId: string) => {
-    const context = {
-      player: playerState.player,
-      currentEnemies: gameState.currentEnemies,
-      effectivePlayerStats,
-      setPlayer: playerState.setPlayer,
-      setCurrentEnemies: gameState.setCurrentEnemies,
-      addLog: gameState.addLog,
-      setModalContent: gameState.setModalContent,
-      setGameState: (state: string) => gameState.setGameState(state as GameState),
-      handleEnemyDefeat: (enemy: Enemy) => {
-        // Handle enemy defeat logic
-        const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-        const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-        
-        playerState.setPlayer(prev => ({
-          ...prev,
-          gold: prev.gold + goldGained,
-          essence: prev.essence + essenceGained,
-          bestiary: {
-            ...prev.bestiary,
-            [enemy.id]: {
-              ...prev.bestiary[enemy.id],
-              vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
+  const handlePlayerAttack = useCallback(async (spell: Spell, targetId: string) => {
+    try {
+      const { CombatEngineUtils } = await import('./game-core/combat/CombatEngine');
+      
+      const context = {
+        player: playerState.player,
+        currentEnemies: gameState.currentEnemies,
+        effectivePlayerStats,
+        setPlayer: playerState.setPlayer,
+        setCurrentEnemies: gameState.setCurrentEnemies,
+        addLog: gameState.addLog,
+        setModalContent: gameState.setModalContent,
+        setGameState: (state: string) => gameState.setGameState(state as GameState),
+        handleEnemyDefeat: (enemy: Enemy) => {
+          // Handle enemy defeat logic
+          const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
+          const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
+          
+          playerState.setPlayer(prev => ({
+            ...prev,
+            gold: prev.gold + goldGained,
+            essence: prev.essence + essenceGained,
+            bestiary: {
+              ...prev.bestiary,
+              [enemy.id]: {
+                ...prev.bestiary[enemy.id],
+                vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
+              }
             }
-          }
-        }));
-        
-        gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-        
-        // Remove defeated enemy and check for victory
-        gameState.setCurrentEnemies(prev => {
-          const updatedEnemies = prev.filter(e => e.id !== enemy.id);
+          }));
+
+          gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
+          
+          // Mark enemy as defeated instead of removing them
+          gameState.setCurrentEnemies(prev => 
+            prev.map(e => e.id === enemy.id ? { ...e, hp: 0, isDefeated: true } : e)
+          );
           
           // Check if all enemies defeated after this update
-          if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-            setTimeout(() => {
-              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-              gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-              gameState.setGameState('GAME_OVER_VICTORY');
-            }, 100);
+          const livingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id || e.hp > 0);
+          if (livingEnemies.length === 0) {
+            // Use immediate execution instead of setTimeout to avoid timing issues
+            gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+            gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+            gameState.setGameState('GAME_OVER_VICTORY');
           }
-          
-          return updatedEnemies;
-        });
-      }
-    };
-    
-    // Import and use CombatEngine
-    import('./game-core/combat/CombatEngine').then(({ CombatEngineUtils }) => {
+        }
+      };
+      
       const success = CombatEngineUtils.executePlayerAttack(spell, targetId, context);
       if (success) {
         gameState.setIsPlayerTurn(false);
       }
-    }).catch(error => {
+    } catch (error) {
       console.error('Failed to load CombatEngine:', error);
       gameState.addLog('System', 'Combat system error occurred.', 'error');
-    });
+    }
   }, [playerState, gameState, effectivePlayerStats]);
 
-  const handlePlayerBasicAttack = useCallback((targetId: string) => {
+  const handlePlayerBasicAttack = useCallback(async (targetId: string) => {
     const targetEnemy = gameState.currentEnemies.find(e => e.id === targetId);
     if (!targetEnemy) return;
     
@@ -700,8 +697,9 @@ export const App: React.FC = () => {
     const effectiveness = targetEnemy.weakness === 'PhysicalNeutral' ? 'weak' : 
                          targetEnemy.resistance === 'PhysicalNeutral' ? 'resistant' : 'normal';
     
-    // Import and use CombatEngine for damage calculation
-    import('./game-core/combat/CombatEngine').then(({ CombatEngineUtils }) => {
+    try {
+      const { CombatEngineUtils } = await import('./game-core/combat/CombatEngine');
+      
       const calculatedDamage = CombatEngineUtils.calculateDamage(
         5, 
         effectivePlayerStats.physicalPower, 
@@ -738,21 +736,19 @@ export const App: React.FC = () => {
           
           gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
           
-          // Remove defeated enemy and check for victory
-          gameState.setCurrentEnemies(prev => {
-            const updatedEnemies = prev.filter(e => e.id !== enemy.id);
-            
-            // Check if all enemies defeated after this update
-            if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-              setTimeout(() => {
-                gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                gameState.setGameState('GAME_OVER_VICTORY');
-              }, 100);
-            }
-            
-            return updatedEnemies;
-          });
+          // Mark enemy as defeated instead of removing them
+          gameState.setCurrentEnemies(prev => 
+            prev.map(e => e.id === enemy.id ? { ...e, hp: 0, isDefeated: true } : e)
+          );
+          
+          // Check if all enemies defeated after this update
+          const livingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id || e.hp > 0);
+          if (livingEnemies.length === 0) {
+            // Use immediate execution instead of setTimeout to avoid timing issues
+            gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+            gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+            gameState.setGameState('GAME_OVER_VICTORY');
+          }
         }
       };
       
@@ -774,10 +770,10 @@ export const App: React.FC = () => {
       }
       
       gameState.setIsPlayerTurn(false);
-    }).catch(error => {
+    } catch (error) {
       console.error('Failed to load CombatEngine:', error);
       gameState.addLog('System', 'Combat system error occurred.', 'error');
-    });
+    }
   }, [playerState, gameState, effectivePlayerStats]);
 
   const handlePlayerDefend = useCallback(() => {
@@ -856,11 +852,10 @@ export const App: React.FC = () => {
                   
                   // Check if all enemies defeated after this update
                   if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                    setTimeout(() => {
-                      gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                      gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                      gameState.setGameState('GAME_OVER_VICTORY');
-                    }, 100);
+                    // Use immediate execution instead of setTimeout to avoid timing issues
+                    gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+                    gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+                    gameState.setGameState('GAME_OVER_VICTORY');
                   }
                   
                   return updatedEnemies;
@@ -942,11 +937,10 @@ export const App: React.FC = () => {
                 
                 // Check if all enemies defeated after this update
                 if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                  setTimeout(() => {
-                    gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                    gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                    gameState.setGameState('GAME_OVER_VICTORY');
-                  }, 100);
+                  // Use immediate execution instead of setTimeout to avoid timing issues
+                  gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+                  gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+                  gameState.setGameState('GAME_OVER_VICTORY');
                 }
                 
                 return updatedEnemies;

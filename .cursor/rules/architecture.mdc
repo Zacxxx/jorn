@@ -1,0 +1,209 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Jorn Game Architecture
+
+## Overview
+The Jorn game follows a **modular architecture** where the main `App.tsx` acts as an orchestrator that integrates specialized modules from two main directories:
+
+- **`game-core/`** - Pure business logic modules (no UI dependencies)
+- **`game-graphics/`** - UI components and presentation layer
+- **`src/components/`** - Legacy UI components (being migrated to game-graphics)
+
+## Architecture Principles
+
+### 1. Separation of Concerns
+- **Business Logic**: All game mechanics, calculations, and state management are in `game-core/`
+- **Presentation**: All UI components, views, and graphics are in `game-graphics/` and `src/components/`
+- **Integration**: `App.tsx` connects business logic with UI through context objects
+
+### 2. Context Pattern
+Each module exports utilities that accept "context objects" containing:
+- State setters (e.g., `setPlayer`, `setCurrentEnemies`)
+- Current state (e.g., `player`, `currentEnemies`)
+- Callback functions (e.g., `addLog`, `setGameState`)
+
+### 3. No Direct Dependencies
+- `game-core/` modules never import UI components
+- UI components import from `game-core/` for business logic
+- All state flows through `App.tsx` as the central coordinator
+
+## Game-Core Architecture
+
+### Core Modules Structure
+
+```
+game-core/
+├── state/
+│   └── GameState.ts          # Central game state management
+├── player/
+│   ├── PlayerState.ts        # Player state management
+│   └── PlayerStats.ts        # Player statistics calculations
+├── combat/
+│   └── CombatEngine.ts       # Combat mechanics and damage calculation
+├── game-loop/
+│   └── TurnManager.ts        # Turn-based combat flow and AI
+├── spells/
+│   ├── SpellCrafting.ts      # Spell creation and management
+│   └── TagSystem.ts          # Spell tag system and effects
+├── progression/
+│   └── ProgressionManager.ts # Character progression and leveling
+├── persistence/
+│   └── SaveManager.ts        # Save/load game functionality
+├── resources/
+│   └── ResourceManager.ts    # Resource management (gold, essence, etc.)
+├── research/
+│   └── ResearchManager.ts    # Research system
+├── traits/
+│   └── TraitManager.ts       # Character traits system
+├── items/
+│   └── ItemManagement.ts     # Item management and equipment
+├── navigation/
+│   └── NavigationController.ts # Game navigation logic
+└── hooks/
+    └── useConsumables.ts     # Consumable items logic
+```
+
+### Module Interface Pattern
+
+Each module exports:
+1. **Context Interface** - Defines what the module needs from App.tsx
+2. **Utility Functions** - Pure functions that operate on the context
+3. **Utils Object** - Exported collection of utility functions
+
+Example from `TurnManager.ts`:
+```typescript
+export interface TurnContext {
+  player: Player;
+  currentEnemies: Enemy[];
+  setPlayer: (updater: (prev: Player) => Player) => void;
+  setCurrentEnemies: (updater: (prev: Enemy[]) => Enemy[]) => void;
+  addLog: (actor: string, message: string, type: string) => void;
+  // ... other context properties
+}
+
+export const processEnemyTurn = (context: TurnContext): void => {
+  // Business logic here
+}
+
+export const TurnManagerUtils = {
+  processEnemyTurn,
+  processPlayerTurnStartEffects,
+  shouldEndCombat,
+};
+```
+
+### Key Responsibilities by Module
+
+- **CombatEngine**: Damage calculation, spell application, elemental effectiveness
+- **TurnManager**: Turn order, enemy AI, status effect processing
+- **SpellCrafting**: Spell creation, tag combinations, spell validation
+- **PlayerStats**: Stat calculations, equipment bonuses, effective stats
+- **ProgressionManager**: Leveling, experience, character advancement
+- **GameState**: Central state management, game flow control
+- **SaveManager**: Persistence, save/load operations
+
+## Game-Graphics Architecture
+
+### Structure
+```
+game-graphics/
+├── ViewRouter.tsx            # Main view routing logic
+├── AppShell.tsx             # Main app shell and layout
+├── views/                   # Major game views (empty - to be populated)
+├── components/              # Reusable UI components (empty - to be populated)
+├── modals/                  # Modal dialogs (empty - to be populated)
+└── hooks/                   # UI-specific hooks (empty - to be populated)
+```
+
+### Current State
+- **ViewRouter.tsx**: Handles all view routing and state management for UI
+- **AppShell.tsx**: Provides the main application shell and layout
+- Most UI components are still in `src/components/` (legacy location)
+
+### Migration Strategy
+Components should be gradually moved from `src/components/` to `game-graphics/` based on:
+- **Views**: Large page-level components → `game-graphics/views/`
+- **Components**: Reusable UI elements → `game-graphics/components/`
+- **Modals**: Dialog components → `game-graphics/modals/`
+
+## Integration Pattern in App.tsx
+
+### 1. State Management
+```typescript
+// Import state hooks from game-core
+const gameState = useGameState();
+const playerState = usePlayerState();
+
+// Calculate derived state
+const effectivePlayerStats = calculateEffectiveStats(playerState.player);
+```
+
+### 2. Context Creation
+```typescript
+// Create context objects for modules
+const createCombatContext = () => ({
+  player: playerState.player,
+  currentEnemies: gameState.currentEnemies,
+  effectivePlayerStats,
+  setPlayer: playerState.setPlayer,
+  setCurrentEnemies: gameState.setCurrentEnemies,
+  addLog: gameState.addLog,
+  // ... other context properties
+});
+```
+
+### 3. Module Usage
+```typescript
+// Use modules through their utility functions
+useEffect(() => {
+  if (!gameState.isPlayerTurn) {
+    const context = createTurnContext();
+    TurnManagerUtils.processEnemyTurn(context);
+  }
+}, [gameState.isPlayerTurn]);
+```
+
+## Editing Guidelines
+
+### When Editing game-core/ Files:
+
+1. **Never import UI components** - Keep modules pure business logic
+2. **Use context interfaces** - Define what you need from App.tsx
+3. **Export utility functions** - Make functions pure and testable
+4. **Update context interfaces** - When adding new functionality, update the context interface
+5. **Follow the pattern** - Each module should export a `ModuleNameUtils` object
+
+### When Editing game-graphics/ Files:
+
+1. **Import from game-core** - Use business logic from game-core modules
+2. **Keep UI concerns separate** - Focus on presentation and user interaction
+3. **Use context objects** - Pass context objects to game-core functions
+4. **Follow React patterns** - Use hooks, components, and React best practices
+
+### When Adding New Features:
+
+1. **Business logic** → Add to appropriate `game-core/` module
+2. **UI components** → Add to `game-graphics/` (or `src/components/` temporarily)
+3. **Integration** → Update `App.tsx` to connect business logic with UI
+4. **Context updates** → Update context interfaces when adding new state or functions
+
+### Common Patterns:
+
+- **State updates**: Always use setter functions from context
+- **Logging**: Use `addLog` function from context
+- **Game state changes**: Use `setGameState` from context
+- **Modal dialogs**: Use `setModalContent` from context
+
+## Example: Adding a New Combat Feature
+
+1. **Add business logic** to `game-core/combat/CombatEngine.ts`
+2. **Update context interface** if new state/functions needed
+3. **Update App.tsx** to provide new context properties
+4. **Update UI components** to use the new functionality
+5. **Test integration** through the context pattern
+
+This architecture ensures clean separation of concerns, testability, and maintainability while allowing for easy feature additions and modifications.
+

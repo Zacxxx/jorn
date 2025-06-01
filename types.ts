@@ -489,7 +489,8 @@ export interface Enemy {
   essenceDrop?: { min: number, max: number }; 
   lootTableId?: string; 
   isElite?: boolean; 
-  droppedResources?: ResourceCost[]; 
+  droppedResources?: ResourceCost[];
+  isDefeated?: boolean; // Track if enemy is defeated but still visible
 }
 
 export interface CombatActionLog {
@@ -670,9 +671,9 @@ export interface Quest {
   unlocksQuests?: string[];
   
   // Timestamps
-  dateAccepted?: number; // timestamp
-  dateCompleted?: number; // timestamp
-  deadline?: string;
+  dateAccepted?: number;
+  dateCompleted?: number;
+  deadline?: number;
   
   // Enhanced rewards
   rewards?: {

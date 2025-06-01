@@ -1,0 +1,342 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Jorn Components Architecture
+
+## Overview
+The `src/components/` folder contains the legacy UI components that are gradually being migrated to the `game-graphics/` folder. This directory houses all React components responsible for the game's user interface, from large view-level components to small reusable UI elements.
+
+## Component Categories
+
+### 1. **View-Level Components** (Large Page Components)
+These are major screen/page components that represent entire game views:
+
+```
+├── HomeScreenView.tsx          # Main home screen with activity cards
+├── CombatView.tsx             # Complete combat interface
+├── CraftingWorkshopView.tsx   # Crafting workshop interface
+├── SpellDesignStudioView.tsx  # Spell creation interface
+├── QuestBookView.tsx          # Quest management interface
+├── ResearchLabView.tsx        # Research interface
+├── MapView.tsx                # Map exploration interface
+├── SettlementView.tsx         # Settlement management
+├── HomesteadView.tsx          # Player homestead interface
+├── ShopView.tsx               # Trading interface
+├── NPCsView.tsx               # NPC interaction interface
+├── MultiplayerView.tsx        # Multiplayer interface
+├── GameOverView.tsx           # Game over screen
+├── ParametersView.tsx         # Game settings interface
+├── ResearchView.tsx           # Research system interface
+├── RecipeDiscoveryView.tsx    # Recipe discovery interface
+└── ConfirmationView.tsx       # Generic confirmation dialog
+```
+
+### 2. **Modal Components** (Dialog Windows)
+Components that display as overlay dialogs:
+
+```
+├── Modal.tsx                  # Base modal component (reusable)
+├── CharacterCreationModal.tsx # Character creation dialog
+├── CraftingHubModal.tsx       # Crafting hub selection
+├── GameMenuModal.tsx          # Main game menu
+├── HelpWikiModal.tsx          # Help and documentation
+├── WorldMapModal.tsx          # World map interface
+├── ExplorationJournalModal.tsx # Exploration journal
+├── MobileMenuModal.tsx        # Mobile navigation menu
+└── CharacterSheetModal-elemets/ # Character sheet components
+    ├── index.tsx              # Main character sheet modal
+    ├── ProgressTab.tsx        # Character progression tab
+    ├── ui/                    # UI components for character sheet
+    └── tabs/                  # Tab components for character sheet
+```
+
+### 3. **Display Components** (Information Presentation)
+Components focused on displaying game data:
+
+```
+├── PlayerStatsDisplay.tsx     # Player statistics display
+├── PlayerBattleDisplay.tsx    # Player info during combat
+├── EnemyDisplay.tsx           # Enemy information display
+├── EnemyBattleDisplay.tsx     # Enemy info during combat
+├── CombatLogDisplay.tsx       # Combat action log
+├── QuestLogDisplay.tsx        # Quest information display
+├── SpellbookDisplay.tsx       # Spellbook interface
+└── ActivityCard.tsx           # Activity selection cards
+```
+
+### 4. **Form Components** (User Input)
+Components for user input and data entry:
+
+```
+├── SpellCraftingForm.tsx      # Spell creation form
+├── ItemCraftingForm.tsx       # Item crafting form
+├── TraitCraftingForm.tsx      # Trait crafting form
+├── SpellEditingForm.tsx       # Spell modification form
+├── SpellCraftingView.tsx      # Spell crafting interface
+├── SpellEditingView.tsx       # Spell editing interface
+├── TraitCraftingView.tsx      # Trait crafting interface
+└── ManageSpellsScreen.tsx     # Spell management interface
+```
+
+### 5. **Reusable UI Components** (Building Blocks)
+Small, reusable components used throughout the application:
+
+```
+├── ActionButton.tsx           # Styled button component
+├── LoadingSpinner.tsx         # Loading indicator
+├── IconComponents.tsx         # Icon library (545 lines!)
+├── SpellComponentCard.tsx     # Spell component display card
+└── gameplay/                  # Gameplay-specific UI elements
+    ├── elements/              # Game element components
+    └── tags/                  # Tag-related components
+```
+
+## Component Patterns and Architecture
+
+### 1. **Props Interface Pattern**
+Every component defines a clear TypeScript interface for its props:
+
+```typescript
+interface HomeScreenViewProps {
+  player: Player;
+  effectiveStats: PlayerEffectiveStats;
+  onFindEnemy: () => void;
+  isLoading: boolean;
+  onExploreMap: () => void;
+  // ... other props
+}
+
+const HomeScreenView: React.FC<HomeScreenViewProps> = ({
+  player,
+  effectiveStats,
+  onFindEnemy,
+  // ... other props
+}) => {
+  // Component implementation
+};
+```
+
+### 2. **Event Handler Pattern**
+Components receive event handlers as props rather than directly manipulating state:
+
+```typescript
+// Good: Component receives handlers
+interface CombatViewProps {
+  onPlayerAttack: (spell: Spell, targetId: string) => void;
+  onPlayerDefend: () => void;
+  onPlayerFlee: () => void;
+}
+
+// Component calls handlers instead of direct state manipulation
+const handleAttack = () => {
+  onPlayerAttack(selectedSpell, targetEnemyId);
+};
+```
+
+### 3. **Conditional Rendering Pattern**
+Components handle different states and conditions gracefully:
+
+```typescript
+// Loading states
+if (isLoading) {
+  return <LoadingSpinner />;
+}
+
+// Empty states
+if (items.length === 0) {
+  return <EmptyStateMessage />;
+}
+
+// Conditional features
+{isPlayerTurn && (
+  <ActionButtons />
+)}
+```
+
+### 4. **Responsive Design Pattern**
+Components adapt to different screen sizes:
+
+```typescript
+// Mobile vs Desktop rendering
+const renderMobileGrid = () => (
+  <SwipeablePagination items={items} />
+);
+
+const renderDesktopGrid = () => (
+  <div className="grid grid-cols-3 gap-2">
+    {items.map(item => <ItemCard key={item.id} item={item} />)}
+  </div>
+);
+
+return (
+  <div>
+    <div className="md:hidden">{renderMobileGrid()}</div>
+    <div className="hidden md:block">{renderDesktopGrid()}</div>
+  </div>
+);
+```
+
+### 5. **Composition Pattern**
+Large components are built from smaller, focused components:
+
+```typescript
+const CombatView = () => (
+  <div className="combat-layout">
+    <PlayerBattleDisplay player={player} />
+    <EnemyBattleDisplay enemies={enemies} />
+    <ActionButtons actions={actions} />
+    <CombatLogDisplay log={combatLog} />
+  </div>
+);
+```
+
+## Integration with Game-Core
+
+### 1. **Business Logic Separation**
+Components focus on presentation while business logic stays in `game-core/`:
+
+```typescript
+// Component handles UI concerns
+const CombatView = ({ onPlayerAttack }) => {
+  const handleSpellClick = (spell: Spell, targetId: string) => {
+    // UI feedback
+    setIsAnimating(true);
+    
+    // Business logic handled by parent/game-core
+    onPlayerAttack(spell, targetId);
+  };
+};
+
+// App.tsx handles business logic integration
+const App = () => {
+  const handlePlayerAttack = (spell: Spell, targetId: string) => {
+    const context = createCombatContext();
+    CombatEngineUtils.executePlayerAttack(spell, targetId, context);
+  };
+};
+```
+
+### 2. **State Flow Pattern**
+State flows down from App.tsx through props, events flow up through callbacks:
+
+```typescript
+// State flows down
+<CombatView 
+  player={playerState.player}
+  currentEnemies={gameState.currentEnemies}
+  isPlayerTurn={gameState.isPlayerTurn}
+  // Events flow up
+  onPlayerAttack={handlePlayerAttack}
+  onPlayerDefend={handlePlayerDefend}
+/>
+```
+
+## Component Responsibilities
+
+### **View Components**
+- **Responsibility**: Orchestrate multiple smaller components into complete screens
+- **Data**: Receive all necessary data via props
+- **Events**: Handle user interactions and delegate to appropriate handlers
+- **Layout**: Manage responsive layout and screen-specific styling
+
+### **Modal Components**
+- **Responsibility**: Display overlay content and manage modal state
+- **Data**: Receive specific data needed for the modal content
+- **Events**: Handle modal-specific interactions (close, submit, etc.)
+- **Accessibility**: Manage focus, keyboard navigation, and ARIA attributes
+
+### **Display Components**
+- **Responsibility**: Present game data in a readable, attractive format
+- **Data**: Receive specific data objects to display
+- **Formatting**: Handle data formatting, calculations for display
+- **Styling**: Provide consistent visual presentation
+
+### **Form Components**
+- **Responsibility**: Handle user input and form validation
+- **State**: Manage local form state and validation
+- **Events**: Handle form submission and input changes
+- **Validation**: Provide immediate feedback on input validity
+
+### **Reusable Components**
+- **Responsibility**: Provide consistent UI building blocks
+- **Props**: Accept configuration through props
+- **Variants**: Support different visual variants and sizes
+- **Accessibility**: Include proper ARIA attributes and keyboard support
+
+## Styling Patterns
+
+### 1. **Tailwind CSS Classes**
+Components use Tailwind CSS for styling with consistent patterns:
+
+```typescript
+// Consistent color schemes
+const primaryButton = "bg-sky-600 hover:bg-sky-500 text-white";
+const dangerButton = "bg-red-600 hover:bg-red-500 text-white";
+const secondaryButton = "bg-slate-600 hover:bg-slate-500 text-slate-100";
+
+// Responsive design
+const responsiveGrid = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+
+// Dark theme consistency
+const darkCard = "bg-slate-800/60 border border-slate-600/40";
+```
+
+### 2. **Animation and Transitions**
+Consistent animation patterns for better UX:
+
+```typescript
+// Hover effects
+const hoverScale = "hover:scale-105 transition-transform duration-200";
+
+// Loading states
+const fadeIn = "transition-opacity duration-300 ease-out";
+
+// Interactive feedback
+const activeScale = "active:scale-95 transform transition-all duration-150";
+```
+
+## Migration Strategy to game-graphics/
+
+### **Priority Order**
+1. **Views** → Move large page components to `game-graphics/views/`
+2. **Modals** → Move dialog components to `game-graphics/modals/`
+3. **Components** → Move reusable components to `game-graphics/components/`
+4. **Forms** → Move form components to `game-graphics/components/forms/`
+
+### **Migration Checklist**
+- [ ] Update import paths in consuming components
+- [ ] Ensure no direct dependencies on `game-core/` (should go through App.tsx)
+- [ ] Verify responsive design works correctly
+- [ ] Test accessibility features
+- [ ] Update any hardcoded paths or references
+
+## Best Practices
+
+### **When Creating New Components**
+1. **Define clear TypeScript interfaces** for props
+2. **Use descriptive, specific names** (e.g., `CombatActionButton` vs `Button`)
+3. **Keep components focused** on a single responsibility
+4. **Handle loading and error states** appropriately
+5. **Include proper accessibility attributes**
+6. **Use consistent styling patterns** from existing components
+7. **Document complex props** with JSDoc comments
+
+### **When Modifying Existing Components**
+1. **Maintain backward compatibility** when possible
+2. **Update TypeScript interfaces** when adding new props
+3. **Test responsive behavior** on different screen sizes
+4. **Verify integration** with parent components
+5. **Update related components** if interfaces change
+
+### **Performance Considerations**
+1. **Use React.memo()** for expensive display components
+2. **Implement proper key props** for list items
+3. **Avoid inline object creation** in render methods
+4. **Use useCallback()** for event handlers passed to children
+5. **Lazy load** large components when appropriate
+
+This architecture ensures maintainable, reusable, and performant UI components that integrate seamlessly with the game's modular business logic architecture.
+
+

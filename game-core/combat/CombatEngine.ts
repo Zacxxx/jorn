@@ -420,12 +420,18 @@ export const executePlayerAttack = (
     targets = [...context.currentEnemies].sort(() => Math.random() - 0.5).slice(0, count);
   }
 
-  // Apply spell to each target
+  // Apply spell to each target and track defeated enemies
+  const defeatedEnemies: Enemy[] = [];
   targets.forEach((enemy, index) => {
     const powerMultiplier = effectiveSpellTags.includes('MultiTarget') ? Math.max(0.4, 1 - index * 0.2) : 1.0;
     const result = applySpellToEnemy(spell, enemy, powerMultiplier, effectiveSpellTags, hasSynergyBonusAppliedThisCast, context);
     if (result.synergyBonusAppliedInThisHit) {
       hasSynergyBonusAppliedThisCast = true;
+    }
+    
+    // Check if this enemy was defeated based on the actual updated HP
+    if (result.updatedTargetHp !== undefined && result.updatedTargetHp <= 0) {
+      defeatedEnemies.push({ ...enemy, hp: result.updatedTargetHp });
     }
   });
 
@@ -434,12 +440,9 @@ export const executePlayerAttack = (
     applySpellToSelf(spell, effectiveSpellTags, context);
   }
 
-  // Check for enemy defeats
-  targets.forEach(enemy => {
-    const updatedEnemy = context.currentEnemies.find(e => e.id === enemy.id);
-    if (updatedEnemy && updatedEnemy.hp <= 0 && !context.currentEnemies.find(e => e.id === updatedEnemy.id && e.hp <= 0)) {
-      context.handleEnemyDefeat(updatedEnemy);
-    }
+  // Handle all defeated enemies
+  defeatedEnemies.forEach(defeatedEnemy => {
+    context.handleEnemyDefeat(defeatedEnemy);
   });
 
   return true;

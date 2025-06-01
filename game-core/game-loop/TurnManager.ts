@@ -124,7 +124,7 @@ export const processEnemyTurn = (context: TurnContext): void => {
   if (context.currentEnemies.length === 0 || context.isPlayerTurn) return;
 
   const actingEnemy = context.currentEnemies[context.currentActingEnemyIndex];
-  if (!actingEnemy || actingEnemy.hp <= 0) {
+  if (!actingEnemy || actingEnemy.hp <= 0 || actingEnemy.isDefeated) {
     advanceToNextEnemyOrPlayerTurn(context);
     return;
   }
@@ -186,6 +186,15 @@ export const processEnemyTurn = (context: TurnContext): void => {
   if (enemyCurrentHp <= 0) {
     context.addLog('System', `${actingEnemy.name} succumbed to status effects!`, 'info');
     context.handleEnemyDefeat({ ...actingEnemy, hp: enemyCurrentHp });
+    
+    // Check for victory after enemy defeat
+    const remainingLivingEnemies = context.currentEnemies.filter(e => e.id !== actingEnemy.id && e.hp > 0 && !e.isDefeated);
+    if (remainingLivingEnemies.length === 0) {
+      context.addLog('System', 'Victory! All enemies defeated.', 'success');
+      context.setGameState('GAME_OVER_VICTORY');
+      return;
+    }
+    
     advanceToNextEnemyOrPlayerTurn(context);
     return;
   }
@@ -267,9 +276,16 @@ const executeEnemyAction = (enemy: Enemy, isSilenced: boolean, context: TurnCont
  */
 const advanceToNextEnemyOrPlayerTurn = (context: TurnContext): void => {
   const nextIndex = context.currentActingEnemyIndex + 1;
-  const livingEnemies = context.currentEnemies.filter(e => e.hp > 0);
+  const livingEnemies = context.currentEnemies.filter(e => e.hp > 0 && !e.isDefeated);
   
   if (nextIndex >= context.currentEnemies.length || livingEnemies.length === 0) {
+    // Check for victory condition before advancing turn
+    if (livingEnemies.length === 0) {
+      context.addLog('System', 'Victory! All enemies defeated.', 'success');
+      context.setGameState('GAME_OVER_VICTORY');
+      return;
+    }
+    
     // End of enemy turns, start new player turn
     context.setTurn(prev => prev + 1);
     context.setIsPlayerTurn(true);
@@ -286,7 +302,7 @@ const advanceToNextEnemyOrPlayerTurn = (context: TurnContext): void => {
  * @returns True if combat should end
  */
 export const shouldEndCombat = (context: TurnContext): boolean => {
-  const livingEnemies = context.currentEnemies.filter(e => e.hp > 0);
+  const livingEnemies = context.currentEnemies.filter(e => e.hp > 0 && !e.isDefeated);
   return livingEnemies.length === 0 || context.player.hp <= 0;
 };
 
