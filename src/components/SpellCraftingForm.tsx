@@ -49,19 +49,19 @@ const SpellCraftingForm: React.FC<SpellCraftingFormProps> = ({ onInitiateSpellCr
   };
 
   return (
-    <div className="bg-slate-800 p-6 rounded-lg shadow-xl border border-slate-700">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-sky-400 flex items-center">
+    <div className="bg-slate-800 p-4 sm:p-6 rounded-lg shadow-xl border border-slate-700">
+      <div className="flex justify-between items-center mb-3 sm:mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-sky-400 flex items-center">
           <WandIcon className="w-7 h-7 mr-2 text-sky-400" />
           Describe Spell Idea
         </h2>
-        <p className={`text-sm font-medium ${canCraftMoreSpells ? 'text-slate-400' : 'text-red-400'}`}>
+        <p className={`text-xs sm:text-sm font-medium ${canCraftMoreSpells ? 'text-slate-400' : 'text-red-400'}`}>
           Spells: {currentSpells} / {maxSpells}
         </p>
       </div>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="spellPrompt" className="block text-sm font-medium text-slate-300 mb-1">
+        <div className="mb-3 sm:mb-4">
+          <label htmlFor="spellPrompt" className="block text-xs sm:text-sm font-medium text-slate-300 mb-0.5 sm:mb-1">
             Describe your spell concept:
           </label>
           <textarea
@@ -77,9 +77,9 @@ const SpellCraftingForm: React.FC<SpellCraftingFormProps> = ({ onInitiateSpellCr
             disabled={isLoading || !canCraftMoreSpells}
           />
         </div>
-        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+        {error && <p className="text-red-400 text-xs sm:text-sm mb-2 sm:mb-3">{error}</p>}
         {!canCraftMoreSpells && !error && (
-           <p className="text-yellow-400 text-sm mb-3">
+           <p className="text-yellow-400 text-xs sm:text-sm mb-2 sm:mb-3">
             Your spellbook is full for your current level. Level up to increase capacity.
            </p>
         )}
@@ -94,22 +94,22 @@ const SpellCraftingForm: React.FC<SpellCraftingFormProps> = ({ onInitiateSpellCr
           {isLoading ? 'Generating Idea...' : 'Generate Spell Idea'}
         </ActionButton>
       </form>
-      <div className="mt-4">
-        <p className="text-sm text-slate-400 mb-2">Or try an example (if space available):</p>
+      <div className="mt-3 sm:mt-4">
+        <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">Or try an example (if space available):</p>
         <div className="flex flex-wrap gap-2">
           {examplePrompts.map((ex, idx) => (
             <button
               key={idx}
               onClick={() => handleExampleClick(ex)}
               disabled={isLoading || !canCraftMoreSpells}
-              className="text-xs bg-slate-700 hover:bg-slate-600 text-sky-300 px-2 py-1 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-[10px] sm:text-xs bg-slate-700 hover:bg-slate-600 text-sky-300 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {ex}
             </button>
           ))}
         </div>
       </div>
-       <p className="text-xs text-slate-500 mt-4">The AI will generate a spell based on your idea, including its stats and resource costs. You will then be able to confirm and craft it if you have the required resources.</p>
+       <p className="text-[10px] sm:text-xs text-slate-500 mt-3 sm:mt-4">The AI will generate a spell based on your idea, including its stats and resource costs. You will then be able to confirm and craft it if you have the required resources.</p>
     </div>
   );
 };

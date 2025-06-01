@@ -39,7 +39,7 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
   ({ icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`flex-1 flex items-center justify-center p-3.5 md:p-4 rounded-t-lg transition-all duration-150 border-b-4
+        className={`flex-1 flex items-center justify-center p-3 sm:p-3.5 md:p-4 rounded-t-lg transition-all duration-150 border-b-4
                     ${isActive 
                         ? 'bg-slate-700/90 text-sky-300 border-sky-500 shadow-inner' 
                         : 'bg-slate-800/80 hover:bg-slate-700/70 text-slate-400 hover:text-sky-400 border-transparent hover:border-sky-600/50'}`}
@@ -75,9 +75,9 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
       </div>
       <div className="p-4 md:p-6">
         {activeMainView === 'Spells' && (
-          <div className="space-y-4 text-center">
-            <p className="text-slate-300">Design powerful spells or research new components.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="space-y-3 sm:space-y-4 text-center">
+            <p className="text-xs sm:text-sm text-slate-300">Design powerful spells or research new components.</p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <ActionButton onClick={onOpenSpellDesignStudio} variant="primary" size="lg" icon={<WandIcon className="w-5 h-5"/>}>
                     Go to Spell Design Studio
                 </ActionButton>
@@ -89,7 +89,7 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
         )}
         {activeMainView === 'Items' && (
           <div>
-            <div className="flex justify-center gap-3 mb-4">
+            <div className="flex justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <ActionButton
                 onClick={() => setActiveItemCraftType('Consumable')}
                 variant={activeItemCraftType === 'Consumable' ? 'primary' : 'secondary'}
@@ -113,9 +113,9 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
           </div>
         )}
         {activeMainView === 'Recipes' && (
-          <div className="space-y-4 text-center">
-            <p className="text-slate-300">Discover new crafting recipes and create items using traditional methods.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="space-y-3 sm:space-y-4 text-center">
+            <p className="text-xs sm:text-sm text-slate-300">Discover new crafting recipes and create items using traditional methods.</p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <ActionButton onClick={onOpenRecipeDiscovery} variant="success" size="lg" icon={<SearchIcon className="w-5 h-5"/>}>
                     Recipe Discovery Workshop
                 </ActionButton>
@@ -123,9 +123,9 @@ export const CraftingHubModal: React.FC<CraftingHubModalProps> = ({
                     Crafting Workshop
                 </ActionButton>
             </div>
-            <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
-              <h4 className="text-lg font-medium text-slate-200 mb-2">Recipe-Based Crafting</h4>
-              <p className="text-sm text-slate-300">
+            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-slate-700/50 rounded-lg">
+              <h4 className="text-base sm:text-lg font-medium text-slate-200 mb-1 sm:mb-2">Recipe-Based Crafting</h4>
+              <p className="text-xs sm:text-sm text-slate-300">
                 Use the Recipe Discovery Workshop to research and learn new crafting recipes through experimentation and knowledge. 
                 Then use the Crafting Workshop to create items using your discovered recipes and gathered materials.
               </p>
