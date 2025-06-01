@@ -457,7 +457,7 @@ export const executePlayerAttack = (
       hasSynergyBonusAppliedThisCast = true;
     }
     
-    // Check if this enemy was defeated based on the actual updated HP
+    // Check if this enemy was defeated based on the actual updated HP from the spell application
     if (result.updatedTargetHp !== undefined && result.updatedTargetHp <= 0) {
       defeatedEnemies.push({ ...enemy, hp: result.updatedTargetHp });
     }
@@ -477,22 +477,9 @@ export const executePlayerAttack = (
 };
 
 /**
- * Combat Engine utility functions
+ * New simplified applyDamage function (as per subtask description)
+ * The existing applyDamageAndReflection will be kept for player attacks or more complex scenarios.
  */
-export const CombatEngineUtils = {
-  calculateDamage,
-  applyDamageAndReflection,
-  applyTagDamageModifiers,
-  getElementalEffectiveness,
-  applySpellToEnemy,
-  applySpellToSelf,
-  executePlayerAttack,
-  applyDamage, // Added new applyDamage
-  handleEnemyDefeat, // Export the new centralized function
-};
-
-// New simplified applyDamage function (as per subtask description)
-// The existing applyDamageAndReflection will be kept for player attacks or more complex scenarios.
 export const applyDamage = (
   target: Player | Enemy,
   damage: number
@@ -596,16 +583,33 @@ export const handleEnemyDefeat = (context: EnemyDefeatContext): void => {
   }
   addLog('System', rewardMessage, 'success');
 
-  // Remove defeated enemy from the perspective of the caller who holds the full list
-  const updatedEnemiesListAfterCurrentDefeat = currentEnemiesList.filter(e => e.id !== defeatedEnemy.id);
-  setCurrentEnemies(updatedEnemiesListAfterCurrentDefeat);
+  // Mark enemy as defeated instead of removing them
+  setCurrentEnemies(prev => 
+    prev.map(e => e.id === defeatedEnemy.id ? { ...e, hp: 0, isDefeated: true } : e)
+  );
 
-  // Check for victory using the just updated list
-  if (updatedEnemiesListAfterCurrentDefeat.length === 0 || updatedEnemiesListAfterCurrentDefeat.every(e => e.hp <= 0)) {
+  // Check for victory using living enemies
+  const livingEnemies = currentEnemiesList.filter(e => e.id !== defeatedEnemy.id && e.hp > 0 && !e.isDefeated);
+  if (livingEnemies.length === 0) {
     setTimeout(() => {
       addLog('System', 'Victory! All enemies defeated.', 'success');
       showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
       setGameState('GAME_OVER_VICTORY');
     }, 100); // Delay to allow reward log to appear first
   }
+};
+
+/**
+ * Combat Engine utility functions
+ */
+export const CombatEngineUtils = {
+  calculateDamage,
+  applyDamageAndReflection,
+  applyTagDamageModifiers,
+  getElementalEffectiveness,
+  applySpellToEnemy,
+  applySpellToSelf,
+  executePlayerAttack,
+  applyDamage, // Added new applyDamage
+  handleEnemyDefeat, // Export the new centralized function
 }; 

@@ -25,7 +25,7 @@ import AppShell from './game-graphics/AppShell';
 import CharacterCreationModal from './src/components/CharacterCreationModal';
 
 // Import types
-import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState } from './src/types';
+import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState, ResourceCost } from './src/types';
 
 /**
  * Main App Component
@@ -102,57 +102,12 @@ export const App: React.FC = () => {
             showMessageModal: gameState.showMessageModal,
             setGameState: (state: GameState) => gameState.setGameState(state as GameState),
             currentEnemiesList: gameState.currentEnemies
-          })
-          calculateDamage: (baseDamage: number, attackerPower: number, defenderDefense: number, effectiveness?: 'normal' | 'weak' | 'resistant') => {
-            // Simple damage calculation for enemy turns
-            let damage = baseDamage + Math.floor(attackerPower * 0.5);
-            const defense = Math.floor(defenderDefense * 0.3);
-            damage = Math.max(1, damage - defense);
-            
-            if (effectiveness === 'weak') damage = Math.floor(damage * 1.5);
-            else if (effectiveness === 'resistant') damage = Math.floor(damage * 0.5);
-            
-            return damage;
-          },
+          }),
           applyDamageAndReflection: (target: Player | Enemy, damage: number, attacker: Player | Enemy, logActor: 'Player' | 'Enemy', targetIsPlayer: boolean) => {
             // Simple damage application for enemy turns
             const actualDamage = damage;
             const updatedHp = Math.max(0, target.hp - actualDamage);
             return { actualDamageDealt: actualDamage, updatedTargetHp: updatedHp };
-          },
-          handleEnemyDefeat: (enemy: Enemy) => {
-            // Handle enemy defeat logic
-            const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-            const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-            
-            playerState.setPlayer(prev => ({
-              ...prev,
-              gold: prev.gold + goldGained,
-              essence: prev.essence + essenceGained,
-              bestiary: {
-                ...prev.bestiary,
-                [enemy.id]: {
-                  ...prev.bestiary[enemy.id],
-                  vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
-                }
-              }
-            }));
-
-            gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-            
-            // Mark enemy as defeated instead of removing them
-            gameState.setCurrentEnemies(prev => 
-              prev.map(e => e.id === enemy.id ? { ...e, hp: 0, isDefeated: true } : e)
-            );
-            
-            // Check if all enemies defeated after this update
-            const livingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id || e.hp > 0);
-            if (livingEnemies.length === 0) {
-              // Use immediate execution instead of setTimeout to avoid timing issues
-              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-              gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-              gameState.setGameState('GAME_OVER_VICTORY');
-            }
           }
         };
         
@@ -652,30 +607,6 @@ export const App: React.FC = () => {
     gameState.setTargetEnemyId(id);
   }, [gameState]);
 
-  const handlePlayerAttack = useCallback((spell: Spell, targetId: string) => {
-    const context = {
-      player: playerState.player,
-      currentEnemies: gameState.currentEnemies,
-      effectivePlayerStats,
-      setPlayer: playerState.setPlayer,
-      setCurrentEnemies: gameState.setCurrentEnemies,
-      addLog: gameState.addLog,
-      setModalContent: gameState.setModalContent,
-      setGameState: (state: string) => gameState.setGameState(state as GameState),
-      handleEnemyDefeat: (enemy: Enemy) => centralizedHandleEnemyDefeat({
-        player: playerState.player,
-        defeatedEnemy: enemy,
-        setPlayer: playerState.setPlayer,
-        setCurrentEnemies: gameState.setCurrentEnemies,
-        addLog: gameState.addLog,
-        showMessageModal: gameState.showMessageModal,
-        setGameState: (state: GameState) => gameState.setGameState(state as GameState),
-        currentEnemiesList: gameState.currentEnemies
-      })
-    };
-    
-    // Import and use CombatEngine
-    import('./game-core/combat/CombatEngine').then(({ CombatEngineUtils }) => {
   const handlePlayerAttack = useCallback(async (spell: Spell, targetId: string) => {
     try {
       const { CombatEngineUtils } = await import('./game-core/combat/CombatEngine');
@@ -689,40 +620,16 @@ export const App: React.FC = () => {
         addLog: gameState.addLog,
         setModalContent: gameState.setModalContent,
         setGameState: (state: string) => gameState.setGameState(state as GameState),
-        handleEnemyDefeat: (enemy: Enemy) => {
-          // Handle enemy defeat logic
-          const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-          const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-          
-          playerState.setPlayer(prev => ({
-            ...prev,
-            gold: prev.gold + goldGained,
-            essence: prev.essence + essenceGained,
-            bestiary: {
-              ...prev.bestiary,
-              [enemy.id]: {
-                ...prev.bestiary[enemy.id],
-                vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
-              }
-            }
-          }));
-
-          gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-          
-          // Mark enemy as defeated instead of removing them
-          gameState.setCurrentEnemies(prev => 
-            prev.map(e => e.id === enemy.id ? { ...e, hp: 0, isDefeated: true } : e)
-          );
-          
-          // Check if all enemies defeated after this update
-          const livingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id || e.hp > 0);
-          if (livingEnemies.length === 0) {
-            // Use immediate execution instead of setTimeout to avoid timing issues
-            gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-            gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-            gameState.setGameState('GAME_OVER_VICTORY');
-          }
-        }
+        handleEnemyDefeat: (enemy: Enemy) => centralizedHandleEnemyDefeat({
+          player: playerState.player,
+          defeatedEnemy: enemy,
+          setPlayer: playerState.setPlayer,
+          setCurrentEnemies: gameState.setCurrentEnemies,
+          addLog: gameState.addLog,
+          showMessageModal: gameState.showMessageModal,
+          setGameState: (state: GameState) => gameState.setGameState(state as GameState),
+          currentEnemiesList: gameState.currentEnemies
+        })
       };
       
       const success = CombatEngineUtils.executePlayerAttack(spell, targetId, context);
@@ -773,40 +680,6 @@ export const App: React.FC = () => {
           setGameState: (state: GameState) => gameState.setGameState(state as GameState),
           currentEnemiesList: gameState.currentEnemies
         })
-        handleEnemyDefeat: (enemy: Enemy) => {
-          // Handle enemy defeat logic
-          const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-          const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-          
-          playerState.setPlayer(prev => ({
-            ...prev,
-            gold: prev.gold + goldGained,
-            essence: prev.essence + essenceGained,
-            bestiary: {
-              ...prev.bestiary,
-              [enemy.id]: {
-                ...prev.bestiary[enemy.id],
-                vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
-              }
-            }
-          }));
-          
-          gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-          
-          // Mark enemy as defeated instead of removing them
-          gameState.setCurrentEnemies(prev => 
-            prev.map(e => e.id === enemy.id ? { ...e, hp: 0, isDefeated: true } : e)
-          );
-          
-          // Check if all enemies defeated after this update
-          const livingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id || e.hp > 0);
-          if (livingEnemies.length === 0) {
-            // Use immediate execution instead of setTimeout to avoid timing issues
-            gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-            gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-            gameState.setGameState('GAME_OVER_VICTORY');
-          }
-        }
       };
       
       const { actualDamageDealt, updatedTargetHp } = CombatEngineUtils.applyDamageAndReflection(
@@ -837,10 +710,10 @@ export const App: React.FC = () => {
     gameState.addLog('Player', 'takes a defensive stance.', 'action');
     
     // Apply defending status effect
-    playerState.setPlayer(prev => ({
+    playerState.setPlayer((prev: any) => ({
                     ...prev,
       activeStatusEffects: [
-        ...prev.activeStatusEffects.filter(eff => eff.name !== 'Defending'),
+        ...prev.activeStatusEffects.filter((eff: any) => eff.name !== 'Defending'),
         {
           id: `defending-${Date.now()}`,
           name: 'Defending',
@@ -858,7 +731,7 @@ export const App: React.FC = () => {
 
   const handlePlayerFlee = useCallback(() => {
     // Check if player is rooted
-    const isRooted = playerState.player.activeStatusEffects.some(eff => eff.name === 'Rooted');
+    const isRooted = playerState.player.activeStatusEffects.some((eff: any) => eff.name === 'Rooted');
     if (isRooted) {
       gameState.addLog('Player', 'cannot flee while rooted!', 'error');
       return;
@@ -891,7 +764,7 @@ export const App: React.FC = () => {
       { 
         success: true, 
         message: `The action seems to have a minor positive effect! (+5 HP)`, 
-        effect: () => playerState.setPlayer(p => ({...p, hp: Math.min(effectivePlayerStats.maxHp, p.hp + 5)}))
+        effect: () => playerState.setPlayer((p: any) => ({...p, hp: Math.min(effectivePlayerStats.maxHp, p.hp + 5)}))
       },
       { 
         success: true, 
@@ -901,7 +774,7 @@ export const App: React.FC = () => {
             const enemy = gameState.currentEnemies.find(e => e.id === targetId); 
             if(enemy) { 
               const newHp = Math.max(0, enemy.hp - 3); 
-              gameState.setCurrentEnemies(es => es.map(e => e.id === targetId ? {...e, hp: newHp} : e)); 
+              gameState.setCurrentEnemies((es: any) => es.map((e: any) => e.id === targetId ? {...e, hp: newHp} : e)); 
               if(newHp <= 0 && enemy) { // Ensure enemy is defined
                 centralizedHandleEnemyDefeat({
                   player: playerState.player,
@@ -912,21 +785,6 @@ export const App: React.FC = () => {
                   showMessageModal: gameState.showMessageModal,
                   setGameState: (state: GameState) => gameState.setGameState(state as GameState),
                   currentEnemiesList: gameState.currentEnemies.filter(e => e.id !== targetId)
-              if(newHp <= 0) {
-                // Handle enemy defeat
-                gameState.addLog('System', `${enemy.name} defeated!`, 'success');
-                gameState.setCurrentEnemies(prev => {
-                  const updatedEnemies = prev.filter(e => e.id !== targetId);
-                  
-                  // Check if all enemies defeated after this update
-                  if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                    // Use immediate execution instead of setTimeout to avoid timing issues
-                    gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                    gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                    gameState.setGameState('GAME_OVER_VICTORY');
-                  }
-                  
-                  return updatedEnemies;
                 });
               }
             }
@@ -941,7 +799,7 @@ export const App: React.FC = () => {
       { 
         success: false, 
         message: `The action backfires slightly! (-2 MP)`, 
-        effect: () => playerState.setPlayer(p => ({...p, mp: Math.max(0, p.mp - 2)}))
+        effect: () => playerState.setPlayer((p: any) => ({...p, mp: Math.max(0, p.mp - 2)}))
       },
     ];
     
@@ -953,7 +811,7 @@ export const App: React.FC = () => {
   }, [playerState, gameState, effectivePlayerStats]);
 
   const handleUseAbility = useCallback((abilityId: string, targetId: string | null) => {
-    const ability = playerState.player.abilities.find(a => a.id === abilityId);
+    const ability = playerState.player.abilities.find((a: any) => a.id === abilityId);
     if (!ability) {
       gameState.addLog('Player', 'ability not found.', 'error');
       return;
@@ -965,14 +823,14 @@ export const App: React.FC = () => {
     }
     
     // Check for status effects that prevent ability use
-    if (playerState.player.activeStatusEffects.some(eff => ['Stun', 'Sleep'].includes(eff.name))) {
-      const statusEffect = playerState.player.activeStatusEffects.find(eff => ['Stun', 'Sleep'].includes(eff.name));
+    if (playerState.player.activeStatusEffects.some((eff: any) => ['Stun', 'Sleep'].includes(eff.name))) {
+      const statusEffect = playerState.player.activeStatusEffects.find((eff: any) => ['Stun', 'Sleep'].includes(eff.name));
       gameState.addLog('Player', `cannot use abilities due to ${statusEffect?.name}!`, 'status');
       return;
     }
     
     // Deduct EP cost
-    playerState.setPlayer(prev => ({ ...prev, ep: prev.ep - ability.epCost }));
+    playerState.setPlayer((prev: any) => ({ ...prev, ep: prev.ep - ability.epCost }));
     
     gameState.addLog('Player', `uses ${ability.name}!`, 'action');
     // TODO: This is a simple ability effect simulation. Implement diverse and specific ability effects based on ability.effectType and other properties.
@@ -981,7 +839,7 @@ export const App: React.FC = () => {
     switch (ability.effectType) {
       case 'SELF_HEAL':
         const healAmount = 15 + Math.floor(effectivePlayerStats.mind * 0.5);
-        playerState.setPlayer(prev => ({ 
+        playerState.setPlayer((prev: any) => ({ 
           ...prev, 
           hp: Math.min(effectivePlayerStats.maxHp, prev.hp + healAmount) 
         }));
@@ -994,8 +852,8 @@ export const App: React.FC = () => {
           if (targetEnemy) {
             const damage = 10 + Math.floor(effectivePlayerStats.body * 0.8);
             const newHp = Math.max(0, targetEnemy.hp - damage);
-            gameState.setCurrentEnemies(prev => 
-              prev.map(e => e.id === targetId ? { ...e, hp: newHp } : e)
+            gameState.setCurrentEnemies((prev: any) => 
+              prev.map((e: any) => e.id === targetId ? { ...e, hp: newHp } : e)
             );
             gameState.addLog('Player', `deals ${damage} ability damage to ${targetEnemy.name}.`, 'damage');
             
@@ -1009,20 +867,6 @@ export const App: React.FC = () => {
                 showMessageModal: gameState.showMessageModal,
                 setGameState: (state: GameState) => gameState.setGameState(state as GameState),
                 currentEnemiesList: gameState.currentEnemies.filter(e => e.id !== targetId)
-            if (newHp <= 0) {
-              gameState.addLog('System', `${targetEnemy.name} defeated!`, 'success');
-              gameState.setCurrentEnemies(prev => {
-                const updatedEnemies = prev.filter(e => e.id !== targetId);
-                
-                // Check if all enemies defeated after this update
-                if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                  // Use immediate execution instead of setTimeout to avoid timing issues
-                  gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                  gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                  gameState.setGameState('GAME_OVER_VICTORY');
-                }
-                
-                return updatedEnemies;
               });
             }
           }
