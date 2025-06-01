@@ -198,7 +198,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
       return (
         <span 
           key={ingredient.itemId} 
-          className={`text-xs px-2 py-1 rounded-md border transition-all duration-200 hover:scale-105 ${
+          className={`text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md border transition-all duration-200 hover:scale-105 ${
             hasEnough 
               ? 'text-green-300 bg-green-500/10 border-green-500/30 hover:bg-green-500/20' 
               : 'text-red-300 bg-red-500/10 border-red-500/30 hover:bg-red-500/20'
@@ -238,7 +238,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
     return (
       <div
         key={recipeId}
-        className={`bg-slate-700/40 rounded-lg p-3 border transition-all duration-200 hover:bg-slate-700/60 hover:shadow-lg hover:scale-[1.02] ${
+        className={`bg-slate-700/40 rounded-lg p-2 sm:p-3 border transition-all duration-200 hover:bg-slate-700/60 hover:shadow-lg hover:scale-[1.02] ${
           canCraft ? 'border-green-500/30 hover:border-green-500/50 shadow-green-500/10' : 'border-slate-600/50 hover:border-slate-500/70'
         }`}
       >
@@ -246,7 +246,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           <>
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-slate-100 truncate hover:text-white transition-colors" title={recipe.name}>
+                <h4 className="text-xs sm:text-sm font-medium text-slate-100 truncate hover:text-white transition-colors" title={recipe.name}>
                   {recipe.name}
                 </h4>
                 <div className="flex items-center gap-2 mt-1">
@@ -263,7 +263,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
               </div>
             </div>
             
-            <p className="text-xs text-slate-300 mb-2 line-clamp-2 hover:text-slate-200 transition-colors" title={recipe.description}>
+            <p className="text-xs text-slate-300 mb-1.5 sm:mb-2 line-clamp-2 hover:text-slate-200 transition-colors" title={recipe.description}>
               {recipe.description}
             </p>
             
@@ -297,9 +297,9 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
   ];
 
   return (
-    <div className="space-y-4 p-4 max-h-screen overflow-hidden flex flex-col">
+    <div className="space-y-3 sm:space-y-4 p-2 sm:p-3 md:p-4 max-h-screen overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="text-center p-4 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 flex-shrink-0">
+      <div className="text-center p-3 sm:p-4 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <ActionButton
             onClick={onReturnHome}
@@ -312,14 +312,14 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             <span className="sm:hidden">Home</span>
           </ActionButton>
           
-          <h2 className="text-2xl font-bold text-green-300 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
+          <h2 className="text-xl sm:text-2xl font-bold text-green-300 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
             <GearIcon className="w-6 h-6 mr-2 text-green-400" />
           Crafting Workshop
         </h2>
           
           <div className="w-20"></div> {/* Spacer for balance */}
         </div>
-        <p className="text-slate-300 text-sm mb-3">Create and discover crafting recipes</p>
+        <p className="text-xs sm:text-sm text-slate-300 mb-2 sm:mb-3">Create and discover crafting recipes</p>
         
         {/* Tabs */}
         <div className="flex justify-center space-x-2 flex-wrap">
@@ -328,7 +328,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             variant={activeTab === 'craft' ? 'primary' : 'secondary'}
             size="sm"
             icon={<GearIcon className="w-4 h-4" />}
-            className="text-sm px-3 py-2"
+            className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
           >
             Craft Items
           </ActionButton>
@@ -337,7 +337,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             variant={activeTab === 'discover' ? 'primary' : 'secondary'}
             size="sm"
             icon={<FlaskIcon className="w-4 h-4" />}
-            className="text-sm px-3 py-2"
+            className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
           >
             Discover Recipes
           </ActionButton>
@@ -346,7 +346,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             variant={activeTab === 'spells' ? 'primary' : 'secondary'}
             size="sm"
             icon={<WandIcon className="w-4 h-4" />}
-            className="text-sm px-3 py-2"
+            className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
           >
             Spell Design
           </ActionButton>
@@ -355,7 +355,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             variant={activeTab === 'research' ? 'primary' : 'secondary'}
             size="sm"
             icon={<AtomIcon className="w-4 h-4" />}
-            className="text-sm px-3 py-2"
+            className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
           >
             Research Lab
           </ActionButton>
@@ -364,13 +364,13 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             variant={activeTab === 'items' ? 'primary' : 'secondary'}
             size="sm"
             icon={<FlaskIcon className="w-4 h-4" />}
-            className="text-sm px-3 py-2"
+            className="text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
           >
             Item Crafting
           </ActionButton>
         </div>
         
-        <div className="flex items-center justify-center space-x-4 text-xs text-slate-400 mt-2">
+        <div className="flex items-center justify-center space-x-2 sm:space-x-4 text-xs text-slate-400 mt-1 sm:mt-2">
           <span className="flex items-center">
             {activeTab === 'craft' && (
               <>
@@ -416,10 +416,10 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'craft' ? (
-          <div className="space-y-4 h-full flex flex-col">
+          <div className="space-y-3 sm:space-y-4 h-full flex flex-col">
             {/* Controls */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-shrink-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 flex-shrink-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
                 {/* Search */}
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -428,7 +428,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     placeholder="Search recipes..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-sm"
+                    className="w-full pl-10 pr-4 py-1.5 sm:py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-xs sm:text-sm"
                   />
       </div>
 
@@ -473,7 +473,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
       </div>
 
               {/* Quick Actions */}
-              <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-600/50">
+              <div className="flex justify-between items-center mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-600/50">
                 <ActionButton
                   onClick={onReturnHome}
                   variant="secondary"
@@ -491,11 +491,11 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             </div>
 
             {/* Recipes Grid */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-1 overflow-y-auto">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-2 sm:p-3 md:p-4 flex-1 overflow-y-auto">
               {filteredAndSortedRecipes.length === 0 ? (
-          <div className="text-center py-8">
-                  <FlaskIcon className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                  <p className="text-slate-400 italic text-sm">
+          <div className="text-center py-6 sm:py-8">
+                  <FlaskIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-slate-600 mb-3" />
+                  <p className="text-xs sm:text-sm text-slate-400 italic">
                     {availableRecipes.length === 0 
                       ? 'No recipes discovered yet. Use the Discovery tab to find new recipes!'
                       : searchTerm 
@@ -505,17 +505,17 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             </p>
           </div>
         ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2 sm:gap-3">
                   {filteredAndSortedRecipes.map((recipe) => {
               const canCraft = canCraftRecipe(recipe);
                     const levelReq = recipe.requirements.find((req: any) => req.type === 'level')?.value;
               
               return (
-                      <div key={recipe.id} className={`bg-slate-700/40 rounded-lg p-3 border transition-all duration-200 hover:bg-slate-700/60 hover:shadow-lg hover:scale-[1.02] ${canCraft ? 'border-green-500/30 hover:border-green-500/50 shadow-green-500/10' : 'border-slate-600/50 hover:border-slate-500/70'}`}>
+                      <div key={recipe.id} className={`bg-slate-700/40 rounded-lg p-2 sm:p-3 border transition-all duration-200 hover:bg-slate-700/60 hover:shadow-lg hover:scale-[1.02] ${canCraft ? 'border-green-500/30 hover:border-green-500/50 shadow-green-500/10' : 'border-slate-600/50 hover:border-slate-500/70'}`}>
                         {/* Header */}
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-slate-100 truncate hover:text-white transition-colors" title={recipe.name}>
+                            <h4 className="text-xs sm:text-sm font-medium text-slate-100 truncate hover:text-white transition-colors" title={recipe.name}>
                               {recipe.name}
                             </h4>
                             <div className="flex items-center gap-2 mt-1">
@@ -542,13 +542,13 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                   </div>
                   
                         {/* Description */}
-                        <p className="text-xs text-slate-300 mb-2 line-clamp-2 hover:text-slate-200 transition-colors" title={recipe.description}>
+                        <p className="text-xs text-slate-300 mb-1.5 sm:mb-2 line-clamp-2 hover:text-slate-200 transition-colors" title={recipe.description}>
                           {recipe.description}
                         </p>
                         
                         {/* Ingredients - Compact View */}
-                        <div className="mb-3">
-                          <h5 className="text-xs font-medium text-slate-200 mb-1 flex items-center">
+                        <div className="mb-2 sm:mb-3">
+                          <h5 className="text-xs font-medium text-slate-200 mb-0.5 sm:mb-1 flex items-center">
                             <span className="mr-1">🧪</span>
                             Ingredients:
                           </h5>
@@ -558,7 +558,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     </div>
                     
                         {/* Result */}
-                        <div className="mb-3">
+                        <div className="mb-2 sm:mb-3">
                           <div className="text-xs text-slate-400 flex items-center">
                             <span className="mr-1">✨</span>
                             Produces: <span className="text-slate-300 ml-1 font-medium">{MASTER_ITEM_DEFINITIONS[recipe.resultItemId]?.name || recipe.resultItemId}</span>
@@ -567,7 +567,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     
                         {/* Requirements */}
                         {recipe.requirements && recipe.requirements.length > 0 && (
-                          <div className="mb-3">
+                          <div className="mb-2 sm:mb-3">
                             <div className="flex flex-wrap gap-1">
                               {recipe.requirements.map((req: any, index: number) => (
                                 <span key={index} className="text-xs text-slate-400 bg-slate-600/30 px-1.5 py-0.5 rounded hover:bg-slate-600/50 transition-colors">
@@ -602,25 +602,25 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           </div>
         ) : activeTab === 'discover' ? (
           /* Discovery Tab */
-          <div className="space-y-4 h-full flex flex-col">
+          <div className="space-y-3 sm:space-y-4 h-full flex flex-col">
             {/* Discovery Form */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-shrink-0">
-              <form onSubmit={handleDiscoverySubmit} className="space-y-4">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 flex-shrink-0">
+              <form onSubmit={handleDiscoverySubmit} className="space-y-3 sm:space-y-4">
                 <div>
-                  <label htmlFor="recipe-prompt" className="block text-sm font-medium text-slate-200 mb-2">
+                  <label htmlFor="recipe-prompt" className="block text-xs sm:text-sm font-medium text-slate-200 mb-1 sm:mb-2">
                     🔬 Describe your recipe idea:
                   </label>
                   <textarea
                     id="recipe-prompt"
                     value={discoveryPrompt}
                     onChange={(e) => setDiscoveryPrompt(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical min-h-[80px]"
+                    className="w-full p-2 sm:p-3 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical min-h-[70px] sm:min-h-[80px]"
                     placeholder="Example: A healing potion made from forest herbs and crystal shards..."
                     disabled={isLoading}
                   />
                 </div>
                 
-                <div className="flex gap-4">
+                <div className="flex gap-3 sm:gap-4">
                   <ActionButton
                     type="submit"
                     variant="primary"
@@ -628,7 +628,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     isLoading={isLoading}
                     disabled={!discoveryPrompt.trim()}
                     icon={<FlaskIcon className="w-4 h-4" />}
-                    className="flex-1 text-sm"
+                    className="flex-1 text-xs sm:text-sm"
                   >
                     {isLoading ? 'Discovering...' : '🔍 Discover Recipe'}
                   </ActionButton>
@@ -638,7 +638,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     variant="secondary"
                     size="sm"
                     icon={<HeroBackIcon className="w-4 h-4" />}
-                    className="text-sm"
+                    className="text-xs sm:text-sm"
                   >
                     Return Home
                   </ActionButton>
@@ -647,10 +647,10 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 flex-1 overflow-hidden">
               {/* Example Prompts */}
-              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center">
+              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 overflow-y-auto">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-2 sm:mb-3 flex items-center">
                   <BookIcon className="w-5 h-5 mr-2 text-amber-400" />
                   💡 Example Ideas
                 </h3>
@@ -659,7 +659,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     <button
                       key={index}
                       onClick={() => setDiscoveryPrompt(example)}
-                      className="w-full text-left p-3 rounded-lg bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600 text-slate-300 hover:text-slate-100 transition-all duration-200 text-sm"
+                      className="w-full text-left p-2 sm:p-3 rounded-lg bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600 text-slate-300 hover:text-slate-100 transition-all duration-200 text-xs sm:text-sm"
                       disabled={isLoading}
                     >
                       "{example}"
@@ -669,8 +669,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
               </div>
 
               {/* Known Recipes */}
-              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center">
+              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 overflow-y-auto">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-2 sm:mb-3 flex items-center">
                   <FlaskIcon className="w-5 h-5 mr-2 text-green-400" />
                   📚 Known Recipes ({player.discoveredRecipes.length})
                 </h3>
@@ -679,9 +679,9 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     {player.discoveredRecipes.map((recipeId, index) => renderKnownRecipeCard(recipeId, index))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <FlaskIcon className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                    <p className="text-slate-400 italic text-sm">No recipes discovered yet. Use the discovery lab above to find new recipes!</p>
+                  <div className="text-center py-6 sm:py-8">
+                    <FlaskIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-slate-600 mb-3" />
+                    <p className="text-xs sm:text-sm text-slate-400 italic">No recipes discovered yet. Use the discovery lab above to find new recipes!</p>
                   </div>
                 )}
               </div>
@@ -689,32 +689,32 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           </div>
         ) : activeTab === 'spells' ? (
           /* Spell Design Tab */
-          <div className="space-y-4 h-full flex flex-col">
+          <div className="space-y-3 sm:space-y-4 h-full flex flex-col">
             {/* Spell Design Form */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-shrink-0">
-              <div className="space-y-4">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 flex-shrink-0">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label htmlFor="spell-prompt" className="block text-sm font-medium text-slate-200 mb-2">
+                  <label htmlFor="spell-prompt" className="block text-xs sm:text-sm font-medium text-slate-200 mb-1 sm:mb-2">
                     🪄 Describe your spell idea:
                   </label>
                   <textarea
                     id="spell-prompt"
                     value={spellPrompt}
                     onChange={(e) => setSpellPrompt(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-vertical min-h-[80px]"
+                    className="w-full p-2 sm:p-3 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-vertical min-h-[70px] sm:min-h-[80px]"
                     placeholder="Example: A fireball that explodes on impact, dealing area damage..."
                     disabled={isLoading}
                   />
                 </div>
                 
-                <div className="flex gap-4">
+                <div className="flex gap-3 sm:gap-4">
                   <ActionButton
                     onClick={handleSpellDesign}
                     variant="primary"
                     size="sm"
                     isLoading={isLoading}
                     icon={<WandIcon className="w-4 h-4" />}
-                    className="flex-1 text-sm"
+                    className="flex-1 text-xs sm:text-sm"
                   >
                     🎨 Open Spell Design Studio
                   </ActionButton>
@@ -724,7 +724,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     variant="secondary"
                     size="sm"
                     icon={<HeroBackIcon className="w-4 h-4" />}
-                    className="text-sm"
+                    className="text-xs sm:text-sm"
                   >
                     Return Home
                   </ActionButton>
@@ -733,10 +733,10 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 flex-1 overflow-hidden">
               {/* Spell Examples */}
-              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center">
+              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 overflow-y-auto">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-2 sm:mb-3 flex items-center">
                   <WandIcon className="w-5 h-5 mr-2 text-purple-400" />
                   ✨ Spell Ideas
                 </h3>
@@ -752,7 +752,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     <button
                       key={index}
                       onClick={() => setSpellPrompt(example)}
-                      className="w-full text-left p-3 rounded-lg bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600 text-slate-300 hover:text-slate-100 transition-all duration-200 text-sm"
+                      className="w-full text-left p-2 sm:p-3 rounded-lg bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600 text-slate-300 hover:text-slate-100 transition-all duration-200 text-xs sm:text-sm"
                       disabled={isLoading}
                     >
                       "{example}"
@@ -762,8 +762,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
               </div>
 
               {/* Current Spells */}
-              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center">
+              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 overflow-y-auto">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-2 sm:mb-3 flex items-center">
                   <WandIcon className="w-5 h-5 mr-2 text-green-400" />
                   📜 Your Spells ({player.spells.length})
                 </h3>
@@ -772,10 +772,10 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     {player.spells.slice(0, 10).map((spell) => (
                       <div
                         key={spell.id}
-                        className="bg-slate-700/40 rounded-lg p-3 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-200"
+                        className="bg-slate-700/40 rounded-lg p-2 sm:p-3 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-200"
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm font-medium text-slate-100">{spell.name}</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-slate-100">{spell.name}</h4>
                           <span className="text-xs text-purple-400">{spell.manaCost} MP</span>
                         </div>
                         <p className="text-xs text-slate-300 line-clamp-2">{spell.description}</p>
@@ -796,9 +796,9 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <WandIcon className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                    <p className="text-slate-400 italic text-sm">No spells created yet. Use the design studio to craft your first spell!</p>
+                  <div className="text-center py-6 sm:py-8">
+                    <WandIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-slate-600 mb-3" />
+                    <p className="text-xs sm:text-sm text-slate-400 italic">No spells created yet. Use the design studio to craft your first spell!</p>
                   </div>
                 )}
               </div>
@@ -806,27 +806,27 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           </div>
         ) : activeTab === 'research' ? (
           /* Research Lab Tab */
-          <div className="space-y-4 h-full flex flex-col">
+          <div className="space-y-3 sm:space-y-4 h-full flex flex-col">
             {/* Research Form */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-shrink-0">
-              <form onSubmit={handleResearchSubmit} className="space-y-4">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 flex-shrink-0">
+              <form onSubmit={handleResearchSubmit} className="space-y-3 sm:space-y-4">
                 <div>
-                  <label htmlFor="research-prompt" className="block text-sm font-medium text-slate-200 mb-2">
+                  <label htmlFor="research-prompt" className="block text-xs sm:text-sm font-medium text-slate-200 mb-1 sm:mb-2">
                     🔬 Describe your component research:
                   </label>
                   <textarea
                     id="research-prompt"
                     value={researchPrompt}
                     onChange={(e) => setResearchPrompt(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-vertical min-h-[80px]"
+                    className="w-full p-2 sm:p-3 rounded-lg bg-slate-700/50 border border-slate-600 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-vertical min-h-[70px] sm:min-h-[80px]"
                     placeholder="Example: A fire-based component that increases spell damage..."
                     disabled={isLoading}
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-slate-200 mb-1 sm:mb-2">
                       💰 Gold Investment: {goldInvestment}
                     </label>
                     <input
@@ -849,7 +849,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-slate-200 mb-1 sm:mb-2">
                       ✨ Essence Investment: {essenceInvestment}
                     </label>
                     <input
@@ -872,7 +872,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                   </div>
                 </div>
                 
-                <div className="flex gap-4">
+                <div className="flex gap-3 sm:gap-4">
                   <ActionButton
                     type="submit"
                     variant="primary"
@@ -880,7 +880,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     isLoading={isLoading}
                     disabled={!researchPrompt.trim() || goldInvestment > player.gold || essenceInvestment > player.essence}
                     icon={<AtomIcon className="w-4 h-4" />}
-                    className="flex-1 text-sm"
+                    className="flex-1 text-xs sm:text-sm"
                   >
                     {isLoading ? 'Researching...' : '🧪 Conduct Research'}
                   </ActionButton>
@@ -890,7 +890,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     variant="secondary"
                     size="sm"
                     icon={<HeroBackIcon className="w-4 h-4" />}
-                    className="text-sm"
+                    className="text-xs sm:text-sm"
                   >
                     Return Home
                   </ActionButton>
@@ -899,10 +899,10 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 flex-1 overflow-hidden">
               {/* Research Examples */}
-              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center">
+              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 overflow-y-auto">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-2 sm:mb-3 flex items-center">
                   <AtomIcon className="w-5 h-5 mr-2 text-cyan-400" />
                   🧪 Research Ideas
                 </h3>
@@ -918,7 +918,7 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     <button
                       key={index}
                       onClick={() => setResearchPrompt(example)}
-                      className="w-full text-left p-3 rounded-lg bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600 text-slate-300 hover:text-slate-100 transition-all duration-200 text-sm"
+                      className="w-full text-left p-2 sm:p-3 rounded-lg bg-slate-700/30 hover:bg-slate-600/50 border border-slate-600 text-slate-300 hover:text-slate-100 transition-all duration-200 text-xs sm:text-sm"
                       disabled={isLoading}
                     >
                       "{example}"
@@ -928,8 +928,8 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
               </div>
 
               {/* Discovered Components */}
-              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-slate-200 mb-3 flex items-center">
+              <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 overflow-y-auto">
+                <h3 className="text-base sm:text-lg font-semibold text-slate-200 mb-2 sm:mb-3 flex items-center">
                   <AtomIcon className="w-5 h-5 mr-2 text-green-400" />
                   🔬 Components ({player.discoveredComponents.length})
                 </h3>
@@ -938,10 +938,10 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     {player.discoveredComponents.slice(0, 8).map((component) => (
                       <div
                         key={component.id}
-                        className="bg-slate-700/40 rounded-lg p-3 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-200"
+                        className="bg-slate-700/40 rounded-lg p-2 sm:p-3 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-200"
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="text-sm font-medium text-slate-100">{component.name}</h4>
+                          <h4 className="text-xs sm:text-sm font-medium text-slate-100">{component.name}</h4>
                           <span className="text-xs text-cyan-400">T{component.tier}</span>
                         </div>
                         <p className="text-xs text-slate-300 line-clamp-2">{component.description}</p>
@@ -962,9 +962,9 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <AtomIcon className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                    <p className="text-slate-400 italic text-sm">No components discovered yet. Conduct research to discover new spell components!</p>
+                  <div className="text-center py-6 sm:py-8">
+                    <AtomIcon className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-slate-600 mb-3" />
+                    <p className="text-xs sm:text-sm text-slate-400 italic">No components discovered yet. Conduct research to discover new spell components!</p>
                   </div>
                 )}
               </div>
@@ -972,16 +972,16 @@ const CraftingWorkshopView: React.FC<CraftingWorkshopViewProps> = ({
           </div>
         ) : (
           /* Item Crafting Tab */
-          <div className="space-y-4 h-full flex flex-col">
+          <div className="space-y-3 sm:space-y-4 h-full flex flex-col">
             {/* Item Crafting Form */}
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-4 flex-shrink-0">
-              <div className="space-y-4">
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-3 sm:p-4 flex-shrink-0">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="text-center">
-                  <h3 className="text-xl font-semibold text-slate-200 mb-3">AI Item Creation</h3>
-                  <p className="text-slate-300">Create consumables and equipment using AI-powered generation.</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-slate-200 mb-2 sm:mb-3">AI Item Creation</h3>
+                  <p className="text-xs sm:text-sm text-slate-300">Create consumables and equipment using AI-powered generation.</p>
                 </div>
                 
-                <div className="flex justify-center gap-4 mb-6">
+                <div className="flex justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <ActionButton
                     onClick={() => setActiveItemCraftType('Consumable')}
                     variant={activeItemCraftType === 'Consumable' ? 'primary' : 'secondary'}
