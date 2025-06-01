@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
-import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, StarIcon } from '../src/components/IconComponents'; 
+import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon } from '../src/components/IconComponents';
 
 interface HeaderProps {
   player: Player;
@@ -42,13 +42,74 @@ const Header: React.FC<HeaderProps> = ({
             onClick={onOpenCharacterSheet}
             title="Open Character Sheet"
           >
-            {/* Avatar */}
+            {/* Avatar with Circular Health/Mana Indicators */}
             <div className="relative">
-              <div className="w-9 h-9 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600/50 rounded-xl flex items-center justify-center shadow-sm group-hover:border-slate-500/70 transition-colors">
+              {/* Main Avatar */}
+              <div className="w-9 h-9 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600/50 rounded-xl flex items-center justify-center shadow-sm group-hover:border-slate-500/70 transition-colors relative z-10">
                 <UserIcon className="w-5 h-5 text-slate-300 group-hover:text-slate-200 transition-colors" />
               </div>
+              
+              {/* Circular Progress Rings - Desktop Only, Not in Combat */}
+              {showHealthManaBar && (
+                <>
+                  {/* Health Ring - Outer */}
+                  <svg className="absolute inset-0 w-9 h-9 -rotate-90 hidden lg:block" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="rgb(51 65 85 / 0.3)"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="rgb(239 68 68)"
+                      strokeWidth="2"
+                      strokeDasharray={`${(player.hp / effectivePlayerStats.maxHp) * 100}, 100`}
+                      className="transition-all duration-500"
+                    />
+                  </svg>
+                  
+                  {/* Mana Ring - Middle */}
+                  <svg className="absolute inset-0 w-9 h-9 -rotate-90 hidden lg:block" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg) scale(0.85)', transformOrigin: 'center' }}>
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="rgb(51 65 85 / 0.3)"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="rgb(59 130 246)"
+                      strokeWidth="2"
+                      strokeDasharray={`${(player.mp / effectivePlayerStats.maxMp) * 100}, 100`}
+                      className="transition-all duration-500"
+                    />
+                  </svg>
+                  
+                  {/* Energy Ring - Inner */}
+                  <svg className="absolute inset-0 w-9 h-9 -rotate-90 hidden lg:block" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg) scale(0.7)', transformOrigin: 'center' }}>
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="rgb(51 65 85 / 0.3)"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="rgb(234 179 8)"
+                      strokeWidth="2"
+                      strokeDasharray={`${(player.ep / effectivePlayerStats.maxEp) * 100}, 100`}
+                      className="transition-all duration-500"
+                    />
+                  </svg>
+                </>
+              )}
+              
               {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full z-20"></div>
             </div>
             
             {/* Character Details */}
@@ -79,64 +140,18 @@ const Header: React.FC<HeaderProps> = ({
                 <span className="hidden sm:inline text-slate-500 truncate max-w-24">
                   {player.currentLocationId || 'Unknown'}
                 </span>
+                
+                {/* Health/Mana Values - Desktop Only, Not in Combat */}
+                {showHealthManaBar && (
+                  <div className="hidden lg:flex items-center gap-2 text-xs">
+                    <span className="text-red-300 font-mono">{player.hp}/{effectivePlayerStats.maxHp}</span>
+                    <span className="text-blue-300 font-mono">{player.mp}/{effectivePlayerStats.maxMp}</span>
+                    <span className="text-yellow-300 font-mono">{player.ep}/{effectivePlayerStats.maxEp}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          
-          {/* Health/Mana Bars - Desktop Only, Not in Combat */}
-          {showHealthManaBar && (
-            <div className="hidden lg:flex items-center gap-3 ml-2">
-              <div className="w-px h-6 bg-slate-700"></div>
-              
-              {/* Stacked Bars - Compact Vertical Layout */}
-              <div className="flex flex-col gap-1 min-w-0">
-                {/* Health Bar */}
-                <div className="flex items-center gap-1.5">
-                  <HealIcon className="w-3 h-3 text-red-400 flex-shrink-0" />
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-xs font-medium text-slate-300 w-6">HP</span>
-                    <div className="w-16 bg-slate-700/50 rounded-full h-1">
-                      <div 
-                        className="bg-gradient-to-r from-red-500 to-red-400 h-1 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.max(0, (player.hp / effectivePlayerStats.maxHp) * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-red-300 min-w-0 text-right">{player.hp}/{effectivePlayerStats.maxHp}</span>
-                  </div>
-                </div>
-                
-                {/* Mana Bar */}
-                <div className="flex items-center gap-1.5">
-                  <WandIcon className="w-3 h-3 text-blue-400 flex-shrink-0" />
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-xs font-medium text-slate-300 w-6">MP</span>
-                    <div className="w-16 bg-slate-700/50 rounded-full h-1">
-                      <div 
-                        className="bg-gradient-to-r from-blue-500 to-cyan-400 h-1 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.max(0, (player.mp / effectivePlayerStats.maxMp) * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-blue-300 min-w-0 text-right">{player.mp}/{effectivePlayerStats.maxMp}</span>
-                  </div>
-                </div>
-                
-                {/* Energy Bar */}
-                <div className="flex items-center gap-1.5">
-                  <StarIcon className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                  <div className="flex items-center gap-1 min-w-0">
-                    <span className="text-xs font-medium text-slate-300 w-6">EP</span>
-                    <div className="w-16 bg-slate-700/50 rounded-full h-1">
-                      <div 
-                        className="bg-gradient-to-r from-yellow-500 to-amber-400 h-1 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.max(0, (player.ep / effectivePlayerStats.maxEp) * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-yellow-300 min-w-0 text-right">{player.ep}/{effectivePlayerStats.maxEp}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
           
           {/* Combat Status Indicator */}
           {isInAnyCombat && onReturnToCombat && (
