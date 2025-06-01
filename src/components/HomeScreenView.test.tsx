@@ -109,12 +109,31 @@ describe('HomeScreenView', () => {
     expect(videoBackground).toHaveStyle('object-fit: cover');
     expect(videoBackground).toHaveStyle('width: 100vw');
     expect(videoBackground).toHaveStyle('height: 100vh');
-    expect(videoBackground).toHaveStyle('filter: blur(2px) brightness(0.4) contrast(1.1) saturate(0.8)');
+    expect(videoBackground).toHaveStyle('filter: blur(10px) brightness(0.4) contrast(1.9) saturate(0.8)');
 
     // Check for video source
     const videoSource = videoBackground.querySelector('source');
     expect(videoSource).toHaveAttribute('src', '/assets/background/jorn-background.webm');
     expect(videoSource).toHaveAttribute('type', 'video/webm');
+  });
+
+  it('sets slow playback rate when video loads', () => {
+    render(<HomeScreenView {...mockProps} />);
+
+    const videoBackground = screen.getByRole('video') as HTMLVideoElement;
+    
+    // Simulate video loaded event
+    Object.defineProperty(videoBackground, 'readyState', {
+      writable: true,
+      value: 4, // HAVE_ENOUGH_DATA
+    });
+    
+    // Trigger the loadeddata event
+    const loadedDataEvent = new Event('loadeddata');
+    videoBackground.dispatchEvent(loadedDataEvent);
+    
+    // Check that playback rate is set to slow motion (0.25 = 25% speed)
+    expect(videoBackground.playbackRate).toBe(0.25);
   });
 
   it('renders fallback background and overlay elements', () => {

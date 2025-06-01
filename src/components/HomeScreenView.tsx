@@ -16,6 +16,10 @@ try {
 // Rest preferences storage
 const REST_PREFERENCES_KEY = 'jorn-rest-preferences';
 
+// Video background configuration
+const VIDEO_PLAYBACK_RATE = 1; // 25% of normal speed (very slow motion)
+// Alternative rates: 0.1 (ultra slow), 0.5 (slow), 0.75 (slightly slow), 1.0 (normal)
+
 interface RestPreferences {
   preferredRestType: 'short' | 'long' | 'custom';
   customDuration: number;
@@ -80,6 +84,9 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenQuestBook,
   onNavigateToMultiplayer,
 }) => {
+  // Video ref for controlling playback
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
   // State for activity card ordering
   const [activityOrder] = React.useState([
     'camp', 'research', 'crafting', 'npcs', 'quests', 'trading'
@@ -118,6 +125,28 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showRestDropdown]);
+
+  // Set video playback rate to be very slow
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      const handleLoadedData = () => {
+        // Set playback rate to be very slow (0.25 = 25% of normal speed)
+        video.playbackRate = VIDEO_PLAYBACK_RATE;
+      };
+
+      video.addEventListener('loadeddata', handleLoadedData);
+      
+      // If video is already loaded, set the rate immediately
+      if (video.readyState >= 2) {
+        video.playbackRate = VIDEO_PLAYBACK_RATE;
+      }
+
+      return () => {
+        video.removeEventListener('loadeddata', handleLoadedData);
+      };
+    }
+  }, []);
 
   // Update rest preferences and save to localStorage
   const updateRestPreferences = (newPreferences: Partial<RestPreferences>) => {
@@ -288,6 +317,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     <div className="min-h-screen md:min-h-[calc(100vh-12rem)] md:h-[calc(100vh-12rem)] w-full max-w-none mx-0 px-4 overflow-hidden relative">
       {/* Video Background */}
       <video
+        ref={videoRef}
         autoPlay
         muted
         loop
@@ -302,12 +332,15 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           zIndex: -20,
           objectFit: 'cover',
           // Video filters for darker, blurry background effect
-          // Current: Moderate blur, quite dark, enhanced contrast, reduced saturation
+          // Current: Heavy blur, quite dark, enhanced contrast, reduced saturation
+          // Playback rate is set to 0.25 (25% speed) via useEffect for slow motion
           filter: 'blur(10px) brightness(0.4) contrast(1.9) saturate(0.8)',
-          // Alternative options:
+          // Alternative filter options:
           // Subtle: 'blur(1px) brightness(0.6) contrast(1.05) saturate(0.9)'
           // Heavy: 'blur(3px) brightness(0.3) contrast(1.2) saturate(0.7)'
           // Cinematic: 'blur(2px) brightness(0.5) contrast(1.3) saturate(0.6) sepia(0.1)'
+          // Alternative playback rates:
+          // Very slow: 0.1 (10% speed), Slow: 0.5 (50% speed), Normal: 1.0 (100% speed)
         }}
         onError={() => {
           console.warn('Video background failed to load');
