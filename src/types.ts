@@ -164,8 +164,27 @@ export type GameState =
   | 'SPELL_EDIT_CONFIRMATION' | 'ITEM_CRAFTING' | 'ITEM_CRAFT_CONFIRMATION' | 'SELECTING_POTION'
   | 'CHARACTER_SHEET' | 'SELECTING_ABILITY' | 'CRAFTING_HUB' | 'EXPLORING_MAP' | 'CAMP'
   | 'SETTLEMENT_VIEW' | 'SHOP_VIEW' | 'TAVERN_VIEW' | 'NPC_DIALOGUE' | 'HOMESTEAD_VIEW'
-  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP' | 'NPCS_VIEW' | 'MULTIPLAYER_VIEW' | 'QUEST_BOOK';
-export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia';
+  | 'RECIPE_DISCOVERY' | 'CRAFTING_WORKSHOP' | 'NPCS_VIEW' | 'QUEST_BOOK'
+  // Added from root types.ts & ensuring MULTIPLAYER_VIEW is definitely part of the type
+  | 'GAME_OVER_VICTORY'
+  | 'GAME_OVER_DEFEAT'
+  | 'PARAMETERS'
+  | 'SPELL_DESIGN_STUDIO'
+  | 'RESEARCH_LAB'
+  | 'GENERAL_RESEARCH'
+  | 'RESEARCH_ARCHIVES'
+  | 'THEORIZE_COMPONENT'
+  | 'SPELL_EDITING'
+  | 'TRAIT_CRAFTING'
+  | 'ABILITY_CRAFTING'
+  | 'MANAGE_SPELLS'
+  | 'SPELL_CRAFT_CONFIRMATION'
+  | 'SPELL_EDIT_CONFIRMATION'
+  | 'ITEM_CRAFTING'
+  | 'ITEM_CRAFT_CONFIRMATION'
+  | 'SELECTING_POTION'
+  | 'MULTIPLAYER_VIEW'; // Ensured MULTIPLAYER_VIEW is here
+export type CharacterSheetTab = 'Main' | 'Inventory' | 'Spells' | 'Abilities' | 'Traits' | 'Quests' | 'Encyclopedia' | 'Progress';
 export type InventoryFilterType = 'All' | ItemType;
 export type LootDropType = 'spell' | 'equipment' | 'consumable' | 'gold' | 'essence' | 'resource' | 'component';
 
@@ -334,24 +353,35 @@ export interface Quest {
   chainId?: string;
   chainPosition?: number;
   chainTotal?: number;
-  prerequisiteQuestIds?: string[];
+  prerequisiteQuestIds?: string[]; // Kept from src/types.ts (vs prerequisiteQuests in root)
+  // unlocksQuests from root is covered by unlockQuestIds below
   
-  // Rewards
+  // Timestamps from root (dateAccepted from root is dateStarted here)
+  dateStarted?: number; // timestamp (equivalent to dateAccepted in root)
+  dateCompleted?: number; // timestamp
+  deadline?: string; // Added from root
+
+  // Rewards - Merged from both
   rewards?: {
     xp?: number;
     gold?: number;
     essence?: number;
     items?: Array<{itemId: string, quantity: number}>;
     generatedLootChestLevel?: number;
-    title?: string;
-    unlockQuestIds?: string[];
+    title?: string; // Kept from src/types.ts
+    unlockQuestIds?: string[]; // Kept from src/types.ts (covers unlocksQuests from root)
+    reputation?: Array<{faction: string, amount: number}>; // Added from root
+    unlocks?: Array<{type: 'location' | 'npc' | 'quest' | 'feature', id: string}>; // Added from root
   };
   
-  // Metadata
-  dateStarted?: number; // timestamp
-  dateCompleted?: number; // timestamp
-  notes?: string[];
-  tags?: string[];
+  // Metadata & Journaling
+  notes?: string[]; // Present in both, kept
+  tags?: string[]; // Kept from src/types.ts
+  journalEntries?: Array<{ // Added from root
+    timestamp: string;
+    entry: string;
+    type: 'progress' | 'discovery' | 'dialogue' | 'completion';
+  }>;
 }
 
 // Items
@@ -449,12 +479,18 @@ export interface Player {
   preparedAbilityIds: string[];
   iconName?: SpellIconName;
   name?: string;
+  // Added from root types.ts
+  title?: string;
+  classId?: string;
+  specializationId?: string;
+  hasCustomizedCharacter?: boolean;
   bestiary: Record<string, {
     id: string;
     name: string;
     iconName: SpellIconName;
     description: string;
     vanquishedCount: number;
+    // Fields below added/updated from root types.ts bestiary definition
     level?: number;
     weakness?: ElementName;
     resistance?: ElementName;
@@ -478,6 +514,36 @@ export interface PlayerEffectiveStats {
   magicPower: number;
   defense: number;
   damageReflectionPercent: number;
+}
+
+// Added from root types.ts: PlayerClass, PlayerSpecialization, Character
+export interface PlayerClass {
+  id: string;
+  name: string;
+  description: string;
+  specializations: PlayerSpecialization[];
+}
+
+export interface PlayerSpecialization {
+  id: string;
+  name: string;
+  description: string;
+  bonuses?: {
+    body?: number;
+    mind?: number;
+    reflex?: number;
+    maxHp?: number;
+    maxMp?: number;
+    maxEp?: number;
+  };
+}
+
+export interface Character {
+  id: number; // Note: original in types.ts was id: number. Consider if string is more consistent. For now, keeping as number.
+  name: string;
+  race: string;
+  class: string; // Consider mapping to PlayerClass.id if appropriate
+  level: number;
 }
 
 // Generated Data types

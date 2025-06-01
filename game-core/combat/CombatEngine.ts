@@ -4,9 +4,18 @@ import {
   Spell, 
   TagName, 
   PlayerEffectiveStats,
-  CombatActionLog 
-} from '../../types';
+  CombatActionLog,
+  GameState, // Added GameState
+  ResourceCost // Added ResourceCost
+} from '../../types'; // Adjusted path assuming types.ts is now in src
 import { getEffectiveTags } from '../spells/TagSystem';
+import {
+  ENEMY_DIFFICULTY_XP_REWARD,
+  BATTLE_RESOURCE_REWARD_TYPES,
+  BATTLE_RESOURCE_REWARD_QUANTITY_MIN,
+  BATTLE_RESOURCE_REWARD_QUANTITY_MAX
+} from '../../constants'; // Adjusted path assuming constants.ts is at root
+import { ResourceManagerUtils } from '../resources/ResourceManager';
 
 /**
  * Combat Engine Module
@@ -32,12 +41,24 @@ export interface CombatContext {
   player: Player;
   currentEnemies: Enemy[];
   effectivePlayerStats: PlayerEffectiveStats;
-  addLog: (actor: 'Player' | 'Enemy' | 'System', message: string, type: 'action' | 'damage' | 'heal' | 'status' | 'error' | 'info' | 'success' | 'warning' | 'resource' | 'speed') => void;
+  addLog: (actor: 'Player' | 'Enemy' | 'System', message: string, type?: string) => void; // type is string to match App.tsx more generically
   setPlayer: (updater: (prev: Player) => Player) => void;
   setCurrentEnemies: (updater: (prev: Enemy[]) => Enemy[]) => void;
-  setModalContent: (content: { title: string; message: string; type: 'info' | 'error' | 'success' }) => void;
-  setGameState: (state: string) => void;
-  handleEnemyDefeat: (enemy: Enemy) => void;
+  setModalContent: (content: { title: string; message: string; type: 'info' | 'error' | 'success' } | null) => void; // Allow null
+  setGameState: (state: GameState | string) => void; // Allow string for flexibility, ideally GameState
+  handleEnemyDefeat: (enemy: Enemy) => void; // This will be replaced by the centralized one
+}
+
+// New context for the centralized handleEnemyDefeat
+export interface EnemyDefeatContext {
+  player: Player;
+  defeatedEnemy: Enemy;
+  setPlayer: React.Dispatch<React.SetStateAction<Player>>; // Matching App.tsx state setter type
+  setCurrentEnemies: React.Dispatch<React.SetStateAction<Enemy[]>>; // Matching App.tsx state setter type
+  addLog: (actor: string, message: string, type?: string) => void;
+  showMessageModal: (title: string, message: string, type: 'info' | 'success' | 'error' | 'warning') => void;
+  setGameState: (gameState: GameState) => void;
+  currentEnemiesList: Enemy[]; // Pass the current list to check for victory
 }
 
 /**
@@ -58,11 +79,18 @@ export const calculateDamage = (
   scalingFactor: number = 0, 
   scalingStatValue: number = 0
 ): number => {
-  let modifiedDamage = baseDamage + attackerPower + (scalingStatValue * (scalingFactor || 0));
-  if (effectiveness === 'weak') modifiedDamage *= 1.5;
-  if (effectiveness === 'resistant') modifiedDamage *= 0.5;
-  const finalDamage = Math.max(1, Math.floor(modifiedDamage - defenderDefense));
-  return finalDamage;
+  // Updated to simpler formula from App.tsx enemy turn context for now
+  let damage = baseDamage + Math.floor(attackerPower * 0.5);
+  const defenseMitigation = Math.floor(defenderDefense * 0.3);
+  damage = Math.max(1, damage - defenseMitigation);
+
+  if (effectiveness === 'weak') {
+    damage = Math.floor(damage * 1.5);
+  } else if (effectiveness === 'resistant') {
+    damage = Math.floor(damage * 0.5);
+  }
+  // scalingFactor and scalingStatValue are not used in this simplified version yet
+  return damage;
 };
 
 /**
@@ -456,4 +484,125 @@ export const CombatEngineUtils = {
   applySpellToEnemy,
   applySpellToSelf,
   executePlayerAttack,
+  applyDamage, // Added new applyDamage
+  handleEnemyDefeat, // Export the new centralized function
+};
+
+// New simplified applyDamage function (as per subtask description)
+// The existing applyDamageAndReflection will be kept for player attacks or more complex scenarios.
+export const applyDamage = (
+  target: Player | Enemy,
+  damage: number
+): { actualDamageDealt: number; updatedTargetHp: number } => {
+  const actualDamageDealt = damage; // No reflection considered in this simplified version
+  const updatedTargetHp = Math.max(0, target.hp - actualDamageDealt);
+  // Note: This function does NOT modify the target object directly. It returns values.
+  return { actualDamageDealt, updatedTargetHp };
+};
+
+export const handleEnemyDefeat = (context: EnemyDefeatContext): void => {
+  const {
+    player,
+    defeatedEnemy,
+    setPlayer,
+    setCurrentEnemies,
+    addLog,
+    showMessageModal,
+    setGameState,
+    currentEnemiesList // This is the list *before* removing the current defeatedEnemy
+  } = context;
+
+  const difficultyBracket = defeatedEnemy.isElite ? 'elite' :
+                           (defeatedEnemy.level > player.level + 2 ? 'hard' :
+                           (defeatedEnemy.level < player.level - 2 ? 'easy' : 'medium'));
+
+  const baseRewardsKey = difficultyBracket === 'elite' ? 'hard' : difficultyBracket; // Elite uses 'hard' for base then applies multiplier
+  const baseRewards = ENEMY_DIFFICULTY_XP_REWARD[baseRewardsKey] || ENEMY_DIFFICULTY_XP_REWARD.medium;
+
+  let goldReward = Math.floor(Math.random() * (defeatedEnemy.goldDrop?.max ?? baseRewards.goldMax)) + (defeatedEnemy.goldDrop?.min ?? baseRewards.goldMin);
+  let essenceReward = Math.floor(Math.random() * (defeatedEnemy.essenceDrop?.max ?? baseRewards.essenceMax)) + (defeatedEnemy.essenceDrop?.min ?? baseRewards.essenceMin);
+  let xpReward = baseRewards.xp; // XP multiplier for elite is applied below
+
+  if (defeatedEnemy.isElite && ENEMY_DIFFICULTY_XP_REWARD.elite) {
+    goldReward = Math.floor(goldReward * ENEMY_DIFFICULTY_XP_REWARD.elite.gold_multiplier);
+    essenceReward = Math.floor(essenceReward * ENEMY_DIFFICULTY_XP_REWARD.elite.essence_multiplier);
+    xpReward = Math.floor(xpReward * ENEMY_DIFFICULTY_XP_REWARD.elite.xp_multiplier);
+  }
+
+  let droppedResourceMessages: string[] = [];
+  const resourcesToGive: { itemId: string, quantity: number }[] = [];
+
+  if (defeatedEnemy.droppedResources && defeatedEnemy.droppedResources.length > 0) {
+    defeatedEnemy.droppedResources.forEach(res => {
+      resourcesToGive.push({ itemId: res.itemId, quantity: res.quantity });
+      const resourceName = ResourceManagerUtils.getResourceNameById(res.itemId);
+      droppedResourceMessages.push(`${res.quantity} ${resourceName || res.itemId}`);
+    });
+  } else {
+    const numResourceTypesToDrop = Math.floor(Math.random() * (BATTLE_RESOURCE_REWARD_TYPES + 1));
+    for (let i = 0; i < numResourceTypesToDrop; i++) {
+      const randomResource = ResourceManagerUtils.getRandomResource();
+      if (randomResource) {
+        const quantity = Math.floor(Math.random() * (BATTLE_RESOURCE_REWARD_QUANTITY_MAX - BATTLE_RESOURCE_REWARD_QUANTITY_MIN + 1)) + BATTLE_RESOURCE_REWARD_QUANTITY_MIN;
+        resourcesToGive.push({ itemId: randomResource.id, quantity });
+        droppedResourceMessages.push(`${quantity} ${randomResource.name}`);
+      }
+    }
+  }
+
+  setPlayer(prev => {
+    const newInventory = { ...prev.inventory };
+    resourcesToGive.forEach(drop => {
+      newInventory[drop.itemId] = (newInventory[drop.itemId] || 0) + drop.quantity;
+    });
+
+    let newXp = prev.xp + xpReward;
+    let newLevel = prev.level;
+    let newXpToNext = prev.xpToNextLevel;
+    if (newXp >= prev.xpToNextLevel) {
+        newLevel += 1;
+        newXpToNext = Math.floor(prev.xpToNextLevel * 1.5);
+        addLog('System', `Level Up! Reached level ${newLevel}!`, 'success');
+    }
+
+    return {
+      ...prev,
+      gold: prev.gold + goldReward,
+      essence: prev.essence + essenceReward,
+      xp: newXp,
+      level: newLevel,
+      xpToNextLevel: newXpToNext,
+      inventory: newInventory,
+      bestiary: {
+        ...prev.bestiary,
+        [defeatedEnemy.id]: {
+          ...(prev.bestiary[defeatedEnemy.id] || { id: defeatedEnemy.id, name: defeatedEnemy.name, iconName: defeatedEnemy.iconName, description: defeatedEnemy.description }),
+          vanquishedCount: (prev.bestiary[defeatedEnemy.id]?.vanquishedCount || 0) + 1,
+          level: defeatedEnemy.level,
+          weakness: defeatedEnemy.weakness,
+          resistance: defeatedEnemy.resistance,
+          specialAbilityName: defeatedEnemy.specialAbilityName,
+        },
+      },
+    };
+  });
+
+  let rewardMessage = `${defeatedEnemy.name} defeated! Gained ${xpReward} XP, ${goldReward} gold, and ${essenceReward} essence.`;
+  if (droppedResourceMessages.length > 0) {
+    rewardMessage += ` Obtained: ${droppedResourceMessages.join(', ')}.`;
+  }
+  addLog('System', rewardMessage, 'success');
+
+  // Remove defeated enemy from the perspective of the caller who holds the full list
+  const updatedEnemiesListAfterCurrentDefeat = currentEnemiesList.filter(e => e.id !== defeatedEnemy.id);
+  setCurrentEnemies(updatedEnemiesListAfterCurrentDefeat);
+
+  // Check for victory using the just updated list
+  if (updatedEnemiesListAfterCurrentDefeat.length === 0 || updatedEnemiesListAfterCurrentDefeat.every(e => e.hp <= 0)) {
+    setTimeout(() => {
+      addLog('System', 'Victory! All enemies defeated.', 'success');
+      showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
+      setGameState('GAME_OVER_VICTORY');
+    }, 100); // Delay to allow reward log to appear first
+  }
 }; 

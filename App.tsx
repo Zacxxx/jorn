@@ -13,6 +13,7 @@ import { SaveManagerUtils } from './game-core/persistence/SaveManager';
 import { ResourceManagerUtils } from './game-core/resources/ResourceManager';
 import { ResearchManagerUtils } from './game-core/research/ResearchManager';
 import { TurnManagerUtils } from './game-core/game-loop/TurnManager';
+import { calculateDamage as calculateDamageCE, applyDamage as applyDamageCE, handleEnemyDefeat as centralizedHandleEnemyDefeat } from './game-core/combat/CombatEngine'; // Added for CombatEngine functions
 
 // Import constants
 import { MASTER_ITEM_DEFINITIONS } from './services/itemService';
@@ -24,7 +25,7 @@ import AppShell from './game-graphics/AppShell';
 import CharacterCreationModal from './src/components/CharacterCreationModal';
 
 // Import types
-import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState } from './types';
+import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState } from './src/types';
 
 /**
  * Main App Component
@@ -87,61 +88,21 @@ export const App: React.FC = () => {
           setTurn: gameState.setTurn,
           setIsPlayerTurn: gameState.setIsPlayerTurn,
           setCurrentActingEnemyIndex: gameState.setCurrentActingEnemyIndex,
-          setGameState: gameState.setGameState as (state: string) => void,
+          setGameState: gameState.setGameState as (state: string) => void, // Will be updated to GameState type later if not already
           addLog: gameState.addLog,
-          calculateDamage: (baseDamage: number, attackerPower: number, defenderDefense: number, effectiveness?: 'normal' | 'weak' | 'resistant') => {
-            // Simple damage calculation for enemy turns
-            let damage = baseDamage + Math.floor(attackerPower * 0.5);
-            const defense = Math.floor(defenderDefense * 0.3);
-            damage = Math.max(1, damage - defense);
-            
-            if (effectiveness === 'weak') damage = Math.floor(damage * 1.5);
-            else if (effectiveness === 'resistant') damage = Math.floor(damage * 0.5);
-            
-            return damage;
-          },
-          applyDamageAndReflection: (target: Player | Enemy, damage: number, attacker: Player | Enemy, logActor: 'Player' | 'Enemy', targetIsPlayer: boolean) => {
-            // Simple damage application for enemy turns
-            const actualDamage = damage;
-            const updatedHp = Math.max(0, target.hp - actualDamage);
-            return { actualDamageDealt: actualDamage, updatedTargetHp: updatedHp };
-          },
-          handleEnemyDefeat: (enemy: Enemy) => {
-            // Handle enemy defeat
-            const goldReward = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-            const essenceReward = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-            
-            playerState.setPlayer(prev => ({
-              ...prev,
-              gold: prev.gold + goldReward,
-              essence: prev.essence + essenceReward,
-              bestiary: {
-                ...prev.bestiary,
-                [enemy.id]: {
-                  ...prev.bestiary[enemy.id],
-                  vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
-                }
-              }
-            }));
-
-            gameState.addLog('System', `${enemy.name} defeated! Gained ${goldReward} gold and ${essenceReward} essence.`, 'success');
-            
-            // Remove defeated enemy and check for victory
-            gameState.setCurrentEnemies(prev => {
-              const updatedEnemies = prev.filter(e => e.id !== enemy.id);
-              
-              // Check if all enemies defeated after this update
-              if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                setTimeout(() => {
-                  gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                  gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                  gameState.setGameState('GAME_OVER_VICTORY');
-                }, 100);
-              }
-              
-              return updatedEnemies;
-            });
-          }
+          // Use functions from CombatEngine
+          calculateDamage: calculateDamageCE,
+          applyDamage: applyDamageCE, // Using the new simpler applyDamage from CombatEngine for enemy turns
+          handleEnemyDefeat: (enemy: Enemy) => centralizedHandleEnemyDefeat({
+            player: playerState.player,
+            defeatedEnemy: enemy,
+            setPlayer: playerState.setPlayer,
+            setCurrentEnemies: gameState.setCurrentEnemies,
+            addLog: gameState.addLog,
+            showMessageModal: gameState.showMessageModal,
+            setGameState: (state: GameState) => gameState.setGameState(state as GameState),
+            currentEnemiesList: gameState.currentEnemies
+          })
         };
         
         TurnManagerUtils.processEnemyTurn(context);
@@ -334,11 +295,20 @@ export const App: React.FC = () => {
     );
   }, [playerState.player.abilities, playerState.player.preparedAbilityIds]);
 
-  const checkResources = useCallback((costs?: any[]) => {
-    if (!costs) return true;
-    // Use ResourceManager to check resources
-    return true; // Simplified for now
-  }, []);
+  const checkResources = useCallback((costs?: ResourceCost[]): boolean => {
+    if (!costs || costs.length === 0) return true;
+    // TODO: This basic check only looks at playerState.player.inventory (master resources).
+    // A full implementation should consider unique items in playerState.player.items if applicable for certain costs.
+    for (const cost of costs) {
+      const playerHas = playerState.player.inventory[cost.itemId] || 0;
+      if (playerHas < cost.quantity) {
+        // Optional: Add a message to the user or log
+        // gameState.showMessageModal('Missing Resources', `You need ${cost.quantity} of ${cost.type || cost.itemId}, but only have ${playerHas}.`, 'warning');
+        return false;
+      }
+    }
+    return true;
+  }, [playerState.player.inventory]); // Added playerState.player.inventory to dependency array
 
   const renderResourceList = useCallback((costs?: any[]) => {
     if (!costs) return null;
@@ -401,8 +371,8 @@ export const App: React.FC = () => {
           isElite: enemyData.isElite || false,
           droppedResources: enemyData.droppedResources || [],
           lootTableId: enemyData.lootTableId || `default_lvl_${enemyData.level}`,
-          weakness: enemyData.weakness as any,
-          resistance: enemyData.resistance as any
+          weakness: enemyData.weakness, // Removed 'as any'
+          resistance: enemyData.resistance // Removed 'as any'
         } as Enemy;
         
         enemiesArray.push(newEnemy);
@@ -491,7 +461,7 @@ export const App: React.FC = () => {
   }, [createNavigationContext]);
 
   const handleOpenMultiplayer = useCallback(() => {
-    gameState.setGameState('MULTIPLAYER_VIEW' as any);
+    gameState.setGameState('MULTIPLAYER_VIEW');
   }, [gameState]);
 
   // Rest and homestead handlers
@@ -641,42 +611,16 @@ export const App: React.FC = () => {
       addLog: gameState.addLog,
       setModalContent: gameState.setModalContent,
       setGameState: (state: string) => gameState.setGameState(state as GameState),
-      handleEnemyDefeat: (enemy: Enemy) => {
-        // Handle enemy defeat logic
-        const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-        const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-        
-        playerState.setPlayer(prev => ({
-          ...prev,
-          gold: prev.gold + goldGained,
-          essence: prev.essence + essenceGained,
-          bestiary: {
-            ...prev.bestiary,
-            [enemy.id]: {
-              ...prev.bestiary[enemy.id],
-              vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
-            }
-          }
-        }));
-        
-        gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-        
-        // Remove defeated enemy and check for victory
-        gameState.setCurrentEnemies(prev => {
-          const updatedEnemies = prev.filter(e => e.id !== enemy.id);
-          
-          // Check if all enemies defeated after this update
-          if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-            setTimeout(() => {
-              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-              gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-              gameState.setGameState('GAME_OVER_VICTORY');
-            }, 100);
-          }
-          
-          return updatedEnemies;
-        });
-      }
+      handleEnemyDefeat: (enemy: Enemy) => centralizedHandleEnemyDefeat({
+        player: playerState.player,
+        defeatedEnemy: enemy,
+        setPlayer: playerState.setPlayer,
+        setCurrentEnemies: gameState.setCurrentEnemies,
+        addLog: gameState.addLog,
+        showMessageModal: gameState.showMessageModal,
+        setGameState: (state: GameState) => gameState.setGameState(state as GameState),
+        currentEnemiesList: gameState.currentEnemies
+      })
     };
     
     // Import and use CombatEngine
@@ -718,42 +662,16 @@ export const App: React.FC = () => {
         addLog: gameState.addLog,
         setModalContent: gameState.setModalContent,
         setGameState: (state: string) => gameState.setGameState(state as GameState),
-        handleEnemyDefeat: (enemy: Enemy) => {
-          // Handle enemy defeat logic
-          const goldGained = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
-          const essenceGained = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
-          
-          playerState.setPlayer(prev => ({
-            ...prev,
-            gold: prev.gold + goldGained,
-            essence: prev.essence + essenceGained,
-            bestiary: {
-              ...prev.bestiary,
-              [enemy.id]: {
-                ...prev.bestiary[enemy.id],
-                vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
-              }
-            }
-          }));
-          
-          gameState.addLog('System', `${enemy.name} defeated! Gained ${goldGained} gold and ${essenceGained} essence.`, 'success');
-          
-          // Remove defeated enemy and check for victory
-          gameState.setCurrentEnemies(prev => {
-            const updatedEnemies = prev.filter(e => e.id !== enemy.id);
-            
-            // Check if all enemies defeated after this update
-            if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-              setTimeout(() => {
-                gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                gameState.setGameState('GAME_OVER_VICTORY');
-              }, 100);
-            }
-            
-            return updatedEnemies;
-          });
-        }
+        handleEnemyDefeat: (enemy: Enemy) => centralizedHandleEnemyDefeat({
+          player: playerState.player,
+          defeatedEnemy: enemy,
+          setPlayer: playerState.setPlayer,
+          setCurrentEnemies: gameState.setCurrentEnemies,
+          addLog: gameState.addLog,
+          showMessageModal: gameState.showMessageModal,
+          setGameState: (state: GameState) => gameState.setGameState(state as GameState),
+          currentEnemiesList: gameState.currentEnemies
+        })
       };
       
       const { actualDamageDealt, updatedTargetHp } = CombatEngineUtils.applyDamageAndReflection(
@@ -824,6 +742,7 @@ export const App: React.FC = () => {
   }, [playerState, gameState]);
 
   const handlePlayerFreestyleAction = useCallback(async (actionText: string, targetId: string | null) => {
+    // TODO: Replace this simulated freestyle action logic with actual AI interpretation and game mechanics.
     gameState.addLog('Player', `attempts: "${actionText}"${targetId ? ` on ${gameState.currentEnemies.find(e => e.id === targetId)?.name}` : ''}.`, 'action');
     gameState.setModalContent({
       title: "Freestyle Action", 
@@ -848,22 +767,16 @@ export const App: React.FC = () => {
             if(enemy) { 
               const newHp = Math.max(0, enemy.hp - 3); 
               gameState.setCurrentEnemies(es => es.map(e => e.id === targetId ? {...e, hp: newHp} : e)); 
-              if(newHp <= 0) {
-                // Handle enemy defeat
-                gameState.addLog('System', `${enemy.name} defeated!`, 'success');
-                gameState.setCurrentEnemies(prev => {
-                  const updatedEnemies = prev.filter(e => e.id !== targetId);
-                  
-                  // Check if all enemies defeated after this update
-                  if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                    setTimeout(() => {
-                      gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                      gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                      gameState.setGameState('GAME_OVER_VICTORY');
-                    }, 100);
-                  }
-                  
-                  return updatedEnemies;
+              if(newHp <= 0 && enemy) { // Ensure enemy is defined
+                centralizedHandleEnemyDefeat({
+                  player: playerState.player,
+                  defeatedEnemy: { ...enemy, hp: newHp }, // Pass the enemy with 0 hp
+                  setPlayer: playerState.setPlayer,
+                  setCurrentEnemies: gameState.setCurrentEnemies,
+                  addLog: gameState.addLog,
+                  showMessageModal: gameState.showMessageModal,
+                  setGameState: (state: GameState) => gameState.setGameState(state as GameState),
+                  currentEnemiesList: gameState.currentEnemies.filter(e => e.id !== targetId)
                 });
               }
             }
@@ -912,6 +825,7 @@ export const App: React.FC = () => {
     playerState.setPlayer(prev => ({ ...prev, ep: prev.ep - ability.epCost }));
     
     gameState.addLog('Player', `uses ${ability.name}!`, 'action');
+    // TODO: This is a simple ability effect simulation. Implement diverse and specific ability effects based on ability.effectType and other properties.
     
     // Simple ability effect simulation
     switch (ability.effectType) {
@@ -935,21 +849,16 @@ export const App: React.FC = () => {
             );
             gameState.addLog('Player', `deals ${damage} ability damage to ${targetEnemy.name}.`, 'damage');
             
-            if (newHp <= 0) {
-              gameState.addLog('System', `${targetEnemy.name} defeated!`, 'success');
-              gameState.setCurrentEnemies(prev => {
-                const updatedEnemies = prev.filter(e => e.id !== targetId);
-                
-                // Check if all enemies defeated after this update
-                if (updatedEnemies.length === 0 || updatedEnemies.every(e => e.hp <= 0)) {
-                  setTimeout(() => {
-                    gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
-                    gameState.showMessageModal('Victory!', 'All enemies have been defeated!', 'success');
-                    gameState.setGameState('GAME_OVER_VICTORY');
-                  }, 100);
-                }
-                
-                return updatedEnemies;
+            if (newHp <= 0 && targetEnemy) { // Ensure targetEnemy is defined
+              centralizedHandleEnemyDefeat({
+                player: playerState.player,
+                defeatedEnemy: { ...targetEnemy, hp: newHp },
+                setPlayer: playerState.setPlayer,
+                setCurrentEnemies: gameState.setCurrentEnemies,
+                addLog: gameState.addLog,
+                showMessageModal: gameState.showMessageModal,
+                setGameState: (state: GameState) => gameState.setGameState(state as GameState),
+                currentEnemiesList: gameState.currentEnemies.filter(e => e.id !== targetId)
               });
             }
           }
