@@ -52,26 +52,42 @@ interface ActionCategoryButtonProps {
   count?: number;
 }
 
-const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon, isActive, onClick, disabled, count }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`
-      relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 border-2 h-full
-      ${isActive 
-        ? 'bg-gradient-to-br from-cyan-600/40 to-blue-600/40 border-cyan-400/60 text-cyan-200 shadow-lg shadow-cyan-500/20' 
-        : disabled 
-          ? 'bg-slate-800/40 border-slate-700/40 text-slate-500 cursor-not-allowed opacity-50'
-          : 'bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/60 hover:border-slate-500/60 hover:text-slate-200'
-      }
-    `}
-  >
-    <div className="w-5 h-5 mb-1 flex-shrink-0">
-      {icon}
-    </div>
-    <span className="text-xs font-semibold truncate w-full text-center">{label}</span>
-    {count !== undefined && count > 0 && (
-      <div className="absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
+const ActionCategoryButton: React.FC<ActionCategoryButtonProps> = ({ label, icon, isActive, onClick, disabled, count }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  if (label === "Actions") { // Log only once, for the first category button typically
+    console.log("Developer note: 'public/assets/activity-card/combat.gif' is missing. Using 'public/assets/activity-card/camp.gif' as a placeholder for ActionCategoryButton hover effects.");
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`
+        relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 border-2 h-full group overflow-hidden
+        ${isActive
+          ? 'bg-gradient-to-br from-cyan-600/40 to-blue-600/40 border-cyan-400/60 text-cyan-200 shadow-lg shadow-cyan-500/20'
+          : disabled
+            ? 'bg-slate-800/40 border-slate-700/40 text-slate-500 cursor-not-allowed opacity-50'
+            : 'bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/60 hover:border-slate-500/60 hover:text-slate-200'
+        }
+      `}
+    >
+      <img
+        src="/assets/activity-card/camp.gif" // Fallback GIF
+        alt="Combat category background"
+        className={`transition-all duration-500 ease-in-out absolute inset-0 w-full h-full object-cover ${
+          isHovered && !disabled ? 'opacity-10 scale-110' : 'opacity-0 scale-100'
+        }`}
+      />
+      <div className="relative z-10 w-5 h-5 mb-1 flex-shrink-0">
+        {icon}
+      </div>
+      <span className="relative z-10 text-xs font-semibold truncate w-full text-center">{label}</span>
+      {count !== undefined && count > 0 && (
+        <div className="relative z-10 absolute -top-1 -right-1 bg-cyan-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
         {count > 99 ? '99+' : count}
       </div>
     )}
@@ -89,7 +105,19 @@ interface EnhancedCombatActionSlotProps {
 const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({ 
   actionItem, player, onClick, isDisabledByGameLogic 
 }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const { name, iconName } = actionItem;
+
+    // Console log for missing GIF - attempt to log once per component type creation
+    // This might log multiple times if many slots are created, alternative is a global flag or context.
+    // For now, a simple approach:
+    if (name) { // A simple condition to ensure it runs within the component instance
+        const componentName = 'EnhancedCombatActionSlot';
+        if (!(window as any)[`hasLoggedMissingGif_${componentName}`]) {
+            console.log(`Developer note: 'public/assets/activity-card/combat.gif' is missing. Using 'public/assets/activity-card/camp.gif' as a placeholder for ${componentName} hover effects.`);
+            (window as any)[`hasLoggedMissingGif_${componentName}`] = true;
+        }
+    }
     
     let costText = "";
     let costColor = "text-slate-400";
@@ -135,17 +163,26 @@ const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({
     return (
         <button
             onClick={handleClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             disabled={finalDisabled}
             className={`
                 relative w-full h-20 bg-gradient-to-br ${bgGradient} backdrop-blur-md
                 border ${borderColor} rounded-lg transition-all duration-200 group
                 ${finalDisabled 
                     ? 'opacity-40 cursor-not-allowed' 
-                    : `hover:${borderColor.replace('/40', '/70')} cursor-pointer hover:scale-105`
+                    : `hover:${borderColor.replace('/40', '/70')} cursor-pointer hover:scale-105 hover:shadow-xl`
                 }
                 flex flex-col items-center justify-center p-2 shadow-lg overflow-hidden
             `}
         >
+            <img
+              src="/assets/activity-card/camp.gif" // Fallback GIF
+              alt="Action slot background"
+              className={`transition-all duration-500 ease-in-out absolute inset-0 w-full h-full object-cover ${
+                isHovered && !finalDisabled ? 'opacity-10 scale-110' : 'opacity-0 scale-100'
+              }`}
+            />
             <div className={`relative z-10 w-8 h-8 mb-1 ${finalDisabled ? 'filter grayscale opacity-50' : iconColor} transition-all duration-200`}>
                 <GetSpellIcon iconName={iconName} className="w-full h-full drop-shadow-lg" />
             </div>

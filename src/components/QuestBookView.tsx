@@ -308,17 +308,29 @@ const QuestBookView: React.FC<QuestBookViewProps> = ({
               </div>
             ) : (
               <div className="space-y-2 p-4">
-                {filteredQuests.map((quest) => (
-                  <div
-                    key={quest.id}
-                    onClick={() => setSelectedQuest(quest)}
-                    className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
-                      selectedQuest?.id === quest.id
-                        ? 'bg-amber-500/20 border-amber-500/50'
-                        : 'bg-slate-800/50 border-slate-600/50 hover:bg-slate-700/50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
+                {filteredQuests.map((quest) => {
+                  const [isHovered, setIsHovered] = useState(false);
+                  return (
+                    <div
+                      key={quest.id}
+                      onClick={() => setSelectedQuest(quest)}
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
+                      className={`relative p-4 rounded-lg border cursor-pointer transition-all duration-300 ease-in-out group overflow-hidden hover:shadow-xl ${
+                        selectedQuest?.id === quest.id
+                          ? 'bg-amber-500/20 border-amber-500/50 scale-105 z-20'
+                          : 'bg-slate-800/50 border-slate-600/50 hover:bg-slate-700/50 hover:scale-105 hover:z-20'
+                      }`}
+                    >
+                      <img
+                        src="/assets/activity-card/quests.gif"
+                        alt="Quest activity"
+                        className={`transition-all duration-500 ease-in-out absolute inset-0 w-full h-full object-cover ${
+                          isHovered ? 'opacity-20 scale-110' : 'opacity-0 scale-100'
+                        }`}
+                      />
+                      <div className="relative z-10"> {/* Content wrapper */}
+                        <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         {getCategoryIcon(quest.category)}
                         <h3 className={`font-semibold ${quest.isMainQuest ? 'text-yellow-300' : 'text-slate-200'}`}>
@@ -372,8 +384,10 @@ const QuestBookView: React.FC<QuestBookViewProps> = ({
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
+                      </div> {/* End of content wrapper */}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
