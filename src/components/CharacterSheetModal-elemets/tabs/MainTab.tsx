@@ -1,7 +1,7 @@
 import React from 'react';
-import { Player, PlayerEffectiveStats, SpellIconName, Talent } from '../../types'; // Corrected path, Added Talent
-import ActionButton from '../../ui/ActionButton'; // Corrected path for global UI
-import { GetSpellIcon } from '../IconComponents'; // Corrected path
+import { Player, PlayerEffectiveStats, SpellIconName, Talent } from '../../../../types'; // Corrected path, Added Talent
+import ActionButton from '../../ActionButton'; // Fixed path to ActionButton
+import { GetSpellIcon } from '../../IconComponents'; // Corrected path
 import VitalStatisticsDisplay from '../ui/VitalStatisticsDisplay';
 import AttributesDisplay from '../ui/AttributesDisplay';
 import TalentTree from './main/talents/TalentTree';

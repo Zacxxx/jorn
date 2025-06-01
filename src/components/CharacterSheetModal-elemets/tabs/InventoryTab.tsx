@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { GameItem, MasterItemDefinition, InventoryFilterType, Equipment, UniqueConsumable, MasterConsumableItem, DetailedEquipmentSlot, Player, SpellIconName } from '../../../../types'; // Corrected
-import Modal from '../../../../ui/Modal'; // Corrected for global UI
-import ActionButton from '../../../../ui/ActionButton'; // Corrected for global UI
-import { ItemCard } from '../../ui/ItemCard'; // Path is correct
-import { GENERIC_TO_DETAILED_SLOT_MAP, MASTER_ITEM_DEFINITIONS, RESOURCE_ICONS } from '../../../../constants'; // Corrected
+import Modal from '../../Modal'; // Fixed path to Modal
+import ActionButton from '../../ActionButton'; // Fixed path to ActionButton
+import { ItemCard } from '../ui/ItemCard'; // Fixed path to ItemCard
+import { GENERIC_TO_DETAILED_SLOT_MAP, RESOURCE_ICONS } from '../../../../constants'; // Corrected
+import { MASTER_ITEM_DEFINITIONS } from '../../../../services/itemService'; // Fixed import location
 import { GetSpellIcon } from '../../IconComponents'; // Corrected
 import { getRarityColorClass } from '../../../../utils'; // Corrected
 

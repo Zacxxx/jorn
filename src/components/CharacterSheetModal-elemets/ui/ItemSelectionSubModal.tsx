@@ -1,7 +1,7 @@
 import React from 'react';
 import { DetailedEquipmentSlot, Equipment } from '../../../../types'; // Corrected path
-import Modal from '../../../../ui/Modal'; // Corrected path for global UI
-import ActionButton from '../../../../ui/ActionButton'; // Corrected path for global UI
+import Modal from '../../Modal'; // Fixed path to Modal
+import ActionButton from '../../ActionButton'; // Fixed path to ActionButton
 import { ItemCard } from './ItemCard'; // Path is correct
 
 interface ItemSelectionSubModalProps {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../../../../types'; // Corrected path
-import { HealIcon, WandIcon, ReflexIcon } from '../IconComponents'; // Path is correct
+import { HealIcon, WandIcon, ReflexIcon } from '../../IconComponents'; // Fixed path to IconComponents
 
 const VitalStatisticsDisplay: React.FC<{player: Player, stats: PlayerEffectiveStats}> = ({player, stats}) => {
   const primaryStats = [

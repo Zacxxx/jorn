@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Player, PlayerEffectiveStats, DetailedEquipmentSlot, GameItem, Equipment, Spell, Ability, EquipmentSlot as GenericEquipmentSlot, CharacterSheetTab, Quest } from '../../../types'; // Simplified types
-import Modal from '../../../ui/Modal'; // Corrected
-import '../../src/styles/ability-list.css'; // Assuming path is correct relative to src
-import ActionButton from '../../../ui/ActionButton'; // Corrected
+import Modal from '../Modal'; // Fixed path to Modal
+import '../../styles/ability-list.css'; // Fixed path - removed extra 'src'
+import ActionButton from '../ActionButton'; // Fixed path to ActionButton
 import {
     UserIcon, BagIcon, WandIcon, StarIcon, BookIcon, CollectionIcon, GearIcon // Icons used in TABS array
 } from '../IconComponents';
