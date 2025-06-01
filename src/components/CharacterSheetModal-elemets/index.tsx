@@ -194,8 +194,8 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} title="Character Sheet" size="5xl">
-      <div className="flex flex-col min-h-[75vh]">
-        <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-wrap">
+      <div className="flex flex-col">
+        <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-nowrap overflow-x-auto styled-scrollbar-thin-x">
           {TABS.map(tab => (
             <SheetTabButton key={tab.id} icon={tab.icon} label={tab.label} isActive={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} />
           ))}
