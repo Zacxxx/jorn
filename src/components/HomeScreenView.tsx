@@ -1,6 +1,5 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
-import SpriteAnimation from './SpriteAnimation'; // Added import
 import ActionButton from './ActionButton';
 import ActivityCard from './ActivityCard';
 import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon, PlusIcon } from './IconComponents';
@@ -206,7 +205,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
       borderColor: 'border-amber-500/30',
       iconColor: 'text-amber-400',
       backgroundImage: '/assets/activity-card/camp.svg',
-      gifBackgroundImage: '/assets/activity-card/jorn-background.webm'
+      gifBackgroundImage: '/assets/activity-card/camp.gif'
     },
     {
       id: 'research',
@@ -286,20 +285,64 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   ];
 
   return (
-    <div className="min-h-screen md:min-h-[calc(100vh-12rem)] md:h-[calc(100vh-12rem)] w-full max-w-none mx-0 px-4 overflow-hidden">
-      <SpriteAnimation
-        imageUrl="assets/activity-card/camp.gif"
-        altText="Animated background"
+    <div className="min-h-screen md:min-h-[calc(100vh-12rem)] md:h-[calc(100vh-12rem)] w-full max-w-none mx-0 px-4 overflow-hidden relative">
+      {/* Video Background */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="fixed top-0 left-0 w-full h-full object-cover"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           width: '100vw',
           height: '100vh',
-          zIndex: -10,
+          zIndex: -20,
           objectFit: 'cover',
+          // Video filters for darker, blurry background effect
+          // Current: Moderate blur, quite dark, enhanced contrast, reduced saturation
+          filter: 'blur(10px) brightness(0.4) contrast(1.9) saturate(0.8)',
+          // Alternative options:
+          // Subtle: 'blur(1px) brightness(0.6) contrast(1.05) saturate(0.9)'
+          // Heavy: 'blur(3px) brightness(0.3) contrast(1.2) saturate(0.7)'
+          // Cinematic: 'blur(2px) brightness(0.5) contrast(1.3) saturate(0.6) sepia(0.1)'
+        }}
+        onError={() => {
+          console.warn('Video background failed to load');
+        }}
+      >
+        <source src="/assets/background/jorn-background.webm" type="video/webm" />
+      </video>
+      
+      {/* Fallback background for when video doesn't load */}
+      <div 
+        className="fixed top-0 left-0 w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: -25,
+          filter: 'brightness(0.6)',
         }}
       />
+      
+      {/* Dark overlay to ensure text readability */}
+      <div 
+        className="fixed top-0 left-0 w-full h-full bg-black/10"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: -15,
+        }}
+      />
+      
       {/* Player Stats Display - Conditional Rendering */}
       {PlayerStatsDisplay && (
         <div className="mb-4">

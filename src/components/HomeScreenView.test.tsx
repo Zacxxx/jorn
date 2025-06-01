@@ -92,23 +92,44 @@ const mockProps = {
 };
 
 describe('HomeScreenView', () => {
-  it('renders the animated background with correct attributes and styles', () => {
+  it('renders the video background with correct attributes and styles', () => {
     render(<HomeScreenView {...mockProps} />);
 
-    const backgroundImage = screen.getByAltText('Animated background');
+    const videoBackground = screen.getByRole('video');
 
-    expect(backgroundImage).toBeInTheDocument();
-    expect(backgroundImage).toHaveAttribute('src', 'assets/activity-card/camp.gif');
+    expect(videoBackground).toBeInTheDocument();
+    expect(videoBackground).toHaveAttribute('autoPlay');
+    expect(videoBackground).toHaveAttribute('muted');
+    expect(videoBackground).toHaveAttribute('loop');
+    expect(videoBackground).toHaveAttribute('playsInline');
 
     // Check for inline styles
-    // Note: JSDOM doesn't fully compute styles like a browser.
-    // We are checking the inline style attribute directly.
-    expect(backgroundImage).toHaveStyle('position: fixed');
-    expect(backgroundImage).toHaveStyle('z-index: -10');
-    expect(backgroundImage).toHaveStyle('object-fit: cover');
-    // Width and height can be tricky with JSDOM, but let's check if they are present
-    expect(backgroundImage).toHaveStyle('width: 100vw');
-    expect(backgroundImage).toHaveStyle('height: 100vh');
+    expect(videoBackground).toHaveStyle('position: fixed');
+    expect(videoBackground).toHaveStyle('z-index: -20');
+    expect(videoBackground).toHaveStyle('object-fit: cover');
+    expect(videoBackground).toHaveStyle('width: 100vw');
+    expect(videoBackground).toHaveStyle('height: 100vh');
+    expect(videoBackground).toHaveStyle('filter: blur(2px) brightness(0.4) contrast(1.1) saturate(0.8)');
+
+    // Check for video source
+    const videoSource = videoBackground.querySelector('source');
+    expect(videoSource).toHaveAttribute('src', '/assets/background/jorn-background.webm');
+    expect(videoSource).toHaveAttribute('type', 'video/webm');
+  });
+
+  it('renders fallback background and overlay elements', () => {
+    render(<HomeScreenView {...mockProps} />);
+
+    // Check for fallback background (should be present even if video loads)
+    const fallbackBackground = document.querySelector('[style*="z-index: -25"]');
+    expect(fallbackBackground).toBeInTheDocument();
+    expect(fallbackBackground).toHaveClass('bg-gradient-to-br', 'from-slate-950', 'via-slate-900', 'to-slate-950');
+    expect(fallbackBackground).toHaveStyle('filter: brightness(0.6)');
+
+    // Check for dark overlay
+    const darkOverlay = document.querySelector('[style*="z-index: -15"]');
+    expect(darkOverlay).toBeInTheDocument();
+    expect(darkOverlay).toHaveClass('bg-black/10');
   });
 
   // Add a placeholder test to ensure the file is picked up by the test runner
