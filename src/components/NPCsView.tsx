@@ -81,7 +81,7 @@ const NPCsView: React.FC<NPCsViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center p-6 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60">
+      <div className="text-center p-3 sm:p-4 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60">
         <h2 className="text-3xl font-bold text-green-300 mb-2 flex items-center justify-center" style={{fontFamily: "'Inter Tight', sans-serif"}}>
           <UserIcon className="w-8 h-8 mr-3 text-green-400" />
           NPCs in {locationName}
@@ -116,8 +116,10 @@ const NPCsView: React.FC<NPCsViewProps> = ({
         </ActionButton>
       </div>
 
-      {/* NPCs List */}
-      <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
+      {/* NPCs List and Details Container */}
+      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+      {/* Left Column: NPCs List */}
+      <div className="w-full md:w-1/2 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
         <h3 className="text-xl font-semibold text-slate-200 mb-4 flex items-center">
           <UserIcon className="w-6 h-6 mr-2 text-green-400" />
           Available NPCs
@@ -149,6 +151,19 @@ const NPCsView: React.FC<NPCsViewProps> = ({
           </div>
         )}
       </div>
+
+        {/* Right Column: NPC Details/Placeholder */}
+        <div className="w-full md:w-1/2 bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
+          <h3 className="text-xl font-semibold text-slate-200 mb-4">NPC Details</h3>
+          <div className="text-center py-8">
+            <UserIcon className="w-16 h-16 mx-auto text-slate-500 mb-4" />
+            <h4 className="text-lg font-medium text-slate-300 mb-2">Select an NPC</h4>
+            <p className="text-slate-400">
+              Click on an NPC from the list to view their details here.
+            </p>
+          </div>
+        </div>
+      </div> {/* This closes the "flex space-x-4" container */}
 
       {/* Help Section */}
       <div className="bg-slate-800/70 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/60 p-6">
