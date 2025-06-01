@@ -1127,6 +1127,7 @@ export const App: React.FC = () => {
     getPreparedAbilities,
     checkResources,
     renderResourceList,
+    onUpdatePlayer: handleCharacterCreation,
   };
 
   return (
