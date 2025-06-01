@@ -1,7 +1,7 @@
 import React from 'react';
 import { Player, PlayerEffectiveStats } from '../types';
 import ActionButton from './ActionButton';
-import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon } from '../src/components/IconComponents';
+import { UserIcon, Bars3Icon, GoldCoinIcon, EssenceIcon, SwordsIcon, HealIcon, WandIcon, ReflexIcon } from '../src/components/IconComponents';
 
 interface HeaderProps {
   player: Player;
@@ -50,63 +50,7 @@ const Header: React.FC<HeaderProps> = ({
               </div>
               
               {/* Circular Progress Rings - Desktop Only, Not in Combat */}
-              {showHealthManaBar && (
-                <>
-                  {/* Health Ring - Outer */}
-                  <svg className="absolute inset-0 w-9 h-9 -rotate-90 hidden lg:block" viewBox="0 0 36 36">
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="rgb(51 65 85 / 0.3)"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="rgb(239 68 68)"
-                      strokeWidth="2"
-                      strokeDasharray={`${(player.hp / effectivePlayerStats.maxHp) * 100}, 100`}
-                      className="transition-all duration-500"
-                    />
-                  </svg>
-                  
-                  {/* Mana Ring - Middle */}
-                  <svg className="absolute inset-0 w-9 h-9 -rotate-90 hidden lg:block" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg) scale(0.85)', transformOrigin: 'center' }}>
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="rgb(51 65 85 / 0.3)"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="rgb(59 130 246)"
-                      strokeWidth="2"
-                      strokeDasharray={`${(player.mp / effectivePlayerStats.maxMp) * 100}, 100`}
-                      className="transition-all duration-500"
-                    />
-                  </svg>
-                  
-                  {/* Energy Ring - Inner */}
-                  <svg className="absolute inset-0 w-9 h-9 -rotate-90 hidden lg:block" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg) scale(0.7)', transformOrigin: 'center' }}>
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="rgb(51 65 85 / 0.3)"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="rgb(234 179 8)"
-                      strokeWidth="2"
-                      strokeDasharray={`${(player.ep / effectivePlayerStats.maxEp) * 100}, 100`}
-                      className="transition-all duration-500"
-                    />
-                  </svg>
-                </>
-              )}
+              {/* SVGs removed as per request */}
               
               {/* Online indicator */}
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full z-20"></div>
@@ -119,7 +63,29 @@ const Header: React.FC<HeaderProps> = ({
                 {player.title ? `${player.title} ${player.name || 'Player'}` : (player.name || 'Player')}
               </div>
               
-              {/* Character Stats - Compact Row */}
+              {/* NEW STATS BLOCK START */}
+              {showHealthManaBar && (
+                <div className="hidden lg:flex items-center gap-3 mt-0.5"> {/* Adjusted gap and margin-top */}
+                  {/* HP */}
+                  <div className="flex items-center gap-1">
+                    <HealIcon className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-red-300 font-mono text-xs">{player.hp}/{effectivePlayerStats.maxHp}</span>
+                  </div>
+                  {/* MP */}
+                  <div className="flex items-center gap-1">
+                    <WandIcon className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-blue-300 font-mono text-xs">{player.mp}/{effectivePlayerStats.maxMp}</span>
+                  </div>
+                  {/* EP */}
+                  <div className="flex items-center gap-1">
+                    <ReflexIcon className="w-3.5 h-3.5 text-yellow-400" /> {/* Or SpeedIcon */}
+                    <span className="text-yellow-300 font-mono text-xs">{player.ep}/{effectivePlayerStats.maxEp}</span>
+                  </div>
+                </div>
+              )}
+              {/* NEW STATS BLOCK END */}
+
+              {/* Character Stats - Compact Row (original, now without HP/MP/EP) */}
               <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400"> {/* MOD: Reduced gap for mobile */}
                 {/* Level */}
                 <span className="text-blue-400 font-medium">L{player.level}</span>
@@ -141,14 +107,8 @@ const Header: React.FC<HeaderProps> = ({
                   {player.currentLocationId || 'Unknown'}
                 </span>
                 
-                {/* Health/Mana Values - Desktop Only, Not in Combat */}
-                {showHealthManaBar && (
-                  <div className="hidden lg:flex items-center gap-2 text-xs">
-                    <span className="text-red-300 font-mono">{player.hp}/{effectivePlayerStats.maxHp}</span>
-                    <span className="text-blue-300 font-mono">{player.mp}/{effectivePlayerStats.maxMp}</span>
-                    <span className="text-yellow-300 font-mono">{player.ep}/{effectivePlayerStats.maxEp}</span>
-                  </div>
-                )}
+                {/* Health/Mana Values - Desktop Only, Not in Combat -- THIS IS THE BLOCK THAT WAS MOVED AND RESTRUCTURED */}
+                {/* {showHealthManaBar && ( ... )} */}
               </div>
             </div>
           </div>
