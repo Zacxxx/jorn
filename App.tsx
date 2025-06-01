@@ -12,6 +12,7 @@ import { TraitManagerUtils } from './game-core/traits/TraitManager';
 import { SaveManagerUtils } from './game-core/persistence/SaveManager';
 import { ResourceManagerUtils } from './game-core/resources/ResourceManager';
 import { ResearchManagerUtils } from './game-core/research/ResearchManager';
+import { TurnManagerUtils } from './game-core/game-loop/TurnManager';
 
 // Import constants
 import { MASTER_ITEM_DEFINITIONS } from './services/itemService';
@@ -43,6 +44,110 @@ export const App: React.FC = () => {
       playerState.savePlayer();
     }
   }, [playerState.player, gameState.autoSave]);
+
+  // Enemy turn processing
+  useEffect(() => {
+    if (!gameState.isPlayerTurn && gameState.currentEnemies.length > 0 && gameState.currentEnemies.some(e => e.hp > 0)) {
+      const timeoutId = setTimeout(() => {
+        const context = {
+          player: playerState.player,
+          currentEnemies: gameState.currentEnemies,
+          effectivePlayerStats,
+          turn: gameState.turn || 1,
+          isPlayerTurn: gameState.isPlayerTurn,
+          currentActingEnemyIndex: gameState.currentActingEnemyIndex,
+          setPlayer: playerState.setPlayer,
+          setCurrentEnemies: gameState.setCurrentEnemies,
+          setTurn: gameState.setTurn,
+          setIsPlayerTurn: gameState.setIsPlayerTurn,
+          setCurrentActingEnemyIndex: gameState.setCurrentActingEnemyIndex,
+          setGameState: gameState.setGameState as (state: string) => void,
+          addLog: gameState.addLog,
+          calculateDamage: (baseDamage: number, attackerPower: number, defenderDefense: number, effectiveness?: 'normal' | 'weak' | 'resistant') => {
+            // Simple damage calculation for enemy turns
+            let damage = baseDamage + Math.floor(attackerPower * 0.5);
+            const defense = Math.floor(defenderDefense * 0.3);
+            damage = Math.max(1, damage - defense);
+            
+            if (effectiveness === 'weak') damage = Math.floor(damage * 1.5);
+            else if (effectiveness === 'resistant') damage = Math.floor(damage * 0.5);
+            
+            return damage;
+          },
+          applyDamageAndReflection: (target: Player | Enemy, damage: number, attacker: Player | Enemy, logActor: 'Player' | 'Enemy', targetIsPlayer: boolean) => {
+            // Simple damage application for enemy turns
+            const actualDamage = damage;
+            const updatedHp = Math.max(0, target.hp - actualDamage);
+            return { actualDamageDealt: actualDamage, updatedTargetHp: updatedHp };
+          },
+          handleEnemyDefeat: (enemy: Enemy) => {
+            // Handle enemy defeat
+            const goldReward = Math.floor(Math.random() * (enemy.goldDrop?.max || 10)) + (enemy.goldDrop?.min || 1);
+            const essenceReward = Math.floor(Math.random() * (enemy.essenceDrop?.max || 2)) + (enemy.essenceDrop?.min || 0);
+            
+            playerState.setPlayer(prev => ({
+              ...prev,
+              gold: prev.gold + goldReward,
+              essence: prev.essence + essenceReward,
+              bestiary: {
+                ...prev.bestiary,
+                [enemy.id]: {
+                  ...prev.bestiary[enemy.id],
+                  vanquishedCount: (prev.bestiary[enemy.id]?.vanquishedCount || 0) + 1
+                }
+              }
+            }));
+            
+            gameState.addLog('System', `${enemy.name} defeated! Gained ${goldReward} gold and ${essenceReward} essence.`, 'success');
+            gameState.setCurrentEnemies(prev => prev.filter(e => e.id !== enemy.id));
+            
+            // Check for victory
+            const remainingEnemies = gameState.currentEnemies.filter(e => e.id !== enemy.id && e.hp > 0);
+            if (remainingEnemies.length === 0) {
+              gameState.addLog('System', 'Victory! All enemies defeated.', 'success');
+              gameState.setGameState('HOME');
+            }
+          }
+        };
+        
+        TurnManagerUtils.processEnemyTurn(context);
+      }, 1000); // 1 second delay for enemy actions
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [gameState.isPlayerTurn, gameState.currentEnemies, gameState.currentActingEnemyIndex, playerState, gameState, effectivePlayerStats]);
+
+  // Player turn start effects processing
+  useEffect(() => {
+    if (gameState.isPlayerTurn && gameState.currentEnemies.length > 0 && playerState.player.hp > 0) {
+      const context = {
+        player: playerState.player,
+        currentEnemies: gameState.currentEnemies,
+        effectivePlayerStats,
+        turn: gameState.turn || 1,
+        isPlayerTurn: gameState.isPlayerTurn,
+        currentActingEnemyIndex: gameState.currentActingEnemyIndex,
+        setPlayer: playerState.setPlayer,
+        setCurrentEnemies: gameState.setCurrentEnemies,
+        setTurn: gameState.setTurn,
+        setIsPlayerTurn: gameState.setIsPlayerTurn,
+        setCurrentActingEnemyIndex: gameState.setCurrentActingEnemyIndex,
+        setGameState: gameState.setGameState as (state: string) => void,
+        addLog: gameState.addLog,
+        calculateDamage: () => 0, // Not used in player turn start
+        applyDamageAndReflection: () => ({ actualDamageDealt: 0, updatedTargetHp: 0 }), // Not used in player turn start
+        handleEnemyDefeat: () => {} // Not used in player turn start
+      };
+      
+      const { willBeStunnedThisTurn } = TurnManagerUtils.processPlayerTurnStartEffects(gameState.turn || 1, context);
+      
+      if (willBeStunnedThisTurn) {
+        setTimeout(() => {
+          gameState.setIsPlayerTurn(false);
+        }, 500);
+      }
+    }
+  }, [gameState.isPlayerTurn, gameState.turn, playerState.player.hp, gameState.currentEnemies.length, playerState, gameState, effectivePlayerStats]);
 
   // Create context objects for our extracted modules
   const createNavigationContext = useCallback(() => ({
@@ -478,7 +583,7 @@ export const App: React.FC = () => {
       playerState.setPlayer(() => result.updatedPlayer!);
       gameState.showMessageModal('Trait Crafted!', `Successfully crafted trait: ${result.trait?.name}`, 'success');
       gameState.setGameState('HOME');
-      } else {
+    } else {
       gameState.showMessageModal('Trait Crafting Error', result.error || 'Failed to craft trait', 'error');
     }
   }, [playerState, gameState]);

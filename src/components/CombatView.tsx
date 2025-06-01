@@ -132,7 +132,7 @@ const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({
             onMouseLeave={onMouseLeave}
             disabled={finalDisabled}
       className={`
-        relative w-full h-20 bg-gradient-to-br ${bgGradient} backdrop-blur-md
+        relative w-full h-24 bg-gradient-to-br ${bgGradient} backdrop-blur-md
         border ${borderColor} rounded-lg transition-all duration-300 group
         ${finalDisabled 
           ? 'opacity-40 cursor-not-allowed' 
@@ -141,11 +141,11 @@ const EnhancedCombatActionSlot: React.FC<EnhancedCombatActionSlotProps> = ({
         flex flex-col items-center justify-center p-2 shadow-lg overflow-hidden
       `}
     >
-      <div className={`relative z-10 w-8 h-8 mb-1 ${finalDisabled ? 'filter grayscale opacity-50' : iconColor} transition-all duration-300 group-hover:scale-110`}>
+      <div className={`relative z-10 w-10 h-10 mb-1 ${finalDisabled ? 'filter grayscale opacity-50' : iconColor} transition-all duration-300 group-hover:scale-110`}>
         <GetSpellIcon iconName={iconName} className="w-full h-full drop-shadow-lg" />
       </div>
       <span className="relative z-10 text-slate-100 text-center text-xs font-bold truncate w-full mb-0.5 drop-shadow-md" title={name}>
-        {name.length > 8 ? name.slice(0, 8) + '...' : name}
+        {name.length > 10 ? name.slice(0, 10) + '...' : name}
       </span>
       {costText && (
         <span className={`relative z-10 text-xs font-bold ${costColor} drop-shadow-md`}>
@@ -349,8 +349,12 @@ const EnhancedEnemyDisplay: React.FC<EnhancedEnemyDisplayProps> = ({ enemy, isTa
           title={`Target ${enemy.name}`}
         />
         
-        {/* Health Bar Overlay - Positioned above sprite */}
-        <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-28">
+        {/* Health Bar Overlay - Positioned above sprite - CLICKABLE FOR DETAILS */}
+        <div 
+          className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-28 cursor-pointer hover:bg-slate-800/70 transition-all duration-200 rounded-md"
+          onClick={onInfoClick}
+          title={`View ${enemy.name} details`}
+        >
           {/* Name */}
           <div className="bg-slate-900/90 backdrop-blur-sm rounded-t-md px-2 py-0.5 border-x border-t border-slate-600/50">
             <div className="flex items-center justify-between">
@@ -395,14 +399,6 @@ const EnhancedEnemyDisplay: React.FC<EnhancedEnemyDisplayProps> = ({ enemy, isTa
           )}
         </div>
       )}
-
-      {/* Invisible click area for info */}
-      <button 
-        onClick={onInfoClick}
-        className="absolute inset-0 opacity-0 cursor-pointer"
-        title={`View ${enemy.name} details`}
-        aria-label={`View ${enemy.name} details`}
-      />
     </div>
   );
 };
@@ -531,7 +527,7 @@ const CombatView: React.FC<CombatViewProps> = ({
       }
       
       return (
-        <div className="grid grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 p-2 h-full overflow-y-auto">
+        <div className="grid grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 p-3 h-full overflow-y-auto">
           {items.map(item => (
             <EnhancedCombatActionSlot 
               key={item.id} 
@@ -570,9 +566,9 @@ const CombatView: React.FC<CombatViewProps> = ({
                 }} 
                 variant="danger" 
                 size="md"
-                icon={<SwordsIcon className="w-4 h-4"/>} 
+                icon={<SwordsIcon className="w-5 h-5"/>} 
                 disabled={!targetEnemyId || !canPlayerAct} 
-                className="h-12 text-sm font-bold"
+                className="h-14 text-base font-bold px-3"
               >
                 ATTACK
               </ActionButton>
@@ -580,9 +576,9 @@ const CombatView: React.FC<CombatViewProps> = ({
                 onClick={() => {onPlayerDefend();}} 
                 variant="info" 
                 size="md"
-                icon={<ShieldIcon className="w-4 h-4"/>} 
+                icon={<ShieldIcon className="w-5 h-5"/>} 
                 disabled={!canPlayerAct} 
-                className="h-12 text-sm font-bold"
+                className="h-14 text-base font-bold px-3"
               >
                 DEFEND
               </ActionButton>
@@ -590,9 +586,9 @@ const CombatView: React.FC<CombatViewProps> = ({
                 onClick={() => {onPlayerFlee();}} 
                 variant="warning" 
                 size="md"
-                icon={<FleeIcon className="w-4 h-4"/>} 
+                icon={<FleeIcon className="w-5 h-5"/>} 
                 disabled={!canPlayerAct} 
-                className="h-12 text-sm font-bold"
+                className="h-14 text-base font-bold px-3"
               >
                 FLEE
               </ActionButton>
@@ -600,7 +596,7 @@ const CombatView: React.FC<CombatViewProps> = ({
                 type="submit" 
                 variant="secondary" 
                 size="md"
-                className="h-12 text-sm font-bold" 
+                className="h-14 text-base font-bold px-3" 
                 disabled={!canPlayerAct || !freestyleActionText.trim()} 
                 onClick={handleFreestyleSubmit}
               >
@@ -616,7 +612,7 @@ const CombatView: React.FC<CombatViewProps> = ({
                   onChange={(e) => setFreestyleActionText(e.target.value)} 
                   placeholder="Describe your custom action..." 
                   rows={3}
-                  className="w-full h-full p-3 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm resize-none shadow-lg" 
+                  className="w-full h-full p-4 bg-slate-800/60 backdrop-blur-md border border-slate-600/40 rounded-lg text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-base resize-none shadow-lg" 
                   disabled={!canPlayerAct} 
                 />
               </form>
