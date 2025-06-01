@@ -2,7 +2,7 @@
 import React from 'react';
 import Modal from '../../ui/Modal';
 import ActionButton from '../../ui/ActionButton';
-import { BookIcon, GearIcon, StarIcon, BagIcon, CollectionIcon, Bars3Icon as OptionsIcon } from './IconComponents';
+import { BookIcon, GearIcon, StarIcon, BagIcon, CollectionIcon, Bars3Icon as OptionsIcon, ScrollIcon } from './IconComponents'; // Added ScrollIcon
 
 interface MobileMenuModalProps {
   isOpen: boolean;
@@ -29,11 +29,12 @@ const MobileMenuModal: React.FC<MobileMenuModalProps> = ({
 }) => {
 
   const menuItems = [
-    { label: "Crafting", handler: onOpenCraftingHub, icon: <GearIcon className="w-5 h-5" />, variant: 'info' as const },
+    // Reordered and updated Quests icon
     { label: "Inventory", handler: onOpenInventory, icon: <BagIcon className="w-5 h-5" />, variant: 'secondary' as const },
     { label: "Spells", handler: onOpenSpellbook, icon: <BookIcon className="w-5 h-5" />, variant: 'primary' as const },
     { label: "Traits", handler: onOpenTraitsPage, icon: <StarIcon className="w-5 h-5" />, variant: 'success' as const },
-    { label: "Quests", handler: onOpenQuestsPage, icon: <BookIcon className="w-5 h-5" />, variant: 'warning' as const },
+    { label: "Quests", handler: onOpenQuestsPage, icon: <ScrollIcon className="w-5 h-5" />, variant: 'warning' as const }, // Changed icon
+    { label: "Crafting", handler: onOpenCraftingHub, icon: <GearIcon className="w-5 h-5" />, variant: 'info' as const },
     { label: "Encyclopedia", handler: onOpenEncyclopedia, icon: <CollectionIcon className="w-5 h-5" />, variant: 'secondary' as const },
     { label: "Options", handler: onOpenGameOptions, icon: <OptionsIcon className="w-5 h-5" />, variant: 'secondary' as const },
   ];

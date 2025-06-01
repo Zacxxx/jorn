@@ -161,7 +161,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-6 gap-3 h-full">
           
           {/* Top Row - Location Info with Details and Homestead (spans full width) */}
-          <div className="col-span-full md:col-span-12 md:row-span-2 bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-xl shadow-xl border border-green-700/60 p-4">
+          {/* Mobile: order-2, Desktop: order-none (implicit first) */}
+          <div className="order-2 md:order-none col-span-full md:col-span-12 md:row-span-2 bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-md rounded-xl shadow-xl border border-green-700/60 p-4">
             {/* Top Section - Main Location Info */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
               <div className="flex items-center space-x-4 mb-2 sm:mb-0">
@@ -251,7 +252,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Left Column - Activity Cards (3 cards) */}
-          <div className="col-span-full md:col-span-3 md:row-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-rows-3 gap-2">
+          {/* Mobile: order-3, Desktop: order-none (implicit second) */}
+          <div className="order-3 md:order-none col-span-full md:col-span-3 md:row-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-rows-3 gap-2">
             {activityOrder.slice(0, 3).map((activityId) => {
               const activity = activityCards.find(card => card.id === activityId);
               if (!activity) return null;
@@ -278,7 +280,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Center Column - BATTLE SECTION (Hero/Focus Area) */}
-          <div className="col-span-full md:col-span-6 md:row-span-4 bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-xl shadow-2xl border border-red-700/60 p-4 sm:p-6 flex flex-col">
+          {/* Mobile: order-1, Desktop: order-none (implicit third) */}
+          <div className="order-1 md:order-none col-span-full md:col-span-6 md:row-span-4 bg-gradient-to-br from-red-900/20 to-red-800/20 backdrop-blur-md rounded-xl shadow-2xl border border-red-700/60 p-4 sm:p-6 flex flex-col">
             {/* Battle Header */}
             <div className="flex items-center justify-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500/20 to-red-600/20 border border-red-500/30 rounded-xl flex items-center justify-center">
@@ -338,7 +341,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
           </div>
 
           {/* Right Column - Activity Cards (3 cards) */}
-          <div className="col-span-full md:col-span-3 md:row-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-rows-3 gap-2">
+          {/* Mobile: order-4, Desktop: order-none (implicit fourth) */}
+          <div className="order-4 md:order-none col-span-full md:col-span-3 md:row-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-rows-3 gap-2">
             {activityOrder.slice(3, 6).map((activityId) => {
               const activity = activityCards.find(card => card.id === activityId);
               if (!activity) return null;
