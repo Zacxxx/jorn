@@ -31,6 +31,10 @@ const createInitialPlayer = (): Player => {
   return {
     ...INITIAL_PLAYER_STATS,
     name: INITIAL_PLAYER_NAME,
+    title: undefined,
+    classId: undefined,
+    specializationId: undefined,
+    hasCustomizedCharacter: false,
     gold: INITIAL_PLAYER_GOLD,
     essence: INITIAL_PLAYER_ESSENCE,
     body: PLAYER_BASE_BODY,
@@ -69,6 +73,10 @@ const validatePlayerData = (parsed: any): Player => {
   const validatedPlayer: Player = {
     ...INITIAL_PLAYER_STATS,
     name: parsed.name || INITIAL_PLAYER_NAME,
+    title: parsed.title || undefined,
+    classId: parsed.classId || undefined,
+    specializationId: parsed.specializationId || undefined,
+    hasCustomizedCharacter: parsed.hasCustomizedCharacter ?? false,
     gold: parsed.gold ?? INITIAL_PLAYER_GOLD,
     essence: parsed.essence ?? INITIAL_PLAYER_ESSENCE,
     body: parsed.body ?? PLAYER_BASE_BODY,

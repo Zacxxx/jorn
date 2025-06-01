@@ -203,20 +203,19 @@ export const CharacterSheetModal: React.FC<CharacterSheetModalProps> = ({
 
   const TABS: { id: CharacterSheetTab; label: string; icon: React.ReactNode }[] = [
     { id: 'Main', label: 'Main', icon: <UserIcon /> },
+    { id: 'Progress', label: 'Progress', icon: <GearIcon /> },
     { id: 'Inventory', label: 'Inventory', icon: <BagIcon /> },
     { id: 'Spells', label: 'Spells', icon: <WandIcon /> },
     { id: 'Abilities', label: 'Abilities', icon: <StarIcon /> },
     { id: 'Traits', label: 'Traits', icon: <StarIcon className="text-yellow-400"/> },
     { id: 'Quests', label: 'Quests', icon: <BookIcon /> },
     { id: 'Encyclopedia', label: 'Encyclopedia', icon: <CollectionIcon /> },
-    { id: 'Progress', label: 'Progress', icon: <GearIcon /> },
   ];
-
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal} title="Character Sheet" size="5xl">
       <div className="flex flex-col">
-        <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-nowrap overflow-x-auto styled-scrollbar-thin-x">
+        <div className="flex border-b-2 border-slate-600/80 mb-1.5 xs:mb-2 sm:mb-3 flex-wrap gap-1 overflow-x-auto styled-scrollbar-thin-x">
           {TABS.map(tab => (
             <SheetTabButton key={tab.id} icon={tab.icon} label={tab.label} isActive={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} />
           ))}

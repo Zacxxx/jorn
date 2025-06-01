@@ -29,11 +29,11 @@ export const PLAYER_CLASSES: PlayerClass[] = [
       {
         id: 'weaponmaster',
         name: 'Weapon Master',
-        description: 'Perfects the art of combat through skill and precision.',
+        description: 'Achieves perfect balance between offense and defense through weapon mastery.',
         bonuses: {
           body: 2,
-          reflex: 2,
-          maxEp: 15
+          reflex: 1,
+          maxHp: 10
         }
       }
     ]
@@ -41,7 +41,7 @@ export const PLAYER_CLASSES: PlayerClass[] = [
   {
     id: 'mage',
     name: 'Mage',
-    description: 'Scholars of the arcane arts, manipulating magical forces to reshape reality.',
+    description: 'Scholars of the arcane arts, manipulating magical forces to devastating effect.',
     specializations: [
       {
         id: 'elementalist',
@@ -60,7 +60,7 @@ export const PLAYER_CLASSES: PlayerClass[] = [
         bonuses: {
           mind: 2,
           maxMp: 15,
-          maxEp: 10
+          maxEp: 5
         }
       },
       {
@@ -70,8 +70,7 @@ export const PLAYER_CLASSES: PlayerClass[] = [
         bonuses: {
           mind: 2,
           body: 1,
-          maxMp: 15,
-          maxHp: 10
+          maxMp: 10
         }
       }
     ]
@@ -84,32 +83,31 @@ export const PLAYER_CLASSES: PlayerClass[] = [
       {
         id: 'assassin',
         name: 'Assassin',
-        description: 'Eliminates targets with deadly precision and stealth.',
+        description: 'Delivers death from the shadows with lethal precision.',
         bonuses: {
           reflex: 3,
-          maxEp: 20,
-          mind: -1
-        }
-      },
-      {
-        id: 'trickster',
-        name: 'Trickster',
-        description: 'Uses cunning and misdirection to outmaneuver foes.',
-        bonuses: {
-          reflex: 2,
-          mind: 1,
           maxEp: 15,
-          maxMp: 10
+          mind: -1
         }
       },
       {
         id: 'scout',
         name: 'Scout',
-        description: 'Masters mobility and awareness to control the battlefield.',
+        description: 'Masters of stealth and reconnaissance, always one step ahead.',
         bonuses: {
           reflex: 2,
-          maxEp: 15,
-          maxHp: 10
+          mind: 1,
+          maxEp: 10
+        }
+      },
+      {
+        id: 'trickster',
+        name: 'Trickster',
+        description: 'Uses cunning and misdirection to overcome challenges.',
+        bonuses: {
+          reflex: 2,
+          maxEp: 10,
+          maxMp: 5
         }
       }
     ]

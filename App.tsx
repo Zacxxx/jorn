@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 
 // Import all our extracted modules
 import { useGameState } from './game-core/state/GameState';
@@ -20,6 +20,9 @@ import { MASTER_ITEM_DEFINITIONS } from './services/itemService';
 // Import the main app shell
 import AppShell from './game-graphics/AppShell';
 
+// Import character creation
+import CharacterCreationModal from './src/components/CharacterCreationModal';
+
 // Import types
 import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState } from './types';
 
@@ -31,6 +34,29 @@ export const App: React.FC = () => {
   // Use our extracted state management
   const gameState = useGameState();
   const playerState = usePlayerState();
+
+  // Character creation state
+  const [showCharacterCreation, setShowCharacterCreation] = useState(false);
+
+  // Check if character creation should be shown
+  useEffect(() => {
+    const shouldShowCreation = !playerState.player.hasCustomizedCharacter && 
+                              (!playerState.player.name || playerState.player.name === 'Hero');
+    setShowCharacterCreation(shouldShowCreation);
+  }, [playerState.player.hasCustomizedCharacter, playerState.player.name]);
+
+  // Character creation handler
+  const handleCharacterCreation = useCallback((name: string, classId: string, specializationId: string, title?: string) => {
+    playerState.setPlayer(prev => ({
+      ...prev,
+      name,
+      title,
+      classId,
+      specializationId,
+      hasCustomizedCharacter: true
+    }));
+    setShowCharacterCreation(false);
+  }, [playerState]);
 
   // Calculate effective stats using our extracted module
   const effectivePlayerStats = calculateEffectiveStats(playerState.player);
@@ -227,7 +253,7 @@ export const App: React.FC = () => {
     const result = ItemManagementUtils.unprepareSpell(playerState.player, spell);
     if (result.success && result.updatedPlayer) {
       playerState.setPlayer(() => result.updatedPlayer!);
-          } else {
+    } else {
       gameState.showMessageModal('Spell Preparation Error', result.error || 'Failed to unprepare spell', 'error');
     }
   }, [playerState, gameState]);
@@ -237,7 +263,7 @@ export const App: React.FC = () => {
     const result = ItemManagementUtils.prepareAbility(playerState.player, ability);
     if (result.success && result.updatedPlayer) {
       playerState.setPlayer(() => result.updatedPlayer!);
-          } else {
+    } else {
       gameState.showMessageModal('Ability Preparation Error', result.error || 'Failed to prepare ability', 'error');
     }
   }, [playerState, gameState]);
@@ -836,9 +862,9 @@ export const App: React.FC = () => {
                   return updatedEnemies;
                 });
               }
-            } 
-          } 
-        } 
+            }
+          }
+        }
       },
       { 
         success: false, 
@@ -1158,7 +1184,20 @@ export const App: React.FC = () => {
     renderResourceList,
   };
 
-  return <AppShell {...appShellProps} />;
+  return (
+    <>
+      <AppShell {...appShellProps} />
+      
+      {/* Character Creation Modal for first-time users */}
+      <CharacterCreationModal
+        isOpen={showCharacterCreation}
+        player={playerState.player}
+        onCreateCharacter={handleCharacterCreation}
+        onClose={() => setShowCharacterCreation(false)}
+        isRecreation={false}
+      />
+    </>
+  );
 };
 
 export default App;

@@ -1,4 +1,5 @@
 import { Player, PlayerEffectiveStats, Equipment } from '../../types';
+import { getSpecializationById } from '../../data/classes';
 import { 
   BASE_HP, 
   BASE_MP, 
@@ -41,6 +42,19 @@ export const calculateEffectiveStats = (player: Player): PlayerEffectiveStats =>
   let bonusSpeed = 0;
   let effectiveDefense = 0;
   let damageReflectionPercent = 0;
+
+  // Apply class specialization bonuses
+  if (player.classId && player.specializationId) {
+    const specialization = getSpecializationById(player.classId, player.specializationId);
+    if (specialization?.bonuses) {
+      effectiveBody += specialization.bonuses.body || 0;
+      effectiveMind += specialization.bonuses.mind || 0;
+      effectiveReflex += specialization.bonuses.reflex || 0;
+      bonusMaxHp += specialization.bonuses.maxHp || 0;
+      bonusMaxMp += specialization.bonuses.maxMp || 0;
+      bonusMaxEp += specialization.bonuses.maxEp || 0;
+    }
+  }
 
   // Apply equipment bonuses
   Object.values(player.equippedItems).forEach(itemId => {
