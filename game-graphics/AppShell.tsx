@@ -12,7 +12,7 @@ import { FIRST_TRAIT_LEVEL, TRAIT_LEVEL_INTERVAL } from '../constants';
 // Import layout and modal components
 import MainLayout from '../src/layouts/MainLayout';
 import Modal from '../src/components/Modal';
-import { CharacterSheetModal } from '../src/CharacterSheetModal.ancient';
+import { CharacterSheetModal } from '../src/components/CharacterSheetModal-elemets';
 import HelpWikiModal from '../src/components/HelpWikiModal';
 import GameMenuModal from '../src/components/GameMenuModal';
 import MobileMenuModal from '../src/components/MobileMenuModal';
@@ -67,6 +67,7 @@ export interface AppShellProps {
   onUnprepareAbility: (ability: Ability) => void;
   onOpenLootChest: (chestId: string) => Promise<void>;
   onUseConsumable: (itemId: string, targetId: string | null) => void;
+  onUpdatePlayer?: (updater: (prev: Player) => Player) => void;
   
   // Navigation handlers
   onNavigateHome: () => void;
@@ -156,6 +157,7 @@ const AppShell: React.FC<AppShellProps> = (props) => {
     onUnprepareAbility,
     onOpenLootChest,
     onUseConsumable,
+    onUpdatePlayer,
     
     // Modal close handlers
     onCloseModal,
@@ -348,6 +350,7 @@ const AppShell: React.FC<AppShellProps> = (props) => {
           canCraftNewTrait={canCraftNewTrait} 
           onOpenLootChest={onOpenLootChest} 
           onUseConsumableFromInventory={onUseConsumable}
+          onUpdatePlayer={onUpdatePlayer}
         />
       )}
 
