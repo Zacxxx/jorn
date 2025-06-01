@@ -19,10 +19,10 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
     <header className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-[1000] shadow-lg">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between max-w-7xl">
         {/* Left Side - Character Info */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3"> {/* MOD: Reduced gap for overall left side on mobile */}
           {/* Character Avatar and Info */}
           <div 
-            className="flex items-center gap-3 cursor-pointer hover:bg-slate-800/50 rounded-xl px-3 py-2 transition-all duration-200 group"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-slate-800/50 rounded-xl px-2 py-2 sm:px-3 transition-all duration-200 group" // MOD: Reduced padding and gap for mobile
             onClick={onOpenCharacterSheet}
             title="Open Character Sheet"
           >
@@ -38,22 +38,22 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
             {/* Character Details */}
             <div className="min-w-0">
               {/* Character Name */}
-              <div className="text-slate-100 text-sm font-semibold truncate group-hover:text-white transition-colors">
+              <div className="text-slate-100 text-xs sm:text-sm font-semibold truncate group-hover:text-white transition-colors"> {/* MOD: Adjusted text size for mobile */}
                 {player.name || 'Player'}
               </div>
               
               {/* Character Stats - Compact Row */}
-              <div className="flex items-center gap-3 text-xs text-slate-400">
+              <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-400"> {/* MOD: Reduced gap for mobile */}
                 {/* Level */}
                 <span className="text-blue-400 font-medium">L{player.level}</span>
                 
                 {/* Resources - Compact */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 sm:gap-2"> {/* MOD: Reduced gap for mobile */}
+                  <div className="flex items-center gap-0.5 sm:gap-1"> {/* MOD: Reduced gap for mobile */}
                     <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                     <span className="font-medium text-slate-300">{player.gold.toLocaleString()}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5 sm:gap-1"> {/* MOD: Reduced gap for mobile */}
                     <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                     <span className="font-medium text-slate-300">{player.essence.toLocaleString()}</span>
                   </div>
@@ -70,10 +70,10 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
           {/* Combat Status Indicator */}
           {isInAnyCombat && onReturnToCombat && (
             <div className="flex items-center">
-              <div className="w-px h-6 bg-slate-700 mx-2"></div>
+              <div className="w-px h-6 bg-slate-700 mx-1 sm:mx-2"></div> {/* MOD: Reduced margin for mobile */}
               <button
                 onClick={isInCombatButNotOnCombatScreen ? onReturnToCombat : undefined}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${ // MOD: Reduced padding and gap for mobile
                   isInCombatButNotOnCombatScreen 
                     ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 cursor-pointer' 
                     : 'bg-slate-700/50 text-slate-400 border border-slate-600/30 cursor-default'
@@ -82,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
                 disabled={!isInCombatButNotOnCombatScreen}
               >
                 <div className={`w-2 h-2 rounded-full ${isInCombatButNotOnCombatScreen ? 'bg-red-400 animate-pulse' : 'bg-slate-500'}`}></div>
-                <span>{isInCombatButNotOnCombatScreen ? "Combat" : "In Combat"}</span>
+                <span className="text-2xs sm:text-xs">{isInCombatButNotOnCombatScreen ? "Combat" : "In Combat"}</span> {/* MOD: Adjusted text size for mobile */}
               </button>
             </div>
           )}
@@ -92,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <button
             onClick={onNavigateHome}
-            className="text-xl font-bold bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent hover:from-sky-300 hover:to-cyan-300 transition-all duration-200 px-3 py-1 rounded-lg hover:bg-slate-800/30"
+            className="text-lg sm:text-xl font-bold bg-gradient-to-r from-sky-400 to-cyan-400 bg-clip-text text-transparent hover:from-sky-300 hover:to-cyan-300 transition-all duration-200 px-2 sm:px-3 py-1 rounded-lg hover:bg-slate-800/30" // MOD: Reduced padding and text size for mobile
             style={{fontFamily: "'Inter Tight', sans-serif"}}
             title="Go to Home Screen"
           >
@@ -101,13 +101,13 @@ const Header: React.FC<HeaderProps> = ({ player, onOpenCharacterSheet, onNavigat
         </div>
         
         {/* Right Side - Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2"> {/* MOD: Reduced gap for mobile */}
           <ActionButton
             onClick={onOpenGameMenu}
             size="sm"
             variant="secondary"
             icon={<Bars3Icon className="w-4 h-4" />}
-            className="!px-3 !py-2 !bg-slate-800/50 !border-slate-600/30 hover:!bg-slate-700/50 hover:!border-slate-500/50 !text-slate-300 hover:!text-slate-200 !shadow-none"
+            className="!px-2 !py-2 sm:!px-3 !bg-slate-800/50 !border-slate-600/30 hover:!bg-slate-700/50 hover:!border-slate-500/50 !text-slate-300 hover:!text-slate-200 !shadow-none" // MOD: Reduced padding for mobile
             title="Open Game Menu"
           >
             <span className="hidden sm:inline text-xs font-medium">Menu</span>
