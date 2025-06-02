@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ActionButton from './ActionButton';
 import CombatLogDisplay from './CombatLogDisplay';
 import EnemyDisplay from './EnemyDisplay';
-import { CombatActionLog, Enemy } from '../../types';
+import { CombatActionLog, Enemy } from '../types';
 import { SkullIcon, StarIcon, GoldCoinIcon, EssenceIcon, CheckmarkCircleIcon, GetSpellIcon } from './IconComponents';
 
 // Add missing icon components
@@ -90,10 +90,10 @@ const GameOverView: React.FC<GameOverViewProps> = ({
     return { gold: goldGained, essence: essenceGained };
   }, [combatLog]);
 
-  const defeatedEnemies = currentEnemies.filter(enemy => enemy.isDefeated || enemy.hp <= 0);
+  const defeatedEnemies = currentEnemies.filter(enemy => enemy.hp <= 0);
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-x-hidden overflow-y-hidden">
+    <div className="min-h-screen w-full max-w-none mx-0 px-4 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-x-hidden">
       {/* Simplified Background Effects - No transforms that could cause overflow */}
       <div className="absolute inset-0">
         {isVictory ? (
@@ -128,7 +128,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
 
       {/* Enemy Detail Modal */}
       {selectedEnemy && (
-        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-800/95 backdrop-blur-lg rounded-2xl border border-slate-600/50 shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -146,10 +146,10 @@ const GameOverView: React.FC<GameOverViewProps> = ({
         </div>
       )}
 
-      {/* Main Content - Fixed fullscreen layout with proper containment */}
-      <div className="relative z-10 h-full flex flex-col items-center overflow-hidden max-w-full">
-        {/* Header Section - Fixed height with max width */}
-        <div className="flex-shrink-0 pt-3 pb-2 px-4 max-w-4xl mx-auto w-full">
+      {/* Main Content - Responsive layout with proper containment */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center py-4 max-w-4xl mx-auto">
+        {/* Header Section */}
+        <div className="flex-shrink-0 w-full">
           <div className="text-center">
             {/* Main Title with Animation */}
             <div className={`transform transition-all duration-1000 ${animationPhase >= 0 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
@@ -167,7 +167,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
                 {isVictory ? 'VICTORY!' : 'DEFEATED!'}
               </h1>
               
-              <p className={`text-sm sm:text-base mb-3 ${
+              <p className={`text-sm sm:text-base mb-4 ${
                 isVictory ? 'text-emerald-200' : 'text-red-200'
               }`}>
                 {modalMessage || (isVictory ? 'You emerged victorious!' : 'You have fallen in battle.')}
@@ -199,38 +199,60 @@ const GameOverView: React.FC<GameOverViewProps> = ({
             )}
           </div>
 
-          {/* Action Buttons - Always centered and prominent */}
+          {/* Action Buttons - Different layout for victory vs defeat */}
           <div className={`transform transition-all duration-1000 delay-300 ${
             animationPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-              <ActionButton 
-                onClick={onReturnHome} 
-                variant="primary" 
-                size="lg" 
-                className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-xl"
-              >
-                Continue Adventure
-              </ActionButton>
-              
-              {isVictory && (
-                <ActionButton 
-                  onClick={onFindEnemy} 
-                  variant="danger" 
-                  isLoading={isLoading} 
-                  icon={<SkullIcon />} 
-                  size="lg" 
-                  className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-xl"
-                >
-                  {isLoading ? 'Seeking Battle...' : 'Fight Again'}
-                </ActionButton>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto mb-4">
+              {isVictory ? (
+                <>
+                  <ActionButton 
+                    onClick={onReturnHome} 
+                    variant="primary" 
+                    size="lg" 
+                    className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-xl"
+                  >
+                    Continue Adventure
+                  </ActionButton>
+                  
+                  <ActionButton 
+                    onClick={onFindEnemy} 
+                    variant="danger" 
+                    isLoading={isLoading} 
+                    icon={<SkullIcon />} 
+                    size="lg" 
+                    className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-xl"
+                  >
+                    {isLoading ? 'Seeking Battle...' : 'Fight Again'}
+                  </ActionButton>
+                </>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-3 w-full">
+                  <ActionButton 
+                    onClick={onReturnHome} 
+                    variant="primary" 
+                    size="lg" 
+                    className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 shadow-xl"
+                  >
+                    Return Home
+                  </ActionButton>
+                  
+                  <ActionButton 
+                    onClick={() => window.history.back()} 
+                    variant="secondary" 
+                    size="lg" 
+                    className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 shadow-xl"
+                  >
+                    Go Back
+                  </ActionButton>
+                </div>
               )}
             </div>
           </div>
 
           {/* Defeated Enemies Section - Victory Only */}
           {isVictory && defeatedEnemies.length > 0 && (
-            <div className={`transform transition-all duration-1000 delay-500 ${
+            <div className={`transform transition-all duration-1000 delay-500 mb-3 ${
               animationPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}>
               <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg border border-slate-600/40 shadow-xl">
@@ -269,7 +291,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
 
                 {/* Detailed Enemy List */}
                 {showDetails && (
-                  <div className="border-t border-slate-600/40 p-3 max-h-48 overflow-y-auto">
+                  <div className="border-t border-slate-600/40 p-3 max-h-40 overflow-y-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {defeatedEnemies.map(enemy => (
                         <button
@@ -314,7 +336,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
               </button>
 
               {showCombatLog && (
-                <div className="border-t border-slate-600/40 p-3 max-h-32 overflow-y-auto">
+                <div className="border-t border-slate-600/40 p-3 max-h-28 overflow-y-auto">
                   <CombatLogDisplay logs={combatLog} />
                 </div>
               )}

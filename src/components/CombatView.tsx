@@ -604,28 +604,28 @@ const CombatView: React.FC<CombatViewProps> = ({
             <div className="flex-1 p-3">
               <div className="grid grid-cols-4 grid-rows-2 gap-2 h-full">
                 {currentItems.map(item => (
-                  <EnhancedCombatActionSlot 
-                    key={item.id} 
-                    actionItem={item} 
-                    player={player}
-                    onClick={(action) => {
-                      if (!canPlayerAct) return;
-                      if (type === 'spell') { 
-                        if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); 
-                        else alert("Select a target first!"); 
-                      }
-                      else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
-                      else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
-                    }}
-                    isDisabledByGameLogic={!canPlayerAct} 
-                  />
+              <EnhancedCombatActionSlot 
+                key={item.id} 
+                actionItem={item} 
+                player={player}
+                        onClick={(action) => {
+                            if (!canPlayerAct) return;
+                  if (type === 'spell') { 
+                    if(targetEnemyId) onPlayerAttack(action as Spell, targetEnemyId); 
+                    else alert("Select a target first!"); 
+                  }
+                            else if (type === 'ability') onUseAbility((action as Ability).id, targetEnemyId);
+                            else if (type === 'consumable') onUseConsumable((action as Consumable).id, null);
+                        }}
+                        isDisabledByGameLogic={!canPlayerAct} 
+                    />
                 ))}
                 
                 {/* Fill empty slots to maintain grid */}
                 {Array.from({ length: DESKTOP_ITEMS_PER_PAGE - currentItems.length }).map((_, index) => (
                   <div key={`empty-${index}`} className="w-full h-full opacity-0"></div>
                 ))}
-              </div>
+            </div>
             </div>
             
             {/* Page Indicator for Desktop */}
@@ -666,8 +666,8 @@ const CombatView: React.FC<CombatViewProps> = ({
                 </span>
               </div>
             )}
-          </div>
-        );
+        </div>
+      );
       };
       
       // Mobile layout - use swipeable pagination
@@ -815,9 +815,9 @@ const CombatView: React.FC<CombatViewProps> = ({
                     Cancel
                   </ActionButton>
                 </div>
-              </form>
+                </form>
+                </div>
             </div>
-          </div>
         );
       case 'log': 
         return (
@@ -1020,7 +1020,7 @@ const CombatView: React.FC<CombatViewProps> = ({
             {/* Action Categories - Vertical List Layout */}
             <div className="w-1/4">
               <div className="flex flex-col gap-2 h-full">
-                <ActionCategoryButton
+              <ActionCategoryButton
                   key="actions"
                   label="Actions"
                   icon={<SwordsIcon className="w-full h-full" />}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Player, PlayerEffectiveStats } from '../types';
+import { Player, PlayerEffectiveStats, Enemy } from '../types';
 import ActionButton from '../ui/ActionButton';
 import { 
   TentIcon, 
@@ -15,6 +15,7 @@ interface CampViewProps {
   effectiveStats: PlayerEffectiveStats;
   onReturnHome: () => void;
   onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
+  currentEnemies?: Enemy[]; // Optional for backward compatibility
 }
 
 type RestType = 'short' | 'long' | 'custom';

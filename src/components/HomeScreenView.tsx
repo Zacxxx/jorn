@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player, PlayerEffectiveStats } from '../types';
+import { Player, PlayerEffectiveStats, Enemy } from '../types';
 import ActionButton from './ActionButton';
 import ActivityCard from './ActivityCard';
 import { SkullIcon, MapIcon, FlaskIcon, BookIcon, TentIcon, HomeIcon, BuildingIcon, UserIcon, GearIcon, PlusIcon } from './IconComponents';
@@ -66,6 +66,8 @@ interface HomeScreenViewProps {
   onOpenNPCs: () => void;
   onOpenQuestBook: () => void;
   onNavigateToMultiplayer: () => void;
+  currentEnemies: Enemy[];
+  onReturnToCombat: () => void;
 }
 
 const HomeScreenView: React.FC<HomeScreenViewProps> = ({
@@ -83,6 +85,8 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   onOpenNPCs,
   onOpenQuestBook,
   onNavigateToMultiplayer,
+  currentEnemies,
+  onReturnToCombat,
 }) => {
   // Video ref for controlling playback
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -148,47 +152,29 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     };
   }, [showRestDropdown, showBattleDropdown]);
 
-  // Preload combat GIF when hovering starts
+  // Preload all GIFs on page load instead of on hover
   React.useEffect(() => {
-    if (isCombatHovered && !combatGifLoaded && !combatGifError) {
-      const img = new Image();
-      img.onload = () => {
-        setCombatGifLoaded(true);
-      };
-      img.onerror = () => {
-        setCombatGifError(true);
-      };
-      img.src = '/assets/activity-card/battle.gif';
-    }
-  }, [isCombatHovered, combatGifLoaded, combatGifError]);
+    const preloadGifs = [
+      '/assets/activity-card/battle-2.gif',
+      '/assets/activity-card/research.gif',
+      '/assets/activity-card/camp.gif'
+    ];
 
-  // Preload exploration GIF when hovering starts
-  React.useEffect(() => {
-    if (isExplorationHovered && !explorationGifLoaded && !explorationGifError) {
+    preloadGifs.forEach(src => {
       const img = new Image();
       img.onload = () => {
-        setExplorationGifLoaded(true);
+        if (src.includes('battle-2')) setCombatGifLoaded(true);
+        if (src.includes('research')) setExplorationGifLoaded(true);
+        if (src.includes('camp')) setHomesteadGifLoaded(true);
       };
       img.onerror = () => {
-        setExplorationGifError(true);
+        if (src.includes('battle-2')) setCombatGifError(true);
+        if (src.includes('research')) setExplorationGifError(true);
+        if (src.includes('camp')) setHomesteadGifError(true);
       };
-      img.src = '/assets/activity-card/research.gif';
-    }
-  }, [isExplorationHovered, explorationGifLoaded, explorationGifError]);
-
-  // Preload homestead GIF when hovering starts
-  React.useEffect(() => {
-    if (isHomesteadHovered && !homesteadGifLoaded && !homesteadGifError) {
-      const img = new Image();
-      img.onload = () => {
-        setHomesteadGifLoaded(true);
-      };
-      img.onerror = () => {
-        setHomesteadGifError(true);
-      };
-      img.src = '/assets/activity-card/camp.gif';
-    }
-  }, [isHomesteadHovered, homesteadGifLoaded, homesteadGifError]);
+      img.src = src;
+    });
+  }, []); // Run once on component mount
 
   // Set video playback rate to be very slow
   React.useEffect(() => {
@@ -247,10 +233,15 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
   // Handle battle launch with selected type
   const handleLaunchBattle = () => {
-    // For now, just call the original onFindEnemy function
-    // In the future, this could pass the battle type to the parent
-    console.log('Launching battle type:', selectedBattleType);
-    onFindEnemy();
+    // Check if there's an active battle (living enemies)
+    if (isInBattle) {
+      // Return to active battle
+      onReturnToCombat();
+    } else {
+      // Start new battle
+      console.log('Launching battle type:', selectedBattleType);
+      onFindEnemy();
+    }
   };
 
   // Get battle type information
@@ -293,6 +284,15 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
 
   const currentBattleInfo = getBattleTypeInfo(selectedBattleType);
 
+  // Check if there's an active battle (living enemies)
+  const isInBattle = currentEnemies.length > 0 && currentEnemies.some(enemy => enemy.hp > 0);
+
+  // Check if player needs rest and is not in combat
+  const needsRest = (player.hp < effectiveStats.maxHp || 
+                    player.mp < effectiveStats.maxMp || 
+                    player.ep < effectiveStats.maxEp) && 
+                    !isInBattle; // Cannot rest while in active combat
+
   // Calculate rest benefits for display
   const getRestBenefits = (restType: 'short' | 'long' | 'custom', customDuration?: number) => {
     const duration = customDuration || restPreferences.customDuration;
@@ -329,11 +329,6 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   const locationDescription = currentLocation?.description || 'A mysterious place...';
   const isInSettlement = currentLocation?.type === 'settlement';
 
-  // Check if player needs rest
-  const needsRest = player.hp < effectiveStats.maxHp || 
-                   player.mp < effectiveStats.maxMp || 
-                   player.ep < effectiveStats.maxEp;
-
   // Get current rest benefits for display
   const currentRestBenefits = getRestBenefits(restPreferences.preferredRestType, restPreferences.customDuration);
 
@@ -341,22 +336,32 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
   const activityCards = [
     {
       id: 'camp',
-      title: 'Camp & Rest',
+      title: 'Camp',
       shortTitle: 'Camp',
-      description: 'Set up camp to rest and recover your health, mana, and energy.',
+      description: isInBattle 
+        ? 'Cannot rest while enemies are present!' 
+        : 'Set up camp to rest and recover your health, mana, and energy.',
       icon: <TentIcon />,
       variant: 'secondary' as const,
-      onClick: onOpenCamp,
-      benefits: ['Restore HP/MP/EP', 'Choose rest activities', 'Safe recovery'],
-      color: 'from-amber-500/20 to-amber-600/20',
-      borderColor: 'border-amber-500/30',
-      iconColor: 'text-amber-400',
+      onClick: isInBattle ? () => {} : onOpenCamp, // Disable if in combat
+      benefits: isInBattle 
+        ? ['Defeat enemies first', 'Or flee from combat', 'Then rest safely'] 
+        : ['Restore HP/MP/EP', 'Choose rest activities', 'Safe recovery'],
+      color: isInBattle 
+        ? 'from-red-500/20 to-red-600/20' 
+        : 'from-amber-500/20 to-amber-600/20',
+      borderColor: isInBattle 
+        ? 'border-red-500/30' 
+        : 'border-amber-500/30',
+      iconColor: isInBattle 
+        ? 'text-red-400' 
+        : 'text-amber-400',
       backgroundImage: '/assets/activity-card/camp.svg',
       gifBackgroundImage: '/assets/activity-card/camp.gif'
     },
     {
       id: 'research',
-      title: 'Research Archives',
+      title: 'Research',
       shortTitle: 'Research',
       description: 'Study ancient texts and discover new spell components.',
       icon: <BookIcon />,
@@ -371,7 +376,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     },
     {
       id: 'crafting',
-      title: 'Crafting Workshop',
+      title: 'Workshop',
       shortTitle: 'Crafting',
       description: 'Create items, discover recipes, and design powerful spells.',
       icon: <FlaskIcon />,
@@ -401,7 +406,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
     },
     {
       id: 'quests',
-      title: 'Quest Book',
+      title: 'Quests',
       shortTitle: 'Quests',
       description: 'Track your active quests and view completed adventures.',
       icon: <BookIcon />,
@@ -804,7 +809,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
               
               {/* GIF animation - only visible when hovered and loaded */}
               <img
-                src={isCombatHovered ? '/assets/activity-card/battle-2.gif' : ''}
+                src={isCombatHovered ? (currentEnemies.length > 0 ? '/assets/activity-card/battle-2.gif' : '/assets/activity-card/battle.gif') : ''}
                 alt="Combat animation"
                 className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
                   isCombatHovered && combatGifLoaded && !combatGifError ? 'opacity-70 scale-110' : 'opacity-0'
@@ -916,28 +921,32 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                     size="lg" 
                     isLoading={isLoading} 
                     icon={<SkullIcon />} 
-                    className="flex-1 text-lg sm:text-xl py-3 sm:py-4 hover:scale-105 transition-transform duration-200 font-bold rounded-r-none border-r-0"
-                    title={`Launch ${currentBattleInfo.name}`}
+                    className={`flex-1 text-lg sm:text-xl py-3 sm:py-4 hover:scale-105 transition-transform duration-200 font-bold ${
+                      isInBattle ? 'rounded-lg' : 'rounded-r-none border-r-0'
+                    }`}
+                    title={isInBattle ? "Return to active battle" : `Launch ${currentBattleInfo.name}`}
                   >
-                    SEEK BATTLE
+                    {isInBattle ? "RETURN TO BATTLE" : "SEEK BATTLE"}
                   </ActionButton>
                   
-                  {/* Dropdown Arrow Button */}
-                  <ActionButton 
-                    onClick={() => setShowBattleDropdown(!showBattleDropdown)}
-                    variant="danger"
-                    size="lg"
-                    className="px-3 sm:px-4 py-3 sm:py-4 rounded-l-none border-l border-red-600/50 hover:scale-105 transition-transform duration-200"
-                    title="Battle options"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </ActionButton>
+                  {/* Dropdown Arrow Button - Only show when not in battle */}
+                  {!isInBattle && (
+                    <ActionButton 
+                      onClick={() => setShowBattleDropdown(!showBattleDropdown)}
+                      variant="danger"
+                      size="lg"
+                      className="px-3 sm:px-4 py-3 sm:py-4 rounded-l-none border-l border-red-600/50 hover:scale-105 transition-transform duration-200"
+                      title="Battle options"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </ActionButton>
+                  )}
                 </div>
                 
-                {/* Dropdown Menu */}
-                {showBattleDropdown && (
+                {/* Dropdown Menu - Only show when not in battle */}
+                {showBattleDropdown && !isInBattle && (
                   <div className="absolute bottom-full left-0 right-0 mb-2 bg-black/40 backdrop-blur-3xl rounded-lg border border-white/30 shadow-2xl shadow-black/40 z-[1001] overflow-hidden">
                     {/* Extra blur overlay */}
                     <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent backdrop-blur-2xl"></div>
@@ -1046,7 +1055,9 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                       icon={<TentIcon />} 
                       disabled={!needsRest}
                       className="flex-1 rounded-r-none border-r-0"
-                      title={`Quick ${restPreferences.preferredRestType} rest (${currentRestBenefits.duration})`}
+                      title={isInBattle 
+                        ? "Cannot rest while enemies are present" 
+                        : `Quick ${restPreferences.preferredRestType} rest (${currentRestBenefits.duration})`}
                     >
                       <span className="hidden sm:inline">Rest</span>
                       <span className="sm:hidden">Rest</span>
@@ -1057,8 +1068,11 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                       onClick={() => setShowRestDropdown(!showRestDropdown)}
                       variant="secondary"
                       size="sm"
+                      disabled={isInBattle} // Disable if in combat
                       className="px-2 rounded-l-none border-l border-slate-600/50"
-                      title="Rest options"
+                      title={isInBattle 
+                        ? "Cannot rest while enemies are present" 
+                        : "Rest options"}
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1067,7 +1081,7 @@ const HomeScreenView: React.FC<HomeScreenViewProps> = ({
                   </div>
                   
                   {/* Dropdown Menu */}
-                  {showRestDropdown && (
+                  {showRestDropdown && !isInBattle && (
                     <div className="absolute bottom-full left-0 right-0 mb-1 bg-slate-800/95 backdrop-blur-xl rounded-lg border border-slate-600/50 shadow-2xl z-50">
                       <div className="p-2 space-y-1">
                         {/* Short Rest Option */}

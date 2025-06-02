@@ -270,13 +270,20 @@ export const useGameState = (): GameStateManager => {
       // Player is in combat but not on combat screen if:
       // 1. There are current enemies with HP > 0
       // 2. The game state is not 'IN_COMBAT'
+      // BUT NOT if the player is defeated (game state is GAME_OVER_DEFEAT)
+      if (gameState === 'GAME_OVER_DEFEAT') {
+        return false;
+      }
       const hasLivingEnemies = currentEnemies.length > 0 && currentEnemies.some(enemy => enemy.hp > 0);
       const notOnCombatScreen = gameState !== 'IN_COMBAT';
       return hasLivingEnemies && notOnCombatScreen;
     },
     isInAnyCombat: () => {
       // Player is in any combat if there are current enemies with HP > 0
-      // regardless of current screen/game state
+      // BUT NOT if the player is defeated (game state is GAME_OVER_DEFEAT)
+      if (gameState === 'GAME_OVER_DEFEAT') {
+        return false;
+      }
       return currentEnemies.length > 0 && currentEnemies.some(enemy => enemy.hp > 0);
     },
   };

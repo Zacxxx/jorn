@@ -241,13 +241,14 @@ export const App: React.FC = () => {
     player: playerState.player,
     effectivePlayerStats,
     pendingTraitUnlock: TraitManagerUtils.canCraftTrait(playerState.player),
+    gameState: gameState.gameState,
     setGameState: gameState.setGameState as (state: string) => void,
     setDefaultCharacterSheetTab: gameState.setDefaultCharacterSheetTab,
     setInitialSpellPromptForStudio: gameState.setInitialSpellPromptForStudio,
     setIsHelpWikiOpen: gameState.setIsHelpWikiOpen,
     setIsGameMenuOpen: gameState.setIsGameMenuOpen,
     setIsMobileMenuOpen: gameState.setIsMobileMenuOpen,
-    currentEnemies: gameState.currentEnemies, // Added
+    currentEnemies: gameState.currentEnemies,
     setCurrentEnemies: gameState.setCurrentEnemies,
     setTargetEnemyId: gameState.setTargetEnemyId,
     setCombatLog: gameState.setCombatLog,
@@ -559,6 +560,16 @@ export const App: React.FC = () => {
 
   // Rest and homestead handlers
   const handleRestComplete = useCallback((restType: 'short' | 'long', duration?: number, activity?: string) => {
+    // Check if player is in combat
+    if (gameState.currentEnemies.length > 0) {
+      gameState.showMessageModal(
+        'Cannot Rest in Combat', 
+        'You cannot rest while enemies are present. Defeat all enemies or flee from combat first.', 
+        'error'
+      );
+      return;
+    }
+
     const context = createNavigationContext();
     const result = NavigationController.completeRest(context, restType, duration, activity);
     gameState.addLog('System', `Rest completed. Gained ${result.hpGain} HP, ${result.mpGain} MP, ${result.epGain} EP.`, 'heal');

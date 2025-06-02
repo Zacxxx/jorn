@@ -80,6 +80,7 @@ export interface ViewRouterProps {
   onOpenQuestBook: () => void;
   onNavigateToMultiplayer: () => void;
   onNavigateHome: () => void;
+  onReturnToCombat: () => void;
   onRestComplete: (restType: 'short' | 'long', duration?: number, activity?: string) => void;
   onStartHomesteadProject: (project: Omit<HomesteadProject, 'id' | 'startTime'>) => void;
   onCompleteHomesteadProject: (projectId: string) => void;
@@ -161,6 +162,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
     onOpenQuestBook,
     onNavigateToMultiplayer,
     onNavigateHome,
+    onReturnToCombat,
     onRestComplete,
     onStartHomesteadProject,
     onCompleteHomesteadProject,
@@ -229,6 +231,8 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           onOpenNPCs={onOpenNPCs} 
           onOpenQuestBook={onOpenQuestBook}
           onNavigateToMultiplayer={onNavigateToMultiplayer}
+          onReturnToCombat={onReturnToCombat}
+          currentEnemies={currentEnemies}
         />
       );
 
@@ -248,6 +252,7 @@ const ViewRouter: React.FC<ViewRouterProps> = (props) => {
           effectiveStats={effectivePlayerStats} 
           onReturnHome={onNavigateHome} 
           onRestComplete={onRestComplete} 
+          currentEnemies={currentEnemies}
         />
       );
 

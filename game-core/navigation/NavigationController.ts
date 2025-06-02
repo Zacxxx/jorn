@@ -34,6 +34,7 @@ export interface NavigationContext {
   setUseLegacyFooter: (value: boolean) => void;
   setDebugMode: (value: boolean) => void;
   setAutoSave: (value: boolean) => void;
+  gameState: string;
 }
 
 export interface RestResult {
@@ -205,14 +206,25 @@ export const navigateToMultiplayer = (context: NavigationContext): void => {
 };
 
 /**
- * Navigate to home (main menu)
+ * Navigate to home screen
  * @param context - Navigation context
  */
 export const navigateToHome = (context: NavigationContext): void => {
+  const previousGameState = context.gameState; // Store the previous state
   context.setGameState('HOME');
-  context.setCurrentEnemies([]);
-  context.setTargetEnemyId(null);
-  context.setCombatLog([]);
+  
+  // Clear combat state if:
+  // 1. There are no active enemies (either no enemies or all defeated) - normal victory
+  // 2. Coming from GAME_OVER_DEFEAT - player was defeated, combat should end
+  const hasLivingEnemies = context.currentEnemies.length > 0 && context.currentEnemies.some(enemy => enemy.hp > 0);
+  const comingFromDefeat = previousGameState === 'GAME_OVER_DEFEAT';
+  
+  if (!hasLivingEnemies || comingFromDefeat) {
+    context.setCurrentEnemies([]);
+    context.setTargetEnemyId(null);
+    context.setCombatLog([]);
+  }
+  
   context.setModalContent(null);
 };
 
