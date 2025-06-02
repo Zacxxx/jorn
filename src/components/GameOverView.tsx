@@ -3,7 +3,7 @@ import ActionButton from './ActionButton';
 import CombatLogDisplay from './CombatLogDisplay';
 import EnemyDisplay from './EnemyDisplay';
 import { CombatActionLog, Enemy } from '../../types';
-import { SkullIcon, StarIcon, GoldCoinIcon, EssenceIcon, CheckmarkCircleIcon } from './IconComponents';
+import { SkullIcon, StarIcon, GoldCoinIcon, EssenceIcon, CheckmarkCircleIcon, GetSpellIcon } from './IconComponents';
 
 // Add missing icon components
 const TrophyIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
@@ -93,32 +93,26 @@ const GameOverView: React.FC<GameOverViewProps> = ({
   const defeatedEnemies = currentEnemies.filter(enemy => enemy.isDefeated || enemy.hp <= 0);
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Animated Background Effects */}
+    <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-x-hidden overflow-y-hidden">
+      {/* Simplified Background Effects - No transforms that could cause overflow */}
       <div className="absolute inset-0">
         {isVictory ? (
           <>
-            {/* Animated gradient background */}
+            {/* Simple gradient background */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-transparent to-gold-900/30 animate-pulse" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(34,197,94,0.2),transparent_70%)] animate-pulse" style={{ animationDuration: '4s' }} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,197,94,0.2),transparent_50%)] animate-pulse" style={{ animationDuration: '4s' }} />
             
-            {/* Moving background waves */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent transform -skew-y-12 animate-pulse" style={{ animationDuration: '6s' }} />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-yellow-500/10 to-transparent transform skew-y-12 animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
-            </div>
-            
-            {/* Floating particles for victory - slower and more elegant */}
-            <div className="absolute inset-0 overflow-hidden">
-              {[...Array(15)].map((_, i) => (
+            {/* Simple floating particles - no edge positioning */}
+            <div className="absolute inset-0">
+              {[...Array(10)].map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-1 h-1 bg-yellow-400/40 rounded-full animate-bounce"
+                  className="absolute w-1 h-1 bg-yellow-400/30 rounded-full animate-bounce"
                   style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
+                    left: `${20 + Math.random() * 60}%`, // Keep well within bounds
+                    top: `${20 + Math.random() * 60}%`,
                     animationDelay: `${Math.random() * 4}s`,
-                    animationDuration: `${3 + Math.random() * 3}s`,
+                    animationDuration: `${3 + Math.random() * 2}s`,
                   }}
                 />
               ))}
@@ -127,7 +121,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
         ) : (
           <>
             <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 via-transparent to-slate-900/40" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.1),transparent_70%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.1),transparent_50%)]" />
           </>
         )}
       </div>
@@ -152,137 +146,68 @@ const GameOverView: React.FC<GameOverViewProps> = ({
         </div>
       )}
 
-      {/* Main Content - Fixed fullscreen layout with proper containment */}
-      <div className="relative z-10 h-full flex flex-col overflow-hidden max-w-full">
-        {/* Header Section - Fixed height with max width */}
-        <div className="flex-shrink-0 pt-3 pb-2 px-4 max-w-4xl mx-auto w-full">
-          <div className="text-center">
-            {/* Main Title with Animation */}
-            <div className={`transform transition-all duration-1000 ${animationPhase >= 0 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-              <div className="relative inline-block">
-                {isVictory ? (
-                  <StarIcon className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-400 mx-auto mb-2" />
-                ) : (
-                  <SkullIcon className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto mb-2" />
-                )}
-              </div>
-              
-              <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-1 ${
-                isVictory ? 'text-emerald-400' : 'text-red-400'
-              }`} style={{fontFamily: "'Inter Tight', sans-serif"}}>
-                {isVictory ? 'VICTORY!' : 'DEFEATED!'}
-              </h1>
-              
-              <p className={`text-sm sm:text-base mb-3 ${
-                isVictory ? 'text-emerald-200' : 'text-red-200'
-              }`}>
-                {modalMessage || (isVictory ? 'You emerged victorious!' : 'You have fallen in battle.')}
-              </p>
-            </div>
+      {/* Main Content - Transform-based perfect centering */}
+      <div 
+        className="absolute z-10"
+        style={{
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          maxWidth: '32rem', // max-w-2xl equivalent
+          padding: '0 1rem'
+        }}
+      >
+        <div className="space-y-4 md:space-y-6">
+          {/* Header Section */}
+          <div className={`text-center transform transition-all duration-1000 ${animationPhase >= 0 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+            <h1 className={`text-3xl md:text-4xl lg:text-5xl font-bold mb-2 ${
+              isVictory ? 'text-emerald-400' : 'text-red-400'
+            }`} style={{fontFamily: "'Inter Tight', sans-serif"}}>
+              {isVictory ? 'VICTORY!' : 'DEFEATED!'}
+            </h1>
+            
+            <p className={`text-base md:text-lg mb-4 ${
+              isVictory ? 'text-emerald-200' : 'text-red-200'
+            }`}>
+              {modalMessage || (isVictory ? 'You emerged victorious!' : 'You have fallen in battle.')}
+            </p>
 
             {/* Rewards Section - Victory Only */}
             {isVictory && (rewards.gold > 0 || rewards.essence > 0) && (
-              <div className={`transform transition-all duration-1000 delay-300 ${
-                animationPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              }`}>
-                <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg p-2 sm:p-3 border border-emerald-500/30 shadow-2xl max-w-xs mx-auto mb-3">
-                  <h3 className="text-emerald-300 font-bold text-sm mb-2 flex items-center justify-center">
-                    <TrophyIcon className="w-3 h-3 mr-1" />
-                    Battle Rewards
-                  </h3>
-                  <div className="flex justify-center space-x-3">
-                    {rewards.gold > 0 && (
-                      <div className="flex items-center space-x-1 bg-yellow-900/30 px-2 py-1 rounded">
-                        <GoldCoinIcon className="w-4 h-4 text-yellow-400" />
-                        <span className="text-yellow-200 font-bold text-sm">+{rewards.gold}</span>
-                      </div>
-                    )}
-                    {rewards.essence > 0 && (
-                      <div className="flex items-center space-x-1 bg-purple-900/30 px-2 py-1 rounded">
-                        <EssenceIcon className="w-4 h-4 text-purple-400" />
-                        <span className="text-purple-200 font-bold text-sm">+{rewards.essence}</span>
-                      </div>
-                    )}
-                  </div>
+              <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg p-3 border border-emerald-500/30 shadow-2xl max-w-sm mx-auto mb-4">
+                <h3 className="text-emerald-300 font-bold text-sm mb-2 flex items-center justify-center">
+                  <TrophyIcon className="w-4 h-4 mr-1" />
+                  Battle Rewards
+                </h3>
+                <div className="flex justify-center space-x-3">
+                  {rewards.gold > 0 && (
+                    <div className="flex items-center space-x-1 bg-yellow-900/30 px-2 py-1 rounded">
+                      <GoldCoinIcon className="w-4 h-4 text-yellow-400" />
+                      <span className="text-yellow-200 font-bold text-sm">+{rewards.gold}</span>
+                    </div>
+                  )}
+                  {rewards.essence > 0 && (
+                    <div className="flex items-center space-x-1 bg-purple-900/30 px-2 py-1 rounded">
+                      <EssenceIcon className="w-4 h-4 text-purple-400" />
+                      <span className="text-purple-200 font-bold text-sm">+{rewards.essence}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Content Area - Flexible height with proper containment */}
-        <div className="flex-1 px-4 min-h-0 flex flex-col max-w-4xl mx-auto w-full">
-          {/* Defeated Enemies Section - Victory Only */}
-          {isVictory && defeatedEnemies.length > 0 && (
-            <div className={`flex-shrink-0 transform transition-all duration-1000 delay-500 ${
-              animationPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-            }`}>
-              <div className="flex flex-col w-full">
-                <button
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="flex-shrink-0 w-full bg-slate-800/60 backdrop-blur-lg rounded-lg p-2 border border-slate-600/40 shadow-xl hover:border-emerald-500/40 transition-all duration-300 mb-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-emerald-300 font-bold text-sm flex items-center">
-                      <SkullIcon className="w-3 h-3 mr-1" />
-                      Enemies Defeated ({defeatedEnemies.length})
-                    </h3>
-                    {showDetails ? (
-                      <ChevronUpIcon className="w-3 h-3 text-slate-400" />
-                    ) : (
-                      <ChevronDownIcon className="w-3 h-3 text-slate-400" />
-                    )}
-                  </div>
-                  
-                  {!showDetails && (
-                    <div className="flex flex-wrap gap-1 mt-1 justify-center max-w-full">
-                      {defeatedEnemies.slice(0, 2).map(enemy => (
-                        <div key={enemy.id} className="flex items-center space-x-1 bg-slate-700/50 px-2 py-1 rounded text-xs">
-                          <span className="text-slate-300 font-medium truncate">{enemy.name}</span>
-                          <span className="text-slate-500 flex-shrink-0">Lvl {enemy.level}</span>
-                        </div>
-                      ))}
-                      {defeatedEnemies.length > 2 && (
-                        <div className="flex items-center space-x-1 bg-slate-700/50 px-2 py-1 rounded text-xs">
-                          <span className="text-slate-400">+{defeatedEnemies.length - 2} more</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </button>
-
-                {/* Detailed Enemy List - Responsive grid with proper constraints */}
-                {showDetails && (
-                  <div className="max-h-32 overflow-y-auto mb-2 w-full">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 pb-2 w-full">
-                      {defeatedEnemies.map(enemy => (
-                        <button
-                          key={enemy.id}
-                          onClick={() => setSelectedEnemy(enemy)}
-                          className="transform hover:scale-105 transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 rounded-lg w-full min-w-0"
-                        >
-                          <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg border border-slate-600/40 hover:border-emerald-500/40 transition-colors w-full">
-                            <EnemyDisplay enemy={enemy} />
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons - Below enemies section with proper centering */}
-          <div className={`flex-shrink-0 py-2 transform transition-all duration-1000 delay-700 ${
-            animationPhase >= 3 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          {/* Action Buttons - Always centered and prominent */}
+          <div className={`transform transition-all duration-1000 delay-300 ${
+            animationPhase >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-            <div className="max-w-xs mx-auto space-y-2 w-full">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
               <ActionButton 
                 onClick={onReturnHome} 
                 variant="primary" 
                 size="lg" 
-                className="w-full text-sm font-bold py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-xl"
+                className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 shadow-xl"
               >
                 Continue Adventure
               </ActionButton>
@@ -294,7 +219,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
                   isLoading={isLoading} 
                   icon={<SkullIcon />} 
                   size="lg" 
-                  className="w-full text-sm font-bold py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-xl"
+                  className="flex-1 text-sm font-bold py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-xl"
                 >
                   {isLoading ? 'Seeking Battle...' : 'Fight Again'}
                 </ActionButton>
@@ -302,32 +227,98 @@ const GameOverView: React.FC<GameOverViewProps> = ({
             </div>
           </div>
 
-          {/* Combat Log Section - Only show if no enemies or enemies section is collapsed */}
-          {(!isVictory || defeatedEnemies.length === 0 || !showDetails) && (
-            <div className="flex-1 min-h-0 w-full">
+          {/* Defeated Enemies Section - Victory Only */}
+          {isVictory && defeatedEnemies.length > 0 && (
+            <div className={`transform transition-all duration-1000 delay-500 ${
+              animationPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+            }`}>
+              <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg border border-slate-600/40 shadow-xl">
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="w-full p-3 hover:bg-slate-700/30 transition-all duration-300 rounded-lg"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-emerald-300 font-bold text-sm flex items-center">
+                      <SkullIcon className="w-4 h-4 mr-2" />
+                      Enemies Defeated ({defeatedEnemies.length})
+                    </h3>
+                    {showDetails ? (
+                      <ChevronUpIcon className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+                    )}
+                  </div>
+                  
+                  {!showDetails && (
+                    <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                      {defeatedEnemies.slice(0, 3).map(enemy => (
+                        <div key={enemy.id} className="flex items-center space-x-1 bg-slate-700/50 px-2 py-1 rounded text-xs">
+                          <span className="text-slate-300 font-medium">{enemy.name}</span>
+                          <span className="text-slate-500">Lvl {enemy.level}</span>
+                        </div>
+                      ))}
+                      {defeatedEnemies.length > 3 && (
+                        <div className="flex items-center space-x-1 bg-slate-700/50 px-2 py-1 rounded text-xs">
+                          <span className="text-slate-400">+{defeatedEnemies.length - 3} more</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </button>
+
+                {/* Detailed Enemy List */}
+                {showDetails && (
+                  <div className="border-t border-slate-600/40 p-3 max-h-48 overflow-y-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {defeatedEnemies.map(enemy => (
+                        <button
+                          key={enemy.id}
+                          onClick={() => setSelectedEnemy(enemy)}
+                          className="p-2 bg-slate-700/50 hover:bg-slate-600/50 rounded-lg transition-all duration-200 text-left"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <GetSpellIcon iconName={enemy.iconName} className="w-6 h-6 text-red-300 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-sm font-bold text-red-300 truncate">{enemy.name}</h4>
+                              <p className="text-xs text-slate-400">Level {enemy.level}</p>
+                            </div>
+                            <SkullIcon className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Combat Log Section */}
+          <div className={`transform transition-all duration-1000 delay-700 ${
+            animationPhase >= 3 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}>
+            <div className="bg-slate-800/60 backdrop-blur-lg rounded-lg border border-slate-600/40 shadow-xl">
               <button
                 onClick={() => setShowCombatLog(!showCombatLog)}
-                className="w-full bg-slate-800/60 backdrop-blur-lg rounded-lg p-2 border border-slate-600/40 shadow-xl hover:border-slate-500/60 transition-all duration-300 mb-2"
+                className="w-full p-3 hover:bg-slate-700/30 transition-all duration-300 rounded-lg"
               >
                 <div className="flex items-center justify-between">
                   <h3 className="text-slate-300 font-bold text-sm">Battle Log</h3>
                   {showCombatLog ? (
-                    <ChevronUpIcon className="w-3 h-3 text-slate-400" />
+                    <ChevronUpIcon className="w-4 h-4 text-slate-400" />
                   ) : (
-                    <ChevronDownIcon className="w-3 h-3 text-slate-400" />
+                    <ChevronDownIcon className="w-4 h-4 text-slate-400" />
                   )}
                 </div>
               </button>
 
               {showCombatLog && (
-                <div className="bg-slate-900/60 backdrop-blur-lg rounded-lg border border-slate-600/40 shadow-xl h-32 overflow-y-auto w-full">
-                  <div className="p-2">
-                    <CombatLogDisplay logs={combatLog} />
-                  </div>
+                <div className="border-t border-slate-600/40 p-3 max-h-32 overflow-y-auto">
+                  <CombatLogDisplay logs={combatLog} />
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
