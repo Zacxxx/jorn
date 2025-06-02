@@ -25,7 +25,8 @@ import AppShell from './game-graphics/AppShell';
 import CharacterCreationModal from './src/components/CharacterCreationModal';
 
 // Import types
-import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState, ResourceCost } from './src/types';
+import { Player, Enemy, Spell, Ability, DetailedEquipmentSlot, CharacterSheetTab, StatusEffectName, GameState, ResourceCost, FullSavedGameData, SavedCombatState } from './src/types';
+import { LOCAL_STORAGE_KEY } from './game-core/player/PlayerState'; // Added for direct save/load
 
 /**
  * Main App Component
@@ -45,6 +46,42 @@ export const App: React.FC = () => {
                               (!playerState.player.name || playerState.player.name === 'Hero');
     setShowCharacterCreation(shouldShowCreation);
   }, [playerState.player.hasCustomizedCharacter, playerState.player.name]);
+
+  // Initial Load Logic
+  useEffect(() => {
+    const dataString = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (dataString) {
+      try {
+        const loadedData = JSON.parse(dataString) as FullSavedGameData;
+
+        if (loadedData && loadedData.player) {
+          playerState.setPlayer(loadedData.player);
+          // console.log('Player data loaded:', loadedData.player); // For debugging
+
+          if (loadedData.combatState) {
+            // console.log('Combat state found, restoring:', loadedData.combatState); // For debugging
+            gameState.setCurrentEnemies(loadedData.combatState.currentEnemies);
+            gameState.setCombatLog(loadedData.combatState.combatLog);
+            gameState.setGameState(loadedData.combatState.currentGameState);
+            gameState.setTurn(loadedData.combatState.turn);
+            gameState.setIsPlayerTurn(loadedData.combatState.isPlayerTurn);
+            gameState.setCurrentActingEnemyIndex(loadedData.combatState.currentActingEnemyIndex);
+            gameState.setTargetEnemyId(loadedData.combatState.targetEnemyId);
+          } else {
+            // console.log('No combat state found in loaded data.'); // For debugging
+          }
+        } else {
+          // console.warn("Loaded data is invalid or missing player data."); // For debugging
+        }
+      } catch (error) {
+        console.error("Error loading or parsing game data from localStorage:", error);
+        // localStorage.removeItem(LOCAL_STORAGE_KEY); // Optional: clear corrupted data
+      }
+    } else {
+      // console.log('No save data found in localStorage.'); // For debugging
+    }
+    // Character creation modal logic is handled by another useEffect that depends on playerState.player changes
+  }, []); // Empty dependency array to run only once on mount
 
   // Character creation handler
   const handleCharacterCreation = useCallback((name: string, classId: string, specializationId: string, title?: string) => {
@@ -68,9 +105,44 @@ export const App: React.FC = () => {
   // Auto-save functionality
   useEffect(() => {
     if (gameState.autoSave) {
-      playerState.savePlayer();
+      // Construct the combat state to save
+      const combatStateToSave: SavedCombatState | undefined = gameState.isInAnyCombat()
+        ? {
+            currentEnemies: gameState.currentEnemies,
+            combatLog: gameState.combatLog,
+            currentGameState: gameState.gameState as GameState, // Cast if gameState.gameState is broader string
+            turn: gameState.turn,
+            isPlayerTurn: gameState.isPlayerTurn,
+            currentActingEnemyIndex: gameState.currentActingEnemyIndex,
+            targetEnemyId: gameState.targetEnemyId,
+          }
+        : undefined;
+
+      const fullSaveData: FullSavedGameData = {
+        player: playerState.player,
+        combatState: combatStateToSave,
+      };
+
+      try {
+        const dataString = JSON.stringify(fullSaveData);
+        localStorage.setItem(LOCAL_STORAGE_KEY, dataString);
+        // console.log('Auto-saving FullGameState:', fullSaveData); // For debugging
+      } catch (error) {
+        console.error("Error auto-saving full game data:", error);
+      }
     }
-  }, [playerState.player, gameState.autoSave]);
+  }, [
+    playerState.player,
+    gameState.autoSave,
+    gameState.currentEnemies,
+    gameState.combatLog,
+    gameState.gameState,
+    gameState.turn,
+    gameState.isPlayerTurn,
+    gameState.currentActingEnemyIndex,
+    gameState.targetEnemyId,
+    gameState.isInAnyCombat // Add isInAnyCombat to dependencies
+  ]);
 
   // Enemy turn processing
   useEffect(() => {
@@ -175,6 +247,7 @@ export const App: React.FC = () => {
     setIsHelpWikiOpen: gameState.setIsHelpWikiOpen,
     setIsGameMenuOpen: gameState.setIsGameMenuOpen,
     setIsMobileMenuOpen: gameState.setIsMobileMenuOpen,
+    currentEnemies: gameState.currentEnemies, // Added
     setCurrentEnemies: gameState.setCurrentEnemies,
     setTargetEnemyId: gameState.setTargetEnemyId,
     setCombatLog: gameState.setCombatLog,

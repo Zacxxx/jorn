@@ -146,32 +146,33 @@ const GameOverView: React.FC<GameOverViewProps> = ({
         </div>
       )}
 
-      {/* Main Content - Transform-based perfect centering */}
-      <div 
-        className="absolute z-10"
-        style={{
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%',
-          maxWidth: '32rem', // max-w-2xl equivalent
-          padding: '0 1rem'
-        }}
-      >
-        <div className="space-y-4 md:space-y-6">
-          {/* Header Section */}
-          <div className={`text-center transform transition-all duration-1000 ${animationPhase >= 0 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-            <h1 className={`text-3xl md:text-4xl lg:text-5xl font-bold mb-2 ${
-              isVictory ? 'text-emerald-400' : 'text-red-400'
-            }`} style={{fontFamily: "'Inter Tight', sans-serif"}}>
-              {isVictory ? 'VICTORY!' : 'DEFEATED!'}
-            </h1>
-            
-            <p className={`text-base md:text-lg mb-4 ${
-              isVictory ? 'text-emerald-200' : 'text-red-200'
-            }`}>
-              {modalMessage || (isVictory ? 'You emerged victorious!' : 'You have fallen in battle.')}
-            </p>
+      {/* Main Content - Fixed fullscreen layout with proper containment */}
+      <div className="relative z-10 h-full flex flex-col items-center overflow-hidden max-w-full">
+        {/* Header Section - Fixed height with max width */}
+        <div className="flex-shrink-0 pt-3 pb-2 px-4 max-w-4xl mx-auto w-full">
+          <div className="text-center">
+            {/* Main Title with Animation */}
+            <div className={`transform transition-all duration-1000 ${animationPhase >= 0 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className="relative inline-block">
+                {isVictory ? (
+                  <StarIcon className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-400 mx-auto mb-2" />
+                ) : (
+                  <SkullIcon className="w-10 h-10 sm:w-12 sm:h-12 text-red-400 mx-auto mb-2" />
+                )}
+              </div>
+              
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-1 ${
+                isVictory ? 'text-emerald-400' : 'text-red-400'
+              }`} style={{fontFamily: "'Inter Tight', sans-serif"}}>
+                {isVictory ? 'VICTORY!' : 'DEFEATED!'}
+              </h1>
+              
+              <p className={`text-sm sm:text-base mb-3 ${
+                isVictory ? 'text-emerald-200' : 'text-red-200'
+              }`}>
+                {modalMessage || (isVictory ? 'You emerged victorious!' : 'You have fallen in battle.')}
+              </p>
+            </div>
 
             {/* Rewards Section - Victory Only */}
             {isVictory && (rewards.gold > 0 || rewards.essence > 0) && (
