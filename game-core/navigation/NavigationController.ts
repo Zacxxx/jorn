@@ -19,12 +19,13 @@ export interface NavigationContext {
   player: Player;
   effectivePlayerStats: PlayerEffectiveStats;
   pendingTraitUnlock: boolean;
-  setGameState: (state: string) => void;
+  setGameState: (state: string) => void; // TODO: Change to GameState type
   setDefaultCharacterSheetTab: (tab: CharacterSheetTab | undefined) => void;
   setInitialSpellPromptForStudio: (prompt: string) => void;
   setIsHelpWikiOpen: (open: boolean) => void;
   setIsGameMenuOpen: (open: boolean) => void;
   setIsMobileMenuOpen: (open: boolean) => void;
+  currentEnemies: Enemy[]; // Added for checking active battle
   setCurrentEnemies: (enemies: Enemy[]) => void;
   setTargetEnemyId: (id: string | null) => void;
   setCombatLog: (log: CombatActionLog[]) => void;

@@ -910,3 +910,20 @@ export interface Homestead {
   totalInvestment: number; // total gold invested
   unlocked: boolean;
 }
+
+// Saved Game Data Structures
+export interface SavedCombatState {
+  currentEnemies: Enemy[];
+  combatLog: CombatActionLog[];
+  currentGameState: GameState; // The string like 'IN_COMBAT', 'HOME'
+  turn: number;
+  isPlayerTurn: boolean;
+  currentActingEnemyIndex: number;
+  targetEnemyId: string | null;
+}
+
+export interface FullSavedGameData {
+  player: Player;
+  combatState?: SavedCombatState; // Optional, as a game might be saved when not in combat
+  // We can add other global states here later if needed, e.g., worldEventStates, etc.
+}

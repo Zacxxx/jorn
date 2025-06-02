@@ -153,7 +153,7 @@ const GameOverView: React.FC<GameOverViewProps> = ({
       )}
 
       {/* Main Content - Fixed fullscreen layout with proper containment */}
-      <div className="relative z-10 h-full flex flex-col overflow-hidden max-w-full">
+      <div className="relative z-10 h-full flex flex-col items-center overflow-hidden max-w-full">
         {/* Header Section - Fixed height with max width */}
         <div className="flex-shrink-0 pt-3 pb-2 px-4 max-w-4xl mx-auto w-full">
           <div className="text-center">
